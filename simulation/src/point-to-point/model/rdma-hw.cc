@@ -212,7 +212,7 @@ uint32_t RdmaHw::GetNicIdxOfQp(Ptr<RdmaQueuePair> qp){
 }
 uint64_t RdmaHw::GetQpKey(uint32_t dip, uint16_t sport, uint16_t pg){
 	return ((uint64_t)dip << 32) | ((uint64_t)sport << 16) | (uint64_t)pg;
-}
+}	//这个不是verbs里的rkey，lkey这些东西，而是一个QP的哈希/索引key
 Ptr<RdmaQueuePair> RdmaHw::GetQp(uint32_t dip, uint16_t sport, uint16_t pg){
 	uint64_t key = GetQpKey(dip, sport, pg);
 	auto it = m_qpMap.find(key);
@@ -252,9 +252,9 @@ void RdmaHw::AddQueuePair(uint64_t size, uint16_t pg, Ipv4Address sip, Ipv4Addre
 	}else if (m_cc_mode == 10){
 		qp->hpccPint.m_curRate = m_bps;
 	}
-
+//RdmaEgressQueue
 	// Notify Nic
-	m_nic[nic_idx].dev->NewQp(qp);
+	m_nic[nic_idx].dev->NewQp(qp);//这个只是通知这个QP所属的网卡来了一个新的QP，然后就可以开始尝试发包了
 }
 
 void RdmaHw::DeleteQueuePair(Ptr<RdmaQueuePair> qp){
@@ -359,11 +359,11 @@ int RdmaHw::ReceiveCnp(Ptr<Packet> p, CustomHeader &ch){
 
 	uint32_t i;
 	// get qp
-	Ptr<RdmaQueuePair> qp = GetQp(ch.sip, udpport, qIndex);
+	Ptr<RdmaQueuePair> qp = GetQp(ch.sip, udpport, qIndex);//根据udp的port和qindex找到qp队列对
 	if (qp == NULL)
 		std::cout << "ERROR: QCN NIC cannot find the flow\n";
 	// get nic
-	uint32_t nic_idx = GetNicIdxOfQp(qp);
+	uint32_t nic_idx = GetNicIdxOfQp(qp);//再找到对应的nic
 	Ptr<QbbNetDevice> dev = m_nic[nic_idx].dev;
 
 	if (qp->m_rate == 0)			//lazy initialization	

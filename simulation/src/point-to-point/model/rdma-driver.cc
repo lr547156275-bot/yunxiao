@@ -13,7 +13,7 @@ TypeId RdmaDriver::GetTypeId (void)
 				MakeTraceSourceAccessor (&RdmaDriver::m_traceQpComplete))
 		;
 	return tid;
-}
+}//构建硬件对象
 
 RdmaDriver::RdmaDriver(){
 }

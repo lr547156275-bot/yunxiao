@@ -82,7 +82,7 @@ namespace ns3 {
 			return p;
 		}
 		if (qIndex >= 0){ // qp
-			Ptr<Packet> p = m_rdmaGetNxtPkt(m_qpGrp->Get(qIndex));
+			Ptr<Packet> p = m_rdmaGetNxtPkt(m_qpGrp->Get(qIndex));//实际发包
 			m_rrlast = qIndex;
 			m_qlast = qIndex;
 			m_traceRdmaDequeue(p, m_qpGrp->Get(qIndex)->m_pg);
@@ -99,7 +99,7 @@ namespace ns3 {
 		// no pkt in highest priority queue, do rr for each qp
 		int res = -1024;
 		uint32_t fcount = m_qpGrp->GetN();
-		uint32_t min_finish_id = 0xffffffff;
+		uint32_t min_finish_id = 0xffffffff;//把初始值设置成最大值表示还没发现结束的QP队列
 		for (qIndex = 1; qIndex <= fcount; qIndex++){
 			uint32_t idx = (qIndex + m_rrlast) % fcount;
 			Ptr<RdmaQueuePair> qp = m_qpGrp->Get(idx);
@@ -114,9 +114,9 @@ namespace ns3 {
 		}
 
 		// clear the finished qp
-		if (min_finish_id < 0xffffffff){
-			int nxt = min_finish_id;
-			auto &qps = m_qpGrp->m_qps;
+		if (min_finish_id < 0xffffffff){//如果min_finish_id被更新过，说明至少发现一个finished QP
+			int nxt = min_finish_id;//这个nxt储存下一个应该防止未完成QP的位置，也就是从第一个QPfinished位置开始，把后面未完成的QP往前挪
+			auto &qps = m_qpGrp->m_qps;//拿到QP数组的引用
 			for (int i = min_finish_id + 1; i < fcount; i++) if (!qps[i]->IsFinished()){
 				if (i == res) // update res to the idx after removing finished qp
 					res = nxt;
@@ -271,14 +271,14 @@ namespace ns3 {
 					return;
 				}
 				// a qp dequeue a packet
-				Ptr<RdmaQueuePair> lastQp = m_rdmaEQ->GetQp(qIndex);
+				Ptr<RdmaQueuePair> lastQp = m_rdmaEQ->GetQp(qIndex);//更新这个last QP，这个last QP指的是上一次发包的QP
 				p = m_rdmaEQ->DequeueQindex(qIndex);
 
 				// transmit
 				m_traceQpDequeue(p, lastQp);
 				TransmitStart(p);
 
-				// update for the next avail time
+				// update for the next avail time，更新这个QP下一次可发送时间
 				m_rdmaPktSent(lastQp, p, m_tInterframeGap);
 			}else { // no packet to send
 				NS_LOG_INFO("PAUSE prohibits send at node " << m_node->GetId());
@@ -381,7 +381,7 @@ namespace ns3 {
 			}
 		}else { // non-PFC packets (data, ACK, NACK, CNP...)
 			if (m_node->GetNodeType() > 0){ // switch
-				packet->AddPacketTag(FlowIdTag(m_ifIndex));
+				packet->AddPacketTag(FlowIdTag(m_ifIndex));//FlowIdTag中保存着这个包从交换机哪个入口端口进入
 				m_node->SwitchReceiveFromDevice(this, packet, ch);
 			}else { // NIC
 				// send to RdmaHw

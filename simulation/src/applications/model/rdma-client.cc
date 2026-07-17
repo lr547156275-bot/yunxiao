@@ -42,7 +42,7 @@ namespace ns3 {
 NS_LOG_COMPONENT_DEFINE ("RdmaClient");
 NS_OBJECT_ENSURE_REGISTERED (RdmaClient);
 
-TypeId
+TypeId//构造一个type
 RdmaClient::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::RdmaClient")
@@ -139,7 +139,7 @@ void RdmaClient::StartApplication (void)
   Ptr<Node> node = GetNode();
   Ptr<RdmaDriver> rdma = node->GetObject<RdmaDriver>();
   rdma->AddQueuePair(m_size, m_pg, m_sip, m_dip, m_sport, m_dport, m_win, m_baseRtt, MakeCallback(&RdmaClient::Finish, this));
-}
+}//添加队列对
 
 void RdmaClient::StopApplication ()
 {

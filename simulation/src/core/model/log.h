@@ -398,12 +398,28 @@ private:
   char const *m_name;
 };
 
-class ParameterLogger : public std::ostream
+class ParameterLogger
 {
   int m_itemNumber;
   std::ostream &m_os;
 public:
   ParameterLogger (std::ostream &os);
+
+  template<typename T>
+  ParameterLogger& operator<< (T *param)
+  {
+    switch (m_itemNumber)
+      {
+      case 0: // first parameter
+        m_os << param;
+        break;
+      default: // parameter following a previous parameter
+        m_os << ", " << param;
+        break;
+      }
+    m_itemNumber++;
+    return *this;
+  }
 
   template<typename T>
   ParameterLogger& operator<< (T param)

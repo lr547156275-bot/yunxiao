@@ -2,7 +2,7 @@ import random
 class CustomRand:
 	def __init__(self):
 		pass
-	def testCdf(self, cdf):
+	def testCdf(self, cdf):#检查CDF是否合法，要求第一个百分位是0，最后一个是100，并且size和percentile都严格递增；
 		if cdf[0][1] != 0:
 			return False
 		if cdf[-1][1] != 100:
@@ -16,7 +16,7 @@ class CustomRand:
 			return False
 		self.cdf = cdf
 		return True
-	def getAvg(self):
+	def getAvg(self):#用梯形积分估算平均流大小
 		s = 0
 		last_x, last_y = self.cdf[0]
 		for c in self.cdf[1:]:
@@ -25,10 +25,10 @@ class CustomRand:
 			last_x = x
 			last_y = y
 		return s/100
-	def rand(self):
+	def rand(self):#抽取一个百分位，再映射成流大小
 		r = random.random() * 100
 		return self.getValueFromPercentile(r)
-	def getPercentileFromValue(self, x):
+	def getPercentileFromValue(self, x):#给定size，反查百分位
 		if x < 0 or x > self.cdf[-1][0]:
 			return -1
 		for i in range(1, len(self.cdf)):
@@ -36,13 +36,13 @@ class CustomRand:
 				x0, y0 = self.cdf[i-1]
 				x1, y1 = self.cdf[i]
 				return y0 + (y1-y0)/(x1-x0)*(x-x0)
-	def getValueFromPercentile(self, y):
+	def getValueFromPercentile(self, y):#给定百分位，查对应的size
 		for i in range(1, len(self.cdf)):
 			if y <= self.cdf[i][1]:
 				x0,y0 = self.cdf[i-1]
 				x1,y1 = self.cdf[i]
 				return x0 + (x1-x0)/(y1-y0)*(y-y0)
-	def getIntegralY(self, y):
+	def getIntegralY(self, y):#计算某个百分位到现在的积分
 		s = 0
 		for i in range(1, len(self.cdf)):
 			x0, y0 = self.cdf[i-1]
