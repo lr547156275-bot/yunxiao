@@ -119,7 +119,8 @@ public:
    virtual Ptr<Channel> GetChannel (void) const;
 
    void SetQueue (Ptr<BEgressQueue> q);
-   Ptr<BEgressQueue> GetQueue ();
+	Ptr<BEgressQueue> GetQueue ();
+	bool IsPaused(uint32_t qIndex) const;
    virtual bool IsQbb(void) const;
    void NewQp(Ptr<RdmaQueuePair> qp);
    void ReassignedQp(Ptr<RdmaQueuePair> qp);
@@ -130,7 +131,9 @@ public:
 	TracedCallback<Ptr<const Packet>, uint32_t> m_traceEnqueue;
 	TracedCallback<Ptr<const Packet>, uint32_t> m_traceDequeue;
 	TracedCallback<Ptr<const Packet>, uint32_t> m_traceDrop;
-	TracedCallback<uint32_t> m_tracePfc; // 0: resume, 1: pause
+	TracedCallback<uint32_t, uint32_t> m_tracePfc; // qIndex, event type (0: resume, 1: pause)
+	TracedCallback<uint32_t, uint32_t, uint32_t, uint32_t>
+		m_tracePfcSemantic; // priority, event, queue in frame, pause quanta
 protected:
 
 	//Ptr<Node> m_node;
@@ -200,6 +203,9 @@ public:
 	Ptr<RdmaEgressQueue> GetRdmaQueue();
 	void TakeDown(); // take down this device
 	void UpdateNextAvail(Time t);
+	// CBAP-only invalidation: discard a NIC-wide wakeup computed from an old
+	// sender rate, then rescan all QPs so another flow is never postponed.
+	void InvalidateAndRescheduleRdma(void);
 
 	TracedCallback<Ptr<const Packet>, Ptr<RdmaQueuePair> > m_traceQpDequeue; // the trace for printing dequeue
 };

@@ -1,0 +1,844 @@
+--- a/simulation/scratch/third.cc
++++ b/simulation/scratch/third.cc
+@@ -134,6 +134,8 @@
+ string cbap_control_overhead_file;
+ string cbap_packet_trace_file;
+ uint32_t cbap_packet_trace_max_mb = 96;
++string cbap_tx_event_file;
++uint32_t cbap_tx_trace_tracking_packets = 4096;
+ 
+ double alpha_resume_interval = 55, rp_timer, ewma_gain = 1 / 16;//恢复间隔；在reaction阶段的时候多久做一次AI；EWMA增益
+ double rate_decrease_interval = 4;//速率降低间隔，也就是在降速的时候多久降速一次
+@@ -550,6 +552,7 @@
+ 	config.maxWirePacketBytes = cbap_max_wire_packet_bytes;
+ 	config.summaryBytes = cbap_summary_bytes;
+ 	config.grantBytes = cbap_grant_bytes;
++	config.txTraceTrackingPackets = cbap_tx_trace_tracking_packets;
+ 	if (!cbap_enable){
+ 		RdmaHw::ConfigureCbap(config, cbap_links, cbap_flow_paths);
+ 		return;
+@@ -723,7 +726,15 @@
+ 	if (!cbap_flow_state_file.empty()){
+ 		ofstream output(cbap_flow_state_file.c_str());
+ 		output << "flow_id,batch_id,application_ready_ns,"
+-			"network_release_ns,first_fresh_feedback_ns,"
++			"network_release_ns,first_fresh_feedback_ns,admission_enter_ns,"
++			"admission_exit_ns,first_data_tx_ns,first_post_release_sample_ns,"
++			"first_complete_fresh_feedback_ns,initial_admit_rate_bps,"
++			"actual_admission_mean_rate_bps,bytes_sent_before_fresh_feedback,"
++			"rate_updates_before_first_tx,ordinary_rate_updates_during_admission,"
++			"emergency_rate_updates_during_admission,credit_gate_enter_ns,"
++			"credit_gate_exit_ns,credit_gate_active_at_finish,"
++			"credit_remaining_at_admission_exit,tracking_actual_rate_bps,"
++			"tracking_current_rate_bps,tracking_base_rate_bps,pacing_violations,"
+ 			"estimated_first_feedback_ns,finish_ns,bytes_sent,"
+ 			"bytes_acked,base_rate_bps,admit_rate_bps,final_rate_bps,"
+ 			"initial_credit_bytes,remaining_credit_bytes,excess_bytes,"
+@@ -737,6 +748,22 @@
+ 			output << r.flowId << ',' << r.batchId << ','
+ 				<< r.applicationReadyNs << ',' << r.networkReleaseNs
+ 				<< ',' << r.firstFreshFeedbackNs << ','
++				<< r.admissionEnterNs << ',' << r.admissionExitNs << ','
++				<< r.firstDataTxNs << ','
++				<< r.firstPostReleaseSampleNs << ','
++				<< r.firstCompleteFreshFeedbackNs << ','
++				<< r.initialAdmitRateBps << ','
++				<< r.actualAdmissionMeanRateBps << ','
++				<< r.bytesSentBeforeFreshFeedback << ','
++				<< r.rateUpdatesBeforeFirstTx << ','
++				<< r.ordinaryRateUpdatesDuringAdmission << ','
++				<< r.emergencyRateUpdatesDuringAdmission << ','
++				<< r.creditGateEnterNs << ',' << r.creditGateExitNs << ','
++				<< r.creditGateActiveAtFinish << ','
++				<< r.creditRemainingAtAdmissionExit << ','
++				<< r.trackingActualRateBps << ','
++				<< r.trackingCurrentRateBps << ','
++				<< r.trackingBaseRateBps << ',' << r.pacingViolations << ','
+ 				<< r.estimatedFirstFeedbackNs << ',' << r.finishNs
+ 				<< ',' << r.bytesSent << ',' << r.bytesAcked << ','
+ 				<< r.baseRateBps << ',' << r.admitRateBps << ','
+@@ -747,6 +774,32 @@
+ 				<< ',' << r.rateDecreases << ',' << r.rateHolds << ','
+ 				<< r.reschedules << ',' << r.fair80Ns << ','
+ 				<< r.fair90Ns << ',' << r.fair95Ns << '\n';
++		}
++	}
++	if (!cbap_tx_event_file.empty()){
++		ofstream output(cbap_tx_event_file.c_str());
++		output << "time_ns,event,flow_id,batch_id,packet_seq,wire_bytes,phase,"
++			"current_rate_bps,target_rate_bps,admit_rate_bps,base_rate_bps,"
++			"credit_gate_active,credit_remaining_bytes,scheduled_time_ns,"
++			"actual_send_time_ns,previous_tx_time_ns,expected_gap_ns,"
++			"actual_gap_ns,reschedule_reason\n";
++		const vector<RdmaHw::CbapTxRecord> &rows =
++			RdmaHw::GetCbapTxRecords();
++		for (uint32_t i = 0; i < rows.size(); ++i){
++			const RdmaHw::CbapTxRecord &r = rows[i];
++			const char *event = r.eventType == RdmaHw::CBAP_TX_SCHEDULE ?
++				"TX_SCHEDULE" : r.eventType == RdmaHw::CBAP_TX_SEND ?
++				"TX_SEND" : r.eventType == RdmaHw::CBAP_TX_RESCHEDULE ?
++				"TX_RESCHEDULE" : "TX_CANCEL_OR_INVALIDATE";
++			output << r.timeNs << ',' << event << ',' << r.flowId << ','
++				<< r.batchId << ',' << r.packetSeq << ',' << r.wireBytes
++				<< ',' << r.phase << ',' << r.currentRateBps << ','
++				<< r.targetRateBps << ',' << r.admitRateBps << ','
++				<< r.baseRateBps << ',' << r.creditGateActive << ','
++				<< r.creditRemainingBytes << ',' << r.scheduledTimeNs << ','
++				<< r.actualSendTimeNs << ',' << r.previousTxTimeNs << ','
++				<< r.expectedGapNs << ',' << r.actualGapNs << ','
++				<< r.rescheduleReason << '\n';
+ 		}
+ 	}
+ 	if (!cbap_control_overhead_file.empty()){
+@@ -2182,6 +2235,10 @@
+ 				conf>>cbap_packet_trace_file;
+ 			else if(key.compare("CBAP_PACKET_TRACE_MAX_MB")==0)
+ 				conf>>cbap_packet_trace_max_mb;
++			else if(key.compare("CBAP_TX_EVENT_FILE")==0)
++				conf>>cbap_tx_event_file;
++			else if(key.compare("CBAP_TX_TRACE_TRACKING_PACKETS")==0)
++				conf>>cbap_tx_trace_tracking_packets;
+ 			else if(key.compare("ROUND_SCHEDULE_FILE")==0) conf>>round_schedule_file;
+ 			else if(key.compare("ROUND_MODE")==0) conf>>round_mode;
+ 			else if(key.compare("ROUND_TRACE_SELECTED_FLOWS")==0) conf>>round_selected_flow_ids;
+@@ -2673,7 +2730,8 @@
+ 				!(cbap_rho > 0 && cbap_rho <= 1) ||
+ 				!(cbap_epsilon_rate > 0) ||
+ 				cbap_priority >= QbbNetDevice::qCnt ||
+-				cbap_max_wire_packet_bytes < packet_payload_size)
++				cbap_max_wire_packet_bytes < packet_payload_size ||
++				cbap_tx_trace_tracking_packets == 0)
+ 			ConfigError("invalid CBAP mode or configuration");
+ 	}else if (RdmaHw::IsCbapMode(cc_mode)){
+ 		ConfigError("CBAP CC_MODE requires CBAP_ENABLE=1");
+--- a/simulation/src/point-to-point/model/qbb-net-device.cc
++++ b/simulation/src/point-to-point/model/qbb-net-device.cc
+@@ -541,4 +541,13 @@
+ 			m_nextSend = Simulator::Schedule(delta, &QbbNetDevice::DequeueAndTransmit, this);
+ 		}
+ 	}
++
++	void QbbNetDevice::InvalidateAndRescheduleRdma(void){
++		if (!m_nextSend.IsExpired())
++			Simulator::Cancel(m_nextSend);
++		// DequeueAndTransmit scans every QP.  If the link is busy its normal
++		// TransmitComplete callback performs the scan; otherwise this call
++		// schedules the minimum currently eligible m_nextAvail.
++		DequeueAndTransmit();
++	}
+ } // namespace ns3
+--- a/simulation/src/point-to-point/model/qbb-net-device.h
++++ b/simulation/src/point-to-point/model/qbb-net-device.h
+@@ -203,6 +203,9 @@
+ 	Ptr<RdmaEgressQueue> GetRdmaQueue();
+ 	void TakeDown(); // take down this device
+ 	void UpdateNextAvail(Time t);
++	// CBAP-only invalidation: discard a NIC-wide wakeup computed from an old
++	// sender rate, then rescan all QPs so another flow is never postponed.
++	void InvalidateAndRescheduleRdma(void);
+ 
+ 	TracedCallback<Ptr<const Packet>, Ptr<RdmaQueuePair> > m_traceQpDequeue; // the trace for printing dequeue
+ };
+--- a/simulation/src/point-to-point/model/rdma-hw.cc
++++ b/simulation/src/point-to-point/model/rdma-hw.cc
+@@ -48,6 +48,7 @@
+ std::vector<RdmaHw::CbapAdmissionRecord> RdmaHw::s_cbapAdmissionRecords;
+ std::vector<RdmaHw::CbapRateRecord> RdmaHw::s_cbapRateRecords;
+ std::vector<RdmaHw::CbapFlowRecord> RdmaHw::s_cbapFlowRecords;
++std::vector<RdmaHw::CbapTxRecord> RdmaHw::s_cbapTxRecords;
+ uint64_t RdmaHw::s_cbapSummaryMessages = 0;
+ uint64_t RdmaHw::s_cbapGrantMessages = 0;
+ 
+@@ -164,6 +165,7 @@
+ 	s_cbapAdmissionRecords.clear();
+ 	s_cbapRateRecords.clear();
+ 	s_cbapFlowRecords.clear();
++	s_cbapTxRecords.clear();
+ 	s_cbapSummaryMessages = 0;
+ 	s_cbapGrantMessages = 0;
+ 	if (!config.enabled)
+@@ -236,6 +238,12 @@
+ RdmaHw::GetCbapFlowRecords()
+ {
+ 	return s_cbapFlowRecords;
++}
++
++const std::vector<RdmaHw::CbapTxRecord> &
++RdmaHw::GetCbapTxRecords()
++{
++	return s_cbapTxRecords;
+ }
+ 
+ uint64_t RdmaHw::GetCbapSummaryMessageCount()
+@@ -742,6 +750,8 @@
+ 		qp->cbap.targetRateBps = admitRates[pending[i]];
+ 		qp->cbap.creditInitialBytes = full ? credit : 0;
+ 		qp->cbap.creditRemainingBytes = full ? credit : 0;
++		qp->cbap.creditGateActive = false;
++		qp->cbap.initialAdmitRateBps = admitRates[pending[i]];
+ 		qp->cbap.estimatedFirstFeedbackNs =
+ 			group.commonReleaseNs + horizon;
+ 		qp->cbap.baseEligibleBytes = 0;
+@@ -806,11 +816,29 @@
+ 	record.staleFeedback = stale;
+ 	record.capacityValid = true;
+ 	if (newRate != oldRate){
++		uint64_t now = Simulator::Now().GetTimeStep();
++		if (qp->cbap.phase == RdmaQueuePair::CBAP_ADMISSION_HOLD){
++			if (qp->cbap.firstDataTxNs == 0)
++				qp->cbap.rateUpdatesBeforeFirstTx++;
++			if (reason == 4)
++				qp->cbap.emergencyRateUpdatesDuringAdmission++;
++			else if (reason != 1)
++				qp->cbap.ordinaryRateUpdatesDuringAdmission++;
++		}
++		if (qp->cbap.phase == RdmaQueuePair::CBAP_TRACKING ||
++				qp->cbap.phase == RdmaQueuePair::CBAP_RECOVERY)
++			UpdateCbapTrackingRateIntegral(qp, now);
++		uint64_t oldSchedule = qp->m_nextAvail.GetTimeStep();
++		RecordCbapTxEvent(qp, CBAP_TX_CANCEL_OR_INVALIDATE,
++			oldSchedule, 0, qp->cbap.lastTxTimeNs, 0, 0, reason);
+ 		flow.hw->ChangeRate(qp, DataRate(newRate));
+ 		if (qp->m_nextAvail < Simulator::Now())
+ 			qp->m_nextAvail = Simulator::Now();
+ 		uint32_t nic = flow.hw->GetNicIdxOfQp(qp);
+-		flow.hw->m_nic[nic].dev->TriggerTransmit();
++		flow.hw->m_nic[nic].dev->InvalidateAndRescheduleRdma();
++		RecordCbapTxEvent(qp, CBAP_TX_RESCHEDULE,
++			qp->m_nextAvail.GetTimeStep(), 0,
++			qp->cbap.lastTxTimeNs, 0, 0, reason);
+ 		if (newRate > oldRate)
+ 			qp->cbap.rateIncreaseCount++;
+ 		else
+@@ -823,6 +851,139 @@
+ 	qp->cbap.rootId = rootId;
+ 	record.phaseAfter = qp->cbap.phase;
+ 	s_cbapRateRecords.push_back(record);
++}
++
++bool RdmaHw::HasCompletePostReleaseFeedback(
++		const CbapFlowRuntime &flow, uint64_t &firstSampleNs,
++		uint64_t &completeDeliveryNs)
++{
++	firstSampleNs = 0;
++	completeDeliveryNs = 0;
++	if (!flow.qp)
++		return false;
++	const uint64_t release = flow.qp->cbap.networkReleaseNs;
++	const std::vector<uint32_t> &path = s_cbapFlowPaths[flow.flowId];
++	for (uint32_t hop = 0; hop < path.size(); ++hop){
++		const CbapLinkRuntime &link = s_cbapLinks[path[hop]];
++		if (!link.initialized ||
++				link.latest.sampleTimeNs <= release ||
++				link.latest.deliveryTimeNs <= release)
++			return false;
++		if (firstSampleNs == 0 ||
++				link.latest.sampleTimeNs < firstSampleNs)
++			firstSampleNs = link.latest.sampleTimeNs;
++		completeDeliveryNs = std::max(completeDeliveryNs,
++			link.latest.deliveryTimeNs);
++	}
++	return !path.empty();
++}
++
++bool RdmaHw::HasPostReleaseEmergencyEvidence(
++		const CbapFlowRuntime &flow, uint32_t &rootId)
++{
++	rootId = 0;
++	if (!flow.qp)
++		return false;
++	const uint64_t release = flow.qp->cbap.networkReleaseNs;
++	const std::vector<uint32_t> &path = s_cbapFlowPaths[flow.flowId];
++	for (uint32_t hop = 0; hop < path.size(); ++hop){
++		const CbapLinkRuntime &link = s_cbapLinks[path[hop]];
++		if (!link.initialized ||
++				link.latest.sampleTimeNs <= release ||
++				link.latest.deliveryTimeNs <= release)
++			continue;
++		uint64_t qHigh = (uint64_t)std::floor(0.80 *
++			link.config.ecnThresholdBytes);
++		if (link.latest.portState == CBAP_PORT_ROOT_CONGESTED){
++			rootId = link.latest.rootId;
++			return true;
++		}
++		if (link.latest.queueBytes >= qHigh ||
++				link.latest.pfcEventsDelta > 0 ||
++				link.latest.localPaused){
++			rootId = link.latest.rootId;
++			return true;
++		}
++	}
++	return false;
++}
++
++void RdmaHw::UpdateCbapTrackingRateIntegral(Ptr<RdmaQueuePair> qp,
++		uint64_t nowNs)
++{
++	if (!qp || qp->cbap.trackingRateLastNs == 0 ||
++			nowNs <= qp->cbap.trackingRateLastNs)
++		return;
++	qp->cbap.trackingRateIntegral +=
++		(long double)qp->cbap.currentRateBps *
++		(nowNs - qp->cbap.trackingRateLastNs);
++	qp->cbap.trackingRateLastNs = nowNs;
++}
++
++void RdmaHw::ExitCbapAdmission(Ptr<RdmaQueuePair> qp,
++		uint64_t completeDeliveryNs)
++{
++	NS_ASSERT_MSG(qp &&
++			qp->cbap.phase == RdmaQueuePair::CBAP_ADMISSION_HOLD,
++			"CBAP admission exit outside ADMISSION_HOLD");
++	uint64_t now = Simulator::Now().GetTimeStep();
++	NS_ASSERT_MSG(completeDeliveryNs > qp->cbap.networkReleaseNs,
++			"CBAP admission exited on a pre-release sample");
++	qp->cbap.firstCompleteFreshFeedbackNs = completeDeliveryNs;
++	if (qp->cbap.firstFreshFeedbackNs == 0)
++		qp->cbap.firstFreshFeedbackNs = completeDeliveryNs;
++	qp->cbap.lastFreshFeedbackNs = completeDeliveryNs;
++	qp->cbap.admissionExitNs = now;
++	qp->cbap.bytesSentBeforeFreshFeedback =
++		qp->snd_nxt >= qp->cbap.bytesSentAtRelease ?
++		qp->snd_nxt - qp->cbap.bytesSentAtRelease : 0;
++	qp->cbap.creditRemainingAtAdmissionExit =
++		qp->cbap.creditRemainingBytes;
++	qp->cbap.creditGateActive = false;
++	if (qp->cbap.creditGateEnterNs > 0)
++		qp->cbap.creditGateExitNs = now;
++	qp->cbap.phase = RdmaQueuePair::CBAP_TRACKING;
++	qp->cbap.trackingStartNs = now;
++	qp->cbap.trackingRateLastNs = now;
++	qp->cbap.trackingRateIntegral = 0;
++}
++
++void RdmaHw::RecordCbapTxEvent(Ptr<RdmaQueuePair> qp,
++		uint32_t eventType, uint64_t scheduledTimeNs,
++		uint64_t actualSendTimeNs, uint64_t previousTxTimeNs,
++		uint64_t expectedGapNs, uint64_t actualGapNs,
++		uint32_t reason)
++{
++	if (!qp || !qp->cbap.enabled)
++		return;
++	bool trackingPacket = qp->cbap.phase == RdmaQueuePair::CBAP_TRACKING ||
++		qp->cbap.phase == RdmaQueuePair::CBAP_RECOVERY;
++	if (trackingPacket &&
++			(eventType == CBAP_TX_SEND || eventType == CBAP_TX_SCHEDULE) &&
++			qp->cbap.txTraceTrackingPackets >=
++				s_cbapConfig.txTraceTrackingPackets)
++		return;
++	CbapTxRecord record = {};
++	record.timeNs = Simulator::Now().GetTimeStep();
++	record.eventType = eventType;
++	record.flowId = qp->crfm.flowId;
++	record.batchId = qp->cbap.batchId;
++	record.packetSeq = qp->cbap.lastPacketSeq;
++	record.wireBytes = qp->cbap.lastPacketWireBytes;
++	record.phase = qp->cbap.phase;
++	record.currentRateBps = qp->m_rate.GetBitRate();
++	record.targetRateBps = qp->cbap.targetRateBps;
++	record.admitRateBps = qp->cbap.admitRateBps;
++	record.baseRateBps = qp->cbap.baseRateBps;
++	record.creditGateActive = qp->cbap.creditGateActive;
++	record.creditRemainingBytes = qp->cbap.creditRemainingBytes;
++	record.scheduledTimeNs = scheduledTimeNs;
++	record.actualSendTimeNs = actualSendTimeNs;
++	record.previousTxTimeNs = previousTxTimeNs;
++	record.expectedGapNs = expectedGapNs;
++	record.actualGapNs = actualGapNs;
++	record.rescheduleReason = reason;
++	s_cbapTxRecords.push_back(record);
+ }
+ 
+ void RdmaHw::RecomputeCbapTracking()
+@@ -868,20 +1029,37 @@
+ 		CbapFlowRuntime &flow = s_cbapFlows[active[i]];
+ 		Ptr<RdmaQueuePair> qp = flow.qp;
+ 		const std::vector<uint32_t> &path = s_cbapFlowPaths[active[i]];
+-		bool allFresh = true, stale = false, severe = false;
++		uint64_t firstPostSample = 0, completeDelivery = 0;
++		bool allFresh = HasCompletePostReleaseFeedback(
++			flow, firstPostSample, completeDelivery);
++		if (firstPostSample > 0 &&
++				(qp->cbap.firstPostReleaseSampleNs == 0 ||
++				 firstPostSample < qp->cbap.firstPostReleaseSampleNs))
++			qp->cbap.firstPostReleaseSampleNs = firstPostSample;
++		bool stale = false, severe = false;
+ 		bool root = false, propagated = false, mixed = false;
+ 		bool allClearStable = true;
+ 		uint32_t rootId = 0;
+ 		uint64_t newestFeedback = 0;
+ 		for (uint32_t hop = 0; hop < path.size(); ++hop){
+ 			CbapLinkRuntime &link = s_cbapLinks[path[hop]];
+-			if (!link.initialized ||
+-					link.latest.deliveryTimeNs <=
+-						qp->cbap.networkReleaseNs){
+-				allFresh = false;
++			bool postRelease = link.initialized &&
++				link.latest.sampleTimeNs > qp->cbap.networkReleaseNs &&
++				link.latest.deliveryTimeNs > qp->cbap.networkReleaseNs;
++			if (!postRelease){
+ 				allClearStable = false;
+ 				continue;
+ 			}
++			if (qp->cbap.firstPostReleaseSampleNs == 0 ||
++					link.latest.sampleTimeNs <
++						qp->cbap.firstPostReleaseSampleNs)
++				qp->cbap.firstPostReleaseSampleNs =
++					link.latest.sampleTimeNs;
++			if (qp->cbap.firstFreshFeedbackNs == 0 ||
++					link.latest.deliveryTimeNs <
++						qp->cbap.firstFreshFeedbackNs)
++				qp->cbap.firstFreshFeedbackNs =
++					link.latest.deliveryTimeNs;
+ 			newestFeedback = std::max(newestFeedback,
+ 				link.latest.deliveryTimeNs);
+ 			uint64_t staleLimit = std::max(qp->m_baseRtt,
+@@ -909,21 +1087,35 @@
+ 				 link.latest.portState == CBAP_PORT_STABLE);
+ 		}
+ 		qp->cbap.targetRateBps = targets[active[i]];
++		if (qp->cbap.phase == RdmaQueuePair::CBAP_ADMISSION_HOLD &&
++				!allFresh){
++			qp->cbap.stableEpochCount = 0;
++			uint32_t emergencyRoot = 0;
++			if (HasPostReleaseEmergencyEvidence(flow, emergencyRoot)){
++				uint64_t current = qp->m_rate.GetBitRate();
++				uint64_t emergency = std::min(current / 2,
++					(uint64_t)std::floor(0.8L *
++						targets[active[i]]));
++				SetCbapRate(flow, emergency, 4, emergencyRoot, false);
++			}
++			// Ordinary tracking decisions are forbidden until every path link
++			// has a sample and delivery strictly after network release.
++			continue;
++		}
++		if (qp->cbap.phase == RdmaQueuePair::CBAP_ADMISSION_HOLD){
++			ExitCbapAdmission(qp, completeDelivery);
++			if (qp->cbap.initOnly){
++				qp->mlx.m_targetRate =
++					DataRate(qp->m_rate.GetBitRate());
++				qp->cbap.currentRateBps =
++					qp->m_rate.GetBitRate();
++				continue;
++			}
++		}
+ 		if (!allFresh){
+ 			qp->cbap.stableEpochCount = 0;
+ 		}else{
+ 			qp->cbap.lastFreshFeedbackNs = newestFeedback;
+-			if (qp->cbap.firstFreshFeedbackNs == 0){
+-				qp->cbap.firstFreshFeedbackNs = now;
+-				qp->cbap.phase = RdmaQueuePair::CBAP_TRACKING;
+-				if (qp->cbap.initOnly){
+-					qp->mlx.m_targetRate =
+-						DataRate(qp->m_rate.GetBitRate());
+-					qp->cbap.currentRateBps =
+-						qp->m_rate.GetBitRate();
+-					continue;
+-				}
+-			}
+ 			qp->cbap.stableEpochCount = allClearStable ?
+ 				qp->cbap.stableEpochCount + 1 : 0;
+ 		}
+@@ -943,6 +1135,10 @@
+ 			qp->cbap.increaseFreezeEpochs--;
+ 		if (severe){
+ 			qp->cbap.phase = RdmaQueuePair::CBAP_RECOVERY;
++			qp->cbap.creditGateActive = false;
++			if (qp->cbap.creditGateEnterNs > 0 &&
++					qp->cbap.creditGateExitNs == 0)
++				qp->cbap.creditGateExitNs = now;
+ 			qp->cbap.creditRemainingBytes = 0;
+ 			qp->cbap.increaseFreezeEpochs = 2;
+ 			uint64_t emergency = std::min(current / 2,
+@@ -1001,6 +1197,12 @@
+ 		flow->second.active = false;
+ 		flow->second.finished = true;
+ 	}
++	uint64_t finishNs = Simulator::Now().GetTimeStep();
++	UpdateCbapTrackingRateIntegral(qp, finishNs);
++	qp->cbap.creditGateActive = false;
++	if (qp->cbap.creditGateEnterNs > 0 &&
++			qp->cbap.creditGateExitNs == 0)
++		qp->cbap.creditGateExitNs = finishNs;
+ 	qp->cbap.phase = RdmaQueuePair::CBAP_FINISHED;
+ 	CbapFlowRecord record = {};
+ 	record.flowId = qp->crfm.flowId;
+@@ -1008,9 +1210,45 @@
+ 	record.applicationReadyNs = qp->cbap.applicationReadyNs;
+ 	record.networkReleaseNs = qp->cbap.networkReleaseNs;
+ 	record.firstFreshFeedbackNs = qp->cbap.firstFreshFeedbackNs;
++	record.admissionEnterNs = qp->cbap.admissionEnterNs;
++	record.admissionExitNs = qp->cbap.admissionExitNs;
++	record.firstDataTxNs = qp->cbap.firstDataTxNs;
++	record.firstPostReleaseSampleNs =
++		qp->cbap.firstPostReleaseSampleNs;
++	record.firstCompleteFreshFeedbackNs =
++		qp->cbap.firstCompleteFreshFeedbackNs;
++	record.initialAdmitRateBps = qp->cbap.initialAdmitRateBps;
++	uint64_t admissionSpan = qp->cbap.admissionExitNs >
++		qp->cbap.admissionEnterNs ? qp->cbap.admissionExitNs -
++		qp->cbap.admissionEnterNs : 0;
++	record.actualAdmissionMeanRateBps = admissionSpan > 0 ?
++		(double)qp->cbap.bytesSentBeforeFreshFeedback * 8e9 /
++		admissionSpan : 0;
++	record.bytesSentBeforeFreshFeedback =
++		qp->cbap.bytesSentBeforeFreshFeedback;
++	record.rateUpdatesBeforeFirstTx =
++		qp->cbap.rateUpdatesBeforeFirstTx;
++	record.ordinaryRateUpdatesDuringAdmission =
++		qp->cbap.ordinaryRateUpdatesDuringAdmission;
++	record.emergencyRateUpdatesDuringAdmission =
++		qp->cbap.emergencyRateUpdatesDuringAdmission;
++	record.creditGateEnterNs = qp->cbap.creditGateEnterNs;
++	record.creditGateExitNs = qp->cbap.creditGateExitNs;
++	record.creditGateActiveAtFinish = qp->cbap.creditGateActive;
++	record.creditRemainingAtAdmissionExit =
++		qp->cbap.creditRemainingAtAdmissionExit;
++	uint64_t trackingSpan = qp->cbap.trackingStartNs > 0 &&
++		finishNs > qp->cbap.trackingStartNs ?
++		finishNs - qp->cbap.trackingStartNs : 0;
++	record.trackingActualRateBps = trackingSpan > 0 ?
++		(double)qp->cbap.trackingBytesSent * 8e9 / trackingSpan : 0;
++	record.trackingCurrentRateBps = trackingSpan > 0 ?
++		(double)(qp->cbap.trackingRateIntegral / trackingSpan) : 0;
++	record.trackingBaseRateBps = qp->cbap.baseRateBps;
++	record.pacingViolations = qp->cbap.pacingViolationCount;
+ 	record.estimatedFirstFeedbackNs =
+ 		qp->cbap.estimatedFirstFeedbackNs;
+-	record.finishNs = Simulator::Now().GetTimeStep();
++	record.finishNs = finishNs;
+ 	record.bytesSent = qp->snd_nxt;
+ 	record.bytesAcked = qp->snd_una;
+ 	record.baseRateBps = qp->cbap.baseRateBps;
+@@ -2736,6 +2974,16 @@
+ 			qp->cbap.phase == RdmaQueuePair::CBAP_PREPARE,
+ 			"CBAP release without completed batch plan");
+ 		qp->cbap.phase = RdmaQueuePair::CBAP_ADMISSION_HOLD;
++		qp->cbap.admissionEnterNs = now;
++		qp->cbap.admissionExitNs = 0;
++		qp->cbap.firstDataTxNs = 0;
++		qp->cbap.firstPostReleaseSampleNs = 0;
++		qp->cbap.firstCompleteFreshFeedbackNs = 0;
++		qp->cbap.bytesSentBeforeFreshFeedback = 0;
++		qp->cbap.creditRemainingAtAdmissionExit = 0;
++		qp->cbap.creditGateActive = qp->cbap.fullCredit;
++		qp->cbap.creditGateEnterNs = qp->cbap.fullCredit ? now : 0;
++		qp->cbap.creditGateExitNs = 0;
+ 		qp->cbap.bytesSentAtRelease = qp->snd_nxt;
+ 		qp->cbap.bytesAckedAtRelease = qp->snd_una;
+ 		qp->cbap.lastEpochSndNxt = qp->snd_nxt;
+@@ -3198,8 +3446,8 @@
+ 	ppp.SetProtocol (0x0021); // EtherToPpp(0x800), see point-to-point-net-device.cc
+ 	p->AddHeader (ppp);
+ 	if (qp->cbap.enabled && qp->cbap.fullCredit &&
+-			qp->cbap.phase != RdmaQueuePair::CBAP_PREPARE &&
+-			qp->cbap.phase != RdmaQueuePair::CBAP_FINISHED){
++			qp->cbap.creditGateActive &&
++			qp->cbap.phase == RdmaQueuePair::CBAP_ADMISSION_HOLD){
+ 		qp->UpdateCbapEligibility(Simulator::Now().GetTimeStep());
+ 		uint64_t wireBytes = p->GetSize();
+ 		long double baseUse = std::min(qp->cbap.baseEligibleBytes,
+@@ -3219,10 +3467,16 @@
+ 	}
+ 
+ 	// update state
++	if (qp->cbap.enabled){
++		qp->cbap.lastPacketSeq = qp->snd_nxt;
++		qp->cbap.lastPacketWireBytes = p->GetSize();
++		if (qp->cbap.phase == RdmaQueuePair::CBAP_TRACKING ||
++				qp->cbap.phase == RdmaQueuePair::CBAP_RECOVERY)
++			qp->cbap.trackingBytesSent += payload_size;
++	}
+ 	qp->snd_nxt += payload_size;
+ 	qp->m_ipid++;
+ 	if (qp->cbap.enabled){
+-		qp->cbap.lastTxTimeNs = Simulator::Now().GetTimeStep();
+ 		qp->cbap.phaseAtLastPacket =
+ 			(RdmaQueuePair::CbapPhase)qp->cbap.phase;
+ 	}
+@@ -3299,7 +3553,32 @@
+ 
+ void RdmaHw::PktSent(Ptr<RdmaQueuePair> qp, Ptr<Packet> pkt, Time interframeGap){
+ 	qp->lastPktSize = pkt->GetSize();
++	if (qp->cbap.enabled){
++		uint64_t now = Simulator::Now().GetTimeStep();
++		uint64_t previous = qp->cbap.lastTxTimeNs;
++		uint64_t expected = Seconds(qp->m_rate.CalculateTxTime(
++			pkt->GetSize())).GetTimeStep();
++		uint64_t actual = previous > 0 && now >= previous ?
++			now - previous : 0;
++		if (previous > 0 && actual + 1 < expected)
++			qp->cbap.pacingViolationCount++;
++		if (qp->cbap.firstDataTxNs == 0)
++			qp->cbap.firstDataTxNs = now;
++		RecordCbapTxEvent(qp, CBAP_TX_SEND, now, now, previous,
++			expected, actual, 0);
++		qp->cbap.lastTxTimeNs = now;
++		if (qp->cbap.phase == RdmaQueuePair::CBAP_TRACKING ||
++				qp->cbap.phase == RdmaQueuePair::CBAP_RECOVERY)
++			qp->cbap.txTraceTrackingPackets++;
++	}
+ 	UpdateNextAvail(qp, interframeGap, pkt->GetSize());
++	if (qp->cbap.enabled){
++		uint64_t expected = Seconds(qp->m_rate.CalculateTxTime(
++			pkt->GetSize())).GetTimeStep();
++		RecordCbapTxEvent(qp, CBAP_TX_SCHEDULE,
++			qp->m_nextAvail.GetTimeStep(), 0,
++			qp->cbap.lastTxTimeNs, expected, 0, 0);
++	}
+ 	if (m_cc_mode == CC_MODE_BOP_QC &&
+ 			qp->crfm.bopQcSwitchPending){
+ 		NS_ASSERT_MSG(!qp->crfm.bopQcSwitchedToBase,
+@@ -3419,9 +3698,28 @@
+ 
+ void RdmaHw::ChangeRate(Ptr<RdmaQueuePair> qp, DataRate new_rate){
+ 	#if 1
+-	Time sendingTime = Seconds(qp->m_rate.CalculateTxTime(qp->lastPktSize));
+-	Time new_sendintTime = Seconds(new_rate.CalculateTxTime(qp->lastPktSize));
+-	qp->m_nextAvail = qp->m_nextAvail + new_sendintTime - sendingTime;
++	if (qp->cbap.enabled){
++		Time next = Simulator::Now();
++		if (qp->cbap.lastTxTimeNs > 0 && qp->lastPktSize > 0){
++			Time paced = NanoSeconds(qp->cbap.lastTxTimeNs) +
++				Seconds(new_rate.CalculateTxTime(qp->lastPktSize));
++			if (paced > next)
++				next = paced;
++		}
++		// An active startup-credit gate may have already established a
++		// later token-eligibility time.  Emergency rate changes must not
++		// move that gate earlier.
++		if (qp->cbap.creditGateActive && qp->m_nextAvail > next)
++			next = qp->m_nextAvail;
++		qp->m_nextAvail = next;
++	}else{
++		Time sendingTime = Seconds(
++			qp->m_rate.CalculateTxTime(qp->lastPktSize));
++		Time new_sendintTime = Seconds(
++			new_rate.CalculateTxTime(qp->lastPktSize));
++		qp->m_nextAvail = qp->m_nextAvail +
++			new_sendintTime - sendingTime;
++	}
+ 	// update nic's next avail event
+ 	uint32_t nic_idx = GetNicIdxOfQp(qp);
+ 	m_nic[nic_idx].dev->UpdateNextAvail(qp->m_nextAvail);
+--- a/simulation/src/point-to-point/model/rdma-hw.h
++++ b/simulation/src/point-to-point/model/rdma-hw.h
+@@ -149,12 +149,13 @@
+ 		uint32_t maxWirePacketBytes;
+ 		uint32_t summaryBytes;
+ 		uint32_t grantBytes;
++		uint32_t txTraceTrackingPackets;
+ 		CbapConfig()
+ 			: enabled(false), controlEpochNs(5000),
+ 			  planningDelayNs(5000), controlDelayNs(5000),
+ 			  rho(0.95), epsilonRate(0.02), priority(3),
+ 			  maxWirePacketBytes(1064), summaryBytes(64),
+-			  grantBytes(48) {}
++			  grantBytes(48), txTraceTrackingPackets(4096) {}
+ 	};
+ 	struct CbapPortSnapshot {
+ 		bool valid;
+@@ -249,6 +250,25 @@
+ 		uint64_t applicationReadyNs;
+ 		uint64_t networkReleaseNs;
+ 		uint64_t firstFreshFeedbackNs;
++		uint64_t admissionEnterNs;
++		uint64_t admissionExitNs;
++		uint64_t firstDataTxNs;
++		uint64_t firstPostReleaseSampleNs;
++		uint64_t firstCompleteFreshFeedbackNs;
++		uint64_t initialAdmitRateBps;
++		double actualAdmissionMeanRateBps;
++		uint64_t bytesSentBeforeFreshFeedback;
++		uint64_t rateUpdatesBeforeFirstTx;
++		uint64_t ordinaryRateUpdatesDuringAdmission;
++		uint64_t emergencyRateUpdatesDuringAdmission;
++		uint64_t creditGateEnterNs;
++		uint64_t creditGateExitNs;
++		bool creditGateActiveAtFinish;
++		uint64_t creditRemainingAtAdmissionExit;
++		double trackingActualRateBps;
++		double trackingCurrentRateBps;
++		uint64_t trackingBaseRateBps;
++		uint64_t pacingViolations;
+ 		uint64_t estimatedFirstFeedbackNs;
+ 		uint64_t finishNs;
+ 		uint64_t bytesSent;
+@@ -270,6 +290,33 @@
+ 		uint64_t fair90Ns;
+ 		uint64_t fair95Ns;
+ 	};
++	enum CbapTxEventType {
++		CBAP_TX_SCHEDULE = 1,
++		CBAP_TX_SEND = 2,
++		CBAP_TX_RESCHEDULE = 3,
++		CBAP_TX_CANCEL_OR_INVALIDATE = 4
++	};
++	struct CbapTxRecord {
++		uint64_t timeNs;
++		uint32_t eventType;
++		uint32_t flowId;
++		uint32_t batchId;
++		uint64_t packetSeq;
++		uint64_t wireBytes;
++		uint32_t phase;
++		uint64_t currentRateBps;
++		uint64_t targetRateBps;
++		uint64_t admitRateBps;
++		uint64_t baseRateBps;
++		bool creditGateActive;
++		uint64_t creditRemainingBytes;
++		uint64_t scheduledTimeNs;
++		uint64_t actualSendTimeNs;
++		uint64_t previousTxTimeNs;
++		uint64_t expectedGapNs;
++		uint64_t actualGapNs;
++		uint32_t rescheduleReason;
++	};
+ 	typedef Callback<CbapPortSnapshot, uint32_t>
+ 		CbapPortReadCallback;
+ 	static void ConfigureCbap(const CbapConfig &config,
+@@ -282,6 +329,7 @@
+ 		GetCbapAdmissionRecords();
+ 	static const std::vector<CbapRateRecord> &GetCbapRateRecords();
+ 	static const std::vector<CbapFlowRecord> &GetCbapFlowRecords();
++	static const std::vector<CbapTxRecord> &GetCbapTxRecords();
+ 	static uint64_t GetCbapSummaryMessageCount();
+ 	static uint64_t GetCbapGrantMessageCount();
+ 
+@@ -560,6 +608,7 @@
+ 	static std::vector<CbapAdmissionRecord> s_cbapAdmissionRecords;
+ 	static std::vector<CbapRateRecord> s_cbapRateRecords;
+ 	static std::vector<CbapFlowRecord> s_cbapFlowRecords;
++	static std::vector<CbapTxRecord> s_cbapTxRecords;
+ 	static uint64_t s_cbapSummaryMessages;
+ 	static uint64_t s_cbapGrantMessages;
+ 	static void PlanCbapBatch(uint32_t groupId);
+@@ -567,6 +616,20 @@
+ 	static void DeliverCbapPortSummary(uint32_t linkId,
+ 			CbapPortSnapshot snapshot);
+ 	static void RecomputeCbapTracking();
++	static bool HasCompletePostReleaseFeedback(
++			const CbapFlowRuntime &flow, uint64_t &firstSampleNs,
++			uint64_t &completeDeliveryNs);
++	static bool HasPostReleaseEmergencyEvidence(
++			const CbapFlowRuntime &flow, uint32_t &rootId);
++	static void ExitCbapAdmission(Ptr<RdmaQueuePair> qp,
++			uint64_t completeDeliveryNs);
++	static void UpdateCbapTrackingRateIntegral(Ptr<RdmaQueuePair> qp,
++			uint64_t nowNs);
++	static void RecordCbapTxEvent(Ptr<RdmaQueuePair> qp,
++			uint32_t eventType, uint64_t scheduledTimeNs,
++			uint64_t actualSendTimeNs, uint64_t previousTxTimeNs,
++			uint64_t expectedGapNs, uint64_t actualGapNs,
++			uint32_t reason);
+ 	static void FinishCbapFlow(Ptr<RdmaQueuePair> qp);
+ 	static void SetCbapRate(CbapFlowRuntime &flow, uint64_t target,
+ 			uint32_t reason, uint32_t rootId, bool stale);
+--- a/simulation/src/point-to-point/model/rdma-queue-pair.cc
++++ b/simulation/src/point-to-point/model/rdma-queue-pair.cc
+@@ -195,11 +195,27 @@
+ 	cbap.baseRateBps = 0;
+ 	cbap.creditInitialBytes = 0;
+ 	cbap.creditRemainingBytes = 0;
++	cbap.creditGateActive = false;
++	cbap.creditRemainingAtAdmissionExit = 0;
+ 	cbap.bytesSentAtRelease = 0;
+ 	cbap.bytesAckedAtRelease = 0;
+ 	cbap.lastTxTimeNs = 0;
++	cbap.lastPacketSeq = 0;
++	cbap.lastPacketWireBytes = 0;
+ 	cbap.lastFreshFeedbackNs = 0;
+ 	cbap.firstFreshFeedbackNs = 0;
++	cbap.admissionEnterNs = 0;
++	cbap.admissionExitNs = 0;
++	cbap.firstDataTxNs = 0;
++	cbap.firstPostReleaseSampleNs = 0;
++	cbap.firstCompleteFreshFeedbackNs = 0;
++	cbap.initialAdmitRateBps = 0;
++	cbap.bytesSentBeforeFreshFeedback = 0;
++	cbap.rateUpdatesBeforeFirstTx = 0;
++	cbap.ordinaryRateUpdatesDuringAdmission = 0;
++	cbap.emergencyRateUpdatesDuringAdmission = 0;
++	cbap.creditGateEnterNs = 0;
++	cbap.creditGateExitNs = 0;
+ 	cbap.estimatedFirstFeedbackNs = 0;
+ 	cbap.protectionFloorBps = 0;
+ 	cbap.rebalanceStartNs = 0;
+@@ -220,6 +236,12 @@
+ 	cbap.firstFair80Ns = 0;
+ 	cbap.firstFair90Ns = 0;
+ 	cbap.firstFair95Ns = 0;
++	cbap.trackingStartNs = 0;
++	cbap.trackingBytesSent = 0;
++	cbap.trackingRateLastNs = 0;
++	cbap.trackingRateIntegral = 0;
++	cbap.pacingViolationCount = 0;
++	cbap.txTraceTrackingPackets = 0;
+ 	cbap.phaseAtLastPacket = CBAP_DISABLED;
+ }
+ 
+@@ -249,8 +271,8 @@
+ 		limit = m_size;
+ 	uint64_t remaining = limit >= snd_nxt ? limit - snd_nxt : 0;
+ 	if (remaining == 0 || !cbap.enabled || !cbap.fullCredit ||
+-			cbap.phase == CBAP_PREPARE ||
+-			cbap.phase == CBAP_FINISHED)
++			!cbap.creditGateActive ||
++			cbap.phase != CBAP_ADMISSION_HOLD)
+ 		return remaining;
+ 	UpdateCbapEligibility(Simulator::Now().GetTimeStep());
+ 	uint64_t payload = std::min((uint64_t)1000, remaining);
+@@ -274,6 +296,8 @@
+ 
+ void RdmaQueuePair::UpdateCbapEligibility(uint64_t nowNs){
+ 	if (!cbap.enabled || !cbap.fullCredit ||
++			!cbap.creditGateActive ||
++			cbap.phase != CBAP_ADMISSION_HOLD ||
+ 			cbap.baseEligibilityLastNs == 0 ||
+ 			nowNs <= cbap.baseEligibilityLastNs)
+ 		return;
+--- a/simulation/src/point-to-point/model/rdma-queue-pair.h
++++ b/simulation/src/point-to-point/model/rdma-queue-pair.h
+@@ -297,11 +297,27 @@
+ 		uint64_t baseRateBps;
+ 		uint64_t creditInitialBytes;
+ 		uint64_t creditRemainingBytes;
++		bool creditGateActive;
++		uint64_t creditRemainingAtAdmissionExit;
+ 		uint64_t bytesSentAtRelease;
+ 		uint64_t bytesAckedAtRelease;
+ 		uint64_t lastTxTimeNs;
++		uint64_t lastPacketSeq;
++		uint64_t lastPacketWireBytes;
+ 		uint64_t lastFreshFeedbackNs;
+ 		uint64_t firstFreshFeedbackNs;
++		uint64_t admissionEnterNs;
++		uint64_t admissionExitNs;
++		uint64_t firstDataTxNs;
++		uint64_t firstPostReleaseSampleNs;
++		uint64_t firstCompleteFreshFeedbackNs;
++		uint64_t initialAdmitRateBps;
++		uint64_t bytesSentBeforeFreshFeedback;
++		uint64_t rateUpdatesBeforeFirstTx;
++		uint64_t ordinaryRateUpdatesDuringAdmission;
++		uint64_t emergencyRateUpdatesDuringAdmission;
++		uint64_t creditGateEnterNs;
++		uint64_t creditGateExitNs;
+ 		uint64_t estimatedFirstFeedbackNs;
+ 		uint64_t protectionFloorBps;
+ 		uint64_t rebalanceStartNs;
+@@ -321,6 +337,12 @@
+ 		uint64_t firstFair80Ns;
+ 		uint64_t firstFair90Ns;
+ 		uint64_t firstFair95Ns;
++		uint64_t trackingStartNs;
++		uint64_t trackingBytesSent;
++		uint64_t trackingRateLastNs;
++		long double trackingRateIntegral;
++		uint64_t pacingViolationCount;
++		uint64_t txTraceTrackingPackets;
+ 		CbapPhase phaseAtLastPacket;
+ 	} cbap;
+ 

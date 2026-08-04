@@ -1,0 +1,12 @@
+{
+  "families": {
+    "ablation": 22,
+    "clos": 140,
+    "multibottleneck": 56,
+    "randomized": 210,
+    "release_skew": 420,
+    "single_bottleneck": 560
+  },
+  "preflight": 7,
+  "total": 1408
+}

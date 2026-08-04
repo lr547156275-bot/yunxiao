@@ -1,0 +1,47 @@
+# Result file index
+
+| Path | Bytes |
+|---|---:|
+| `cbap_exp_v11_freeze/figures/e1_new_flow_cct.csv` | 336 |
+| `cbap_exp_v11_freeze/figures/e1_new_flow_cct.pdf` | 19992 |
+| `cbap_exp_v11_freeze/figures/e1_new_flow_cct.png` | 4900 |
+| `cbap_exp_v11_freeze/figures/e2_new_batch_cct.csv` | 355 |
+| `cbap_exp_v11_freeze/figures/e2_new_batch_cct.pdf` | 19917 |
+| `cbap_exp_v11_freeze/figures/e2_new_batch_cct.png` | 5124 |
+| `cbap_exp_v11_freeze/figures/e4_rtt_checkpoints.csv` | 1811 |
+| `cbap_exp_v11_freeze/figures/e4_rtt_checkpoints.pdf` | 28029 |
+| `cbap_exp_v11_freeze/figures/e4_rtt_checkpoints.png` | 5380 |
+| `cbap_exp_v11_freeze/figures/e4_staggered_convergence.csv` | 840 |
+| `cbap_exp_v11_freeze/figures/e4_staggered_convergence.pdf` | 9369 |
+| `cbap_exp_v11_freeze/figures/e4_staggered_convergence.png` | 7618 |
+| `cbap_exp_v11_freeze/processed/admission_audit.csv` | 360 |
+| `cbap_exp_v11_freeze/processed/convergence_audit.csv` | 3344 |
+| `cbap_exp_v11_freeze/processed/credit_scope_audit.csv` | 9203 |
+| `cbap_exp_v11_freeze/processed/increase_policy_audit.csv` | 456921 |
+| `cbap_exp_v11_freeze/processed/invalid_runs.csv` | 15 |
+| `cbap_exp_v11_freeze/processed/missing_runs.csv` | 15 |
+| `cbap_exp_v11_freeze/processed/multibottleneck_decrease_audit.csv` | 703 |
+| `cbap_exp_v11_freeze/processed/pacing_audit.csv` | 4548 |
+| `cbap_exp_v11_freeze/processed/paired_comparisons.csv` | 11509 |
+| `cbap_exp_v11_freeze/processed/paired_v1_v11.csv` | 51780 |
+| `cbap_exp_v11_freeze/processed/semantic_regression.csv` | 5521 |
+| `cbap_exp_v11_freeze/processed/summary_by_run.csv` | 29669 |
+| `cbap_exp_v11_freeze/processed/summary_by_scenario.csv` | 21323 |
+| `cbap_exp_v11_freeze/processed/victim_calibration_summary.csv` | 4884 |
+| `cbap_exp_v11_freeze/reports/algorithm_diff_v1_to_v11.md` | 866 |
+| `cbap_exp_v11_freeze/reports/build_full.log` | 1458 |
+| `cbap_exp_v11_freeze/reports/build_report.md` | 153 |
+| `cbap_exp_v11_freeze/reports/code_changes.patch` | 13083 |
+| `cbap_exp_v11_freeze/reports/experiment_design.md` | 1004 |
+| `cbap_exp_v11_freeze/reports/files_changed.txt` | 17079 |
+| `cbap_exp_v11_freeze/reports/final_freeze_report.md` | 2314 |
+| `cbap_exp_v11_freeze/reports/freeze_validation_report.md` | 316 |
+| `cbap_exp_v11_freeze/reports/implementation_report.md` | 1709 |
+| `cbap_exp_v11_freeze/reports/measured_vs_interpreted.md` | 417 |
+| `cbap_exp_v11_freeze/reports/result_file_index.md` | 2834 |
+| `cbap_exp_v11_freeze/reports/result_integrity_report.md` | 247 |
+| `cbap_exp_v11_freeze/reports/run_instructions.md` | 1117 |
+| `cbap_exp_v11_freeze/reports/semantic_regression_report.md` | 108 |
+| `cbap_exp_v11_freeze/reports/semantic_regression_verification.md` | 245 |
+| `cbap_exp_v11_freeze/reports/suspicious_findings.md` | 343 |
+| `cbap_exp_v11_freeze/reports/victim_calibration_report.md` | 177 |

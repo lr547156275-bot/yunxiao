@@ -10,9 +10,26 @@
 #include "qbb-net-device.h"
 #include "ppp-header.h"
 #include "ns3/int-header.h"
+#include <algorithm>
 #include <cmath>
 
 namespace ns3 {
+
+bool SwitchNode::UsesHpccInt(uint32_t ccMode){
+	return ccMode == 3 || ccMode == 11 || ccMode == 12 ||
+		ccMode == 13 || ccMode == 14 || ccMode == 15 ||
+		ccMode == 16 || ccMode == 18 || ccMode == 19;
+}
+
+bool SwitchNode::FixedPathKey::operator<(const FixedPathKey &other) const {
+	if (sip != other.sip)
+		return sip < other.sip;
+	if (dip != other.dip)
+		return dip < other.dip;
+	if (sport != other.sport)
+		return sport < other.sport;
+	return dport < other.dport;
+}
 
 TypeId SwitchNode::GetTypeId (void)
 {
@@ -23,6 +40,11 @@ TypeId SwitchNode::GetTypeId (void)
 			"Enable ECN marking.",
 			BooleanValue(false),
 			MakeBooleanAccessor(&SwitchNode::m_ecnEnabled),
+			MakeBooleanChecker())
+	.AddAttribute("PfcEnabled",
+			"Enable switch generation of PFC pause and resume frames.",
+			BooleanValue(true),
+			MakeBooleanAccessor(&SwitchNode::m_pfcEnabled),
 			MakeBooleanChecker())
 	.AddAttribute("CcMode",
 			"CC mode.",
@@ -39,6 +61,12 @@ TypeId SwitchNode::GetTypeId (void)
 			UintegerValue(9000),
 			MakeUintegerAccessor(&SwitchNode::m_maxRtt),
 			MakeUintegerChecker<uint32_t>())
+	.AddTraceSource("PfcSemantic",
+			"Event-level PFC generation trace: port, priority, occupancy, threshold, event.",
+			MakeTraceSourceAccessor(&SwitchNode::m_tracePfcSemantic))
+	.AddTraceSource("EgressDequeue",
+			"Read-only packet dequeue trace: packet, ingress, egress, priority.",
+			MakeTraceSourceAccessor(&SwitchNode::m_traceEgressDequeue))
   ;
   return tid;
 }
@@ -51,8 +79,11 @@ SwitchNode::SwitchNode(){
 		for (uint32_t j = 0; j < pCnt; j++)
 			for (uint32_t k = 0; k < qCnt; k++)
 				m_bytes[i][j][k] = 0;
-	for (uint32_t i = 0; i < pCnt; i++)
-		m_txBytes[i] = 0;
+	for (uint32_t i = 0; i < pCnt; i++){
+		m_txBytes[i] = m_rxBytes[i] = m_ecnMarks[i] = 0;
+		m_pfcPauseEvents[i] = m_pfcResumeEvents[i] = 0;
+		m_pfcPauseStartNs[i] = m_pfcPauseDurationNs[i] = 0;
+	}
 	for (uint32_t i = 0; i < pCnt; i++)
 		m_lastPktSize[i] = m_lastPktTs[i] = 0;
 	for (uint32_t i = 0; i < pCnt; i++)
@@ -69,6 +100,15 @@ int SwitchNode::GetOutDev(Ptr<const Packet> p, CustomHeader &ch){
 
 	// entry found
 	auto &nexthops = entry->second;
+
+	// Fixed paths apply only to forward RDMA UDP data.  Control packets and
+	// unmatched flows continue through the original ECMP hash below.
+	if (ch.l3Prot == 0x11){
+		FixedPathKey key = {ch.sip, ch.dip, ch.udp.sport, ch.udp.dport};
+		auto fixed = m_fixedPathTable.find(key);
+		if (fixed != m_fixedPathTable.end())
+			return fixed->second;
+	}
 
 	// pick one next hop based on hash
 	union {
@@ -89,17 +129,37 @@ int SwitchNode::GetOutDev(Ptr<const Packet> p, CustomHeader &ch){
 }
 
 void SwitchNode::CheckAndSendPfc(uint32_t inDev, uint32_t qIndex){
+	if (!m_pfcEnabled)
+		return;
 	Ptr<QbbNetDevice> device = DynamicCast<QbbNetDevice>(m_devices[inDev]);
 	if (m_mmu->CheckShouldPause(inDev, qIndex)){
+		m_tracePfcSemantic(inDev, qIndex,
+			m_mmu->GetPfcOccupancy(inDev, qIndex),
+			m_mmu->GetPfcThreshold(inDev), 0);
 		device->SendPfc(qIndex, 0);
 		m_mmu->SetPause(inDev, qIndex);
+		m_pfcPauseEvents[inDev]++;
+		m_pfcPauseStartNs[inDev] = Simulator::Now().GetTimeStep();
 	}
 }
 void SwitchNode::CheckAndSendResume(uint32_t inDev, uint32_t qIndex){
+	if (!m_pfcEnabled)
+		return;
 	Ptr<QbbNetDevice> device = DynamicCast<QbbNetDevice>(m_devices[inDev]);
 	if (m_mmu->CheckShouldResume(inDev, qIndex)){
+		m_tracePfcSemantic(inDev, qIndex,
+			m_mmu->GetPfcOccupancy(inDev, qIndex),
+			m_mmu->GetPfcThreshold(inDev), 3);
 		device->SendPfc(qIndex, 1);
 		m_mmu->SetResume(inDev, qIndex);
+		m_pfcResumeEvents[inDev]++;
+		if (m_pfcPauseStartNs[inDev] > 0 &&
+				Simulator::Now().GetTimeStep() >=
+					m_pfcPauseStartNs[inDev])
+			m_pfcPauseDurationNs[inDev] +=
+				Simulator::Now().GetTimeStep() -
+				m_pfcPauseStartNs[inDev];
+		m_pfcPauseStartNs[inDev] = 0;
 	}
 }
 
@@ -130,6 +190,7 @@ void SwitchNode::SendToDev(Ptr<Packet>p, CustomHeader &ch){
 			CheckAndSendPfc(inDev, qIndex);
 		}
 		m_bytes[inDev][idx][qIndex] += p->GetSize();
+		m_rxBytes[idx] += p->GetSize();
 		m_devices[idx]->SwitchSend(qIndex, p, ch);
 	}else
 		return; // Drop
@@ -182,8 +243,88 @@ void SwitchNode::AddTableEntry(Ipv4Address &dstAddr, uint32_t intf_idx){
 	m_rtTable[dip].push_back(intf_idx);
 }
 
+bool SwitchNode::AddFixedPathEntry(Ipv4Address sip, Ipv4Address dip, uint16_t sport, uint16_t dport, uint32_t intf_idx){
+	auto entry = m_rtTable.find(dip.Get());
+	if (entry == m_rtTable.end() ||
+		std::find(entry->second.begin(), entry->second.end(), intf_idx) == entry->second.end())
+		return false;
+	FixedPathKey key = {sip.Get(), dip.Get(), sport, dport};
+	m_fixedPathTable[key] = intf_idx;
+	return true;
+}
+
+uint64_t SwitchNode::GetTxBytes(uint32_t intf_idx) const {
+	NS_ASSERT_MSG(intf_idx < pCnt, "interface index exceeds switch counter array");
+	return m_txBytes[intf_idx];
+}
+
+uint64_t SwitchNode::GetRxBytes(uint32_t intf_idx) const {
+	NS_ASSERT_MSG(intf_idx < pCnt,
+		"interface index exceeds switch counter array");
+	return m_rxBytes[intf_idx];
+}
+
+uint64_t SwitchNode::GetEcnMarks(uint32_t intf_idx) const {
+	NS_ASSERT_MSG(intf_idx < pCnt, "interface index exceeds switch counter array");
+	return m_ecnMarks[intf_idx];
+}
+
+uint64_t SwitchNode::GetPfcPauseEvents(uint32_t intf_idx) const {
+	NS_ASSERT_MSG(intf_idx < pCnt,
+		"interface index exceeds switch counter array");
+	return m_pfcPauseEvents[intf_idx];
+}
+
+uint64_t SwitchNode::GetPfcResumeEvents(uint32_t intf_idx) const {
+	NS_ASSERT_MSG(intf_idx < pCnt,
+		"interface index exceeds switch counter array");
+	return m_pfcResumeEvents[intf_idx];
+}
+
+uint64_t SwitchNode::GetPfcPauseDurationNs(uint32_t intf_idx) const {
+	NS_ASSERT_MSG(intf_idx < pCnt,
+		"interface index exceeds switch counter array");
+	uint64_t duration = m_pfcPauseDurationNs[intf_idx];
+	if (m_pfcPauseStartNs[intf_idx] > 0 &&
+			Simulator::Now().GetTimeStep() >= m_pfcPauseStartNs[intf_idx])
+		duration += Simulator::Now().GetTimeStep() -
+			m_pfcPauseStartNs[intf_idx];
+	return duration;
+}
+
+uint64_t SwitchNode::GetEgressQueueBytes(uint32_t intf_idx) const {
+	NS_ASSERT_MSG(intf_idx < GetNDevices(), "invalid egress interface");
+	Ptr<QbbNetDevice> dev =
+		DynamicCast<QbbNetDevice>(m_devices[intf_idx]);
+	NS_ASSERT_MSG(dev != 0, "egress interface is not QbbNetDevice");
+	return dev->GetQueue()->GetNBytesTotal();
+}
+
+uint64_t SwitchNode::GetEgressCapacityBps(uint32_t intf_idx) const {
+	NS_ASSERT_MSG(intf_idx < GetNDevices(), "invalid egress interface");
+	Ptr<QbbNetDevice> dev =
+		DynamicCast<QbbNetDevice>(m_devices[intf_idx]);
+	NS_ASSERT_MSG(dev != 0, "egress interface is not QbbNetDevice");
+	return dev->GetDataRate().GetBitRate();
+}
+
+bool SwitchNode::IsLocallyPaused(uint32_t intf_idx,
+		uint32_t qIndex) const {
+	return m_mmu->IsPaused(intf_idx, qIndex);
+}
+
+bool SwitchNode::IsDownstreamPaused(uint32_t intf_idx,
+		uint32_t qIndex) const {
+	NS_ASSERT_MSG(intf_idx < GetNDevices(), "invalid egress interface");
+	Ptr<QbbNetDevice> dev =
+		DynamicCast<QbbNetDevice>(m_devices[intf_idx]);
+	NS_ASSERT_MSG(dev != 0, "egress interface is not QbbNetDevice");
+	return dev->IsPaused(qIndex);
+}
+
 void SwitchNode::ClearTable(){
 	m_rtTable.clear();
+	m_fixedPathTable.clear();
 }
 
 // This function can only be called in switch mode
@@ -195,6 +336,7 @@ bool SwitchNode::SwitchReceiveFromDevice(Ptr<NetDevice> device, Ptr<Packet> pack
 void SwitchNode::SwitchNotifyDequeue(uint32_t ifIndex, uint32_t qIndex, Ptr<Packet> p){
 	FlowIdTag t;
 	p->PeekPacketTag(t);
+	m_traceEgressDequeue(p, t.GetFlowId(), ifIndex, qIndex);
 	if (qIndex != 0){
 		uint32_t inDev = t.GetFlowId();
 		m_mmu->RemoveFromIngressAdmission(inDev, qIndex, p->GetSize());
@@ -203,6 +345,7 @@ void SwitchNode::SwitchNotifyDequeue(uint32_t ifIndex, uint32_t qIndex, Ptr<Pack
 		if (m_ecnEnabled){
 			bool egressCongested = m_mmu->ShouldSendCN(ifIndex, qIndex);
 			if (egressCongested){
+				m_ecnMarks[ifIndex]++;
 				PppHeader ppp;
 				Ipv4Header h;
 				p->RemoveHeader(ppp);
@@ -220,8 +363,8 @@ void SwitchNode::SwitchNotifyDequeue(uint32_t ifIndex, uint32_t qIndex, Ptr<Pack
 		if (buf[PppHeader::GetStaticSize() + 9] == 0x11){ // udp packet
 			IntHeader *ih = (IntHeader*)&buf[PppHeader::GetStaticSize() + 20 + 8 + 6]; // ppp, ip, udp, SeqTs, INT
 			Ptr<QbbNetDevice> dev = DynamicCast<QbbNetDevice>(m_devices[ifIndex]);
-			if (m_ccMode == 3){ // HPCC
-				ih->PushHop(Simulator::Now().GetTimeStep(), m_txBytes[ifIndex], dev->GetQueue()->GetNBytesTotal(), dev->GetDataRate().GetBitRate());
+				if (UsesHpccInt(m_ccMode)){ // HPCC and round-aligned HPCC modes
+					ih->PushHop(Simulator::Now().GetTimeStep(), m_txBytes[ifIndex], dev->GetQueue()->GetNBytesTotal(), dev->GetDataRate().GetBitRate());
 			}else if (m_ccMode == 10){ // HPCC-PINT
 				uint64_t t = Simulator::Now().GetTimeStep();
 				uint64_t dt = t - m_lastPktTs[ifIndex];

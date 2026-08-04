@@ -1,0 +1,52 @@
+# Python caches
+**/__pycache__/
+*.py[cod]
+
+# Native and ns-3 build products
+*.o
+*.so
+*.pc
+simulation/build/
+simulation/.waf*/
+simulation/.lock-waf*
+simulation/tests/.build/
+
+# Generated experiment outputs
+*.csv
+*.tsv
+*.log
+*.flag
+*.gz
+*.tar.gz
+*.tar.gz.sha256
+*.pdf
+*.png
+*.svg
+**/runs/
+**/runs_*/
+**/processed/
+**/recomputed/
+**/figures/
+**/codex_logs/
+**/preflight/
+**/preflight_*/
+**/victim_calibration/
+**/victim_cases/
+**/tests/.build/
+
+# Generated case material; canonical generators and configs stay tracked
+**/cases/
+
+# Local snapshots, audits, and archives
+.cleanup_backup/
+cleanup_audit/
+research_archive/
+codex_tasks/
+simulation/research_archive/
+simulation/codex_tasks/
+cbap_clos_partial_audit/
+cbap_v13_simple_statistics/
+rwmcr_problem1.patch
+
+# Simulator runtime leftovers
+simulation/fct.txt

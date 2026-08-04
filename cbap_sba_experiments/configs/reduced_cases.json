@@ -1,0 +1,12 @@
+{
+  "mode": 30,
+  "algorithm": "CBAP-SBA scheme 1",
+  "cases": [
+    "shared_link_atomic_grant",
+    "two_bottlenecks_path_min",
+    "zero_grant_hold_readmission",
+    "single_handoff_applied_rate",
+    "held_flow_never_dcqcn",
+    "no_cbap_write_after_handoff"
+  ]
+}

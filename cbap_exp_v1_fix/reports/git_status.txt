@@ -1,0 +1,49 @@
+ M simulation/scratch/third.cc
+ M simulation/src/point-to-point/model/qbb-net-device.cc
+ M simulation/src/point-to-point/model/qbb-net-device.h
+ M simulation/src/point-to-point/model/rdma-hw.cc
+ M simulation/src/point-to-point/model/rdma-hw.h
+ M simulation/src/point-to-point/model/rdma-queue-pair.cc
+ M simulation/src/point-to-point/model/rdma-queue-pair.h
+ M simulation/src/point-to-point/model/switch-mmu.cc
+ M simulation/src/point-to-point/model/switch-mmu.h
+ M simulation/src/point-to-point/model/switch-node.cc
+ M simulation/src/point-to-point/model/switch-node.h
+ M simulation/src/point-to-point/wscript
+?? .cleanup_backup/
+?? cbap_exp/
+?? cbap_exp_v1_fix/
+?? cbap_v0_closed_loop_results.tar.zst
+?? cbap_v0_closed_loop_results_20260731_071133.tar.zst
+?? cbap_v0_closed_loop_results_20260731_071148.tar.zst
+?? cbap_v0_closed_loop_results_20260731_071212.tar.zst
+?? cbap_v0_closed_loop_results_20260731_071346.tar.gz
+?? cbap_v1_semantic_fail_20260731_084615.tar.gz
+?? cleanup_audit/
+?? codex_tasks/
+?? research_archive/
+?? rwmcr_problem1.patch
+?? simulation/.lock-waf_linux2_build
+?? simulation/.waf-1.7.11-edc6ccb516c5e3f9b892efc9f53a610f/
+?? simulation/.waf3-1.7.11-edc6ccb516c5e3f9b892efc9f53a610f/
+?? simulation/bop_exp/
+?? simulation/build/
+?? simulation/codex_tasks/
+?? simulation/crfm_exp/
+?? simulation/experiment/
+?? simulation/fct.txt
+?? simulation/paper/
+?? simulation/research_archive/
+?? simulation/scratch/bop-final-validation.h
+?? simulation/src/point-to-point/model/prt-probe-tag.cc
+?? simulation/src/point-to-point/model/prt-probe-tag.h
+?? simulation/src/point-to-point/model/wire-padding-header.cc
+?? simulation/src/point-to-point/model/wire-padding-header.h
+?? simulation/utils.pyc
+?? simulation/waf-tools/boost.pyc
+?? simulation/waf-tools/cflags.pyc
+?? simulation/waf-tools/command.pyc
+?? simulation/waf-tools/misc.pyc
+?? simulation/waf-tools/relocation.pyc
+?? simulation/waf-tools/shellcmd.pyc
+?? simulation/wutils.pyc

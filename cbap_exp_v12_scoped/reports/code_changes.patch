@@ -1,0 +1,1433 @@
+--- a/simulation/src/point-to-point/model/rdma-hw.h
++++ b/simulation/src/point-to-point/model/rdma-hw.h
+@@ -39,7 +39,8 @@
+ 		CC_MODE_CBAP_INDEPENDENT = 20,
+ 		CC_MODE_CBAP_INIT_ONLY = 21,
+ 		CC_MODE_CBAP_RATE_ONLY = 22,
+-		CC_MODE_CBAP_FULL = 23
++		CC_MODE_CBAP_FULL = 23,
++		CC_MODE_CBAP_FULL_SCOPED = 24
+ 	};
+ 	enum {
+ 		BOP_Q0_ORIGIN_NONE = 0,
+@@ -143,6 +144,16 @@
+ 		CBAP_INCREASE_LEGACY_V1 = 0,
+ 		CBAP_INCREASE_ADAPTIVE_V11 = 1
+ 	};
++	enum CbapScopePolicy {
++		CBAP_SCOPE_ALWAYS = 0,
++		CBAP_SCOPE_SHARED_BATCH_OVERSUBSCRIPTION = 1
++	};
++	enum CbapScopeReason {
++		CBAP_SCOPE_REASON_ALWAYS = 0,
++		CBAP_SCOPE_REASON_SHARED_BATCH_OVERSUBSCRIBED = 1,
++		CBAP_SCOPE_REASON_NO_SHARED_LINK = 2,
++		CBAP_SCOPE_REASON_WITHIN_ADMISSION_CAPACITY = 3
++	};
+ 	struct CbapConfig {
+ 		bool enabled;
+ 		uint64_t controlEpochNs;
+@@ -158,6 +169,8 @@
+ 		uint32_t increasePolicy;
+ 		double increaseFraction;
+ 		uint64_t increaseAbsoluteBps;
++		uint32_t scopePolicy;
++		uint32_t scopeBaseCc;
+ 		std::string scenario;
+ 		std::string algorithm;
+ 		std::string cbapVersion;
+@@ -170,9 +183,39 @@
+ 			  increasePolicy(CBAP_INCREASE_LEGACY_V1),
+ 			  increaseFraction(0.10),
+ 			  increaseAbsoluteBps(UINT64_C(2000000000)),
++			  scopePolicy(CBAP_SCOPE_ALWAYS), scopeBaseCc(1),
+ 			  scenario("unknown"), algorithm("unknown"),
+ 			  cbapVersion("v1") {}
+ 	};
++	struct CbapScopeBatchRecord {
++		uint32_t batchId;
++		uint64_t applicationReadyNs;
++		uint64_t decisionCompleteNs;
++		uint64_t decisionDelayNs;
++		uint32_t flowCount;
++		uint32_t usedLinkCount;
++		bool enabled;
++		uint32_t reason;
++		uint32_t triggeringLinkCount;
++		uint32_t maximumPendingCount;
++		double maximumOversubscriptionRatio;
++	};
++	struct CbapScopeLinkRecord {
++		uint32_t batchId;
++		uint64_t applicationReadyNs;
++		uint64_t newestSummarySampleNs;
++		uint64_t newestSummaryDeliveryNs;
++		uint32_t linkId;
++		uint32_t switchId;
++		uint32_t egressPort;
++		uint32_t pendingCount;
++		uint64_t admissionCapacityBps;
++		uint64_t independentAggregateBps;
++		uint64_t oversubscriptionBps;
++		double oversubscriptionRatio;
++		bool enabledOnLink;
++		bool preReleaseCausal;
++	};
+ 	struct CbapPortSnapshot {
+ 		bool valid;
+ 		uint64_t timestampNs;
+@@ -375,6 +418,12 @@
+ 	static const std::vector<CbapTxRecord> &GetCbapTxRecords();
+ 	static uint64_t GetCbapSummaryMessageCount();
+ 	static uint64_t GetCbapGrantMessageCount();
++	static const std::vector<CbapScopeBatchRecord> &
++		GetCbapScopeBatchRecords();
++	static const std::vector<CbapScopeLinkRecord> &
++		GetCbapScopeLinkRecords();
++	static bool GetCbapScopeApplicationReadyNs(uint32_t batchId,
++		uint64_t &applicationReadyNs);
+ 
+ 	Ptr<Node> m_node;
+ 	DataRate m_minRate;		//< Min sending rate
+@@ -640,6 +689,11 @@
+ 			  clearStableEpochs(0), previousEffectiveCapacityBps(0),
+ 			  rootDetectTimeNs(0) {}
+ 	};
++	struct CbapScopeBaseFlowRuntime {
++		Ptr<RdmaQueuePair> qp;
++		uint32_t flowId;
++		CbapScopeBaseFlowRuntime() : qp(NULL), flowId(0) {}
++	};
+ 	static CbapConfig s_cbapConfig;
+ 	static bool s_cbapStarted;
+ 	static uint32_t s_cbapEpoch;
+@@ -647,6 +701,8 @@
+ 	static std::map<uint32_t, CbapLinkRuntime> s_cbapLinks;
+ 	static std::map<uint32_t, std::vector<uint32_t> > s_cbapFlowPaths;
+ 	static std::map<uint32_t, CbapFlowRuntime> s_cbapFlows;
++	static std::map<uint32_t, CbapScopeBaseFlowRuntime>
++		s_cbapScopeBaseFlows;
+ 	static std::vector<CbapPortRecord> s_cbapPortRecords;
+ 	static std::vector<CbapAdmissionRecord> s_cbapAdmissionRecords;
+ 	static std::vector<CbapRateRecord> s_cbapRateRecords;
+@@ -655,7 +711,10 @@
+ 	static std::vector<CbapTxRecord> s_cbapTxRecords;
+ 	static uint64_t s_cbapSummaryMessages;
+ 	static uint64_t s_cbapGrantMessages;
++	static std::vector<CbapScopeBatchRecord> s_cbapScopeBatchRecords;
++	static std::vector<CbapScopeLinkRecord> s_cbapScopeLinkRecords;
+ 	static void PlanCbapBatch(uint32_t groupId);
++	static void PlanScopedCbapBatch(uint32_t groupId);
+ 	static void CbapEpochTick();
+ 	static void DeliverCbapPortSummary(uint32_t linkId,
+ 			CbapPortSnapshot snapshot);
+--- a/simulation/src/point-to-point/model/rdma-hw.cc
++++ b/simulation/src/point-to-point/model/rdma-hw.cc
+@@ -44,6 +44,8 @@
+ std::map<uint32_t, RdmaHw::CbapLinkRuntime> RdmaHw::s_cbapLinks;
+ std::map<uint32_t, std::vector<uint32_t> > RdmaHw::s_cbapFlowPaths;
+ std::map<uint32_t, RdmaHw::CbapFlowRuntime> RdmaHw::s_cbapFlows;
++std::map<uint32_t, RdmaHw::CbapScopeBaseFlowRuntime>
++	RdmaHw::s_cbapScopeBaseFlows;
+ std::vector<RdmaHw::CbapPortRecord> RdmaHw::s_cbapPortRecords;
+ std::vector<RdmaHw::CbapAdmissionRecord> RdmaHw::s_cbapAdmissionRecords;
+ std::vector<RdmaHw::CbapRateRecord> RdmaHw::s_cbapRateRecords;
+@@ -52,11 +54,16 @@
+ std::vector<RdmaHw::CbapTxRecord> RdmaHw::s_cbapTxRecords;
+ uint64_t RdmaHw::s_cbapSummaryMessages = 0;
+ uint64_t RdmaHw::s_cbapGrantMessages = 0;
++std::vector<RdmaHw::CbapScopeBatchRecord>
++	RdmaHw::s_cbapScopeBatchRecords;
++std::vector<RdmaHw::CbapScopeLinkRecord>
++	RdmaHw::s_cbapScopeLinkRecords;
+ 
+ bool RdmaHw::IsDcqcnMode(uint32_t mode)
+ {
+ 	return mode == 1 || mode == CC_MODE_DCQCN_WIRE_EQUALIZED ||
+-		mode == CC_MODE_CBAP_INIT_ONLY;
++		mode == CC_MODE_CBAP_INIT_ONLY ||
++		mode == CC_MODE_CBAP_FULL_SCOPED;
+ }
+ 
+ bool RdmaHw::IsBopQbMode(uint32_t mode)
+@@ -80,7 +87,7 @@
+ bool RdmaHw::IsCbapMode(uint32_t mode)
+ {
+ 	return mode >= CC_MODE_CBAP_INDEPENDENT &&
+-		mode <= CC_MODE_CBAP_FULL;
++		mode <= CC_MODE_CBAP_FULL_SCOPED;
+ }
+ 
+ void RdmaHw::ConfigureBopMultilink(
+@@ -162,12 +169,15 @@
+ 	s_cbapLinks.clear();
+ 	s_cbapFlowPaths = flowPaths;
+ 	s_cbapFlows.clear();
++	s_cbapScopeBaseFlows.clear();
+ 	s_cbapPortRecords.clear();
+ 	s_cbapAdmissionRecords.clear();
+ 	s_cbapRateRecords.clear();
+ 	s_cbapIncreaseRecords.clear();
+ 	s_cbapFlowRecords.clear();
+ 	s_cbapTxRecords.clear();
++	s_cbapScopeBatchRecords.clear();
++	s_cbapScopeLinkRecords.clear();
+ 	s_cbapSummaryMessages = 0;
+ 	s_cbapGrantMessages = 0;
+ 	if (!config.enabled)
+@@ -179,6 +189,9 @@
+ 			config.epsilonRate > 0 &&
+ 			config.maxWirePacketBytes > 0 &&
+ 			config.increasePolicy <= CBAP_INCREASE_ADAPTIVE_V11 &&
++			config.scopePolicy <=
++				CBAP_SCOPE_SHARED_BATCH_OVERSUBSCRIPTION &&
++			config.scopeBaseCc == 1 &&
+ 			std::fabs(config.increaseFraction - 0.10) < 1e-12 &&
+ 			config.increaseAbsoluteBps == UINT64_C(2000000000),
+ 			"invalid CBAP configuration");
+@@ -267,6 +280,31 @@
+ 	return s_cbapGrantMessages;
+ }
+ 
++const std::vector<RdmaHw::CbapScopeBatchRecord> &
++RdmaHw::GetCbapScopeBatchRecords()
++{
++	return s_cbapScopeBatchRecords;
++}
++
++const std::vector<RdmaHw::CbapScopeLinkRecord> &
++RdmaHw::GetCbapScopeLinkRecords()
++{
++	return s_cbapScopeLinkRecords;
++}
++
++bool RdmaHw::GetCbapScopeApplicationReadyNs(uint32_t batchId,
++		uint64_t &applicationReadyNs)
++{
++	for (std::vector<CbapScopeBatchRecord>::const_reverse_iterator row =
++			s_cbapScopeBatchRecords.rbegin();
++			row != s_cbapScopeBatchRecords.rend(); ++row)
++		if (row->batchId == batchId){
++			applicationReadyNs = row->applicationReadyNs;
++			return true;
++		}
++	return false;
++}
++
+ void RdmaHw::SetRoundQueueReadCallback(RoundQueueReadCallback callback)
+ {
+ 	s_roundQueueRead = callback;
+@@ -548,6 +586,298 @@
+ 	s_cbapSummaryMessages++;
+ }
+ 
++/*
++ * The v1.2 scope predicate is deliberately outside PlanCbapBatch().  That
++ * function remains the single implementation of the frozen Full-v1.1
++ * allocation, credit, and tracking policy.  This routine performs a
++ * read-only counterfactual at application_ready and either enters the
++ * frozen planner or schedules the group on the original DCQCN path.
++ */
++void RdmaHw::PlanScopedCbapBatch(uint32_t groupId)
++{
++	RoundGroupRuntime &group = s_roundGroups[groupId];
++	NS_ASSERT_MSG(group.planScheduled && !group.planned,
++		"scoped CBAP decision callback executed out of order");
++	NS_ASSERT_MSG(Simulator::Now().GetTimeStep() ==
++		group.applicationReadyNs,
++		"scoped CBAP decision did not run at application_ready");
++	NS_ASSERT_MSG(s_cbapConfig.scopePolicy ==
++		CBAP_SCOPE_SHARED_BATCH_OVERSUBSCRIPTION,
++		"scoped CBAP mode requires structural scope policy");
++
++	std::vector<uint32_t> pending;
++	std::map<uint32_t, Ptr<RdmaQueuePair> > pendingQp;
++	std::set<uint32_t> usedLinks;
++	for (uint32_t i = 0; i < group.members.size(); ++i){
++		RoundGroupMember &member = group.members[i];
++		NS_ASSERT_MSG(member.hw->m_cc_mode == CC_MODE_CBAP_FULL_SCOPED,
++			"mixed algorithm in scoped CBAP batch");
++		uint32_t flowId = member.qp->crfm.flowId;
++		NS_ASSERT_MSG(s_cbapFlowPaths.count(flowId),
++			"scoped CBAP flow lacks an explicit path");
++		pending.push_back(flowId);
++		pendingQp[flowId] = member.qp;
++		const std::vector<uint32_t> &path = s_cbapFlowPaths[flowId];
++		usedLinks.insert(path.begin(), path.end());
++	}
++
++	std::vector<uint32_t> incumbents;
++	for (std::map<uint32_t, CbapFlowRuntime>::const_iterator flow =
++			s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow)
++		if (flow->second.active && !flow->second.finished)
++			incumbents.push_back(flow->first);
++	std::vector<uint32_t> baseIncumbents;
++	for (std::map<uint32_t, CbapScopeBaseFlowRuntime>::const_iterator flow =
++			s_cbapScopeBaseFlows.begin();
++			flow != s_cbapScopeBaseFlows.end(); ++flow)
++		if (flow->second.qp &&
++				flow->second.qp->crfm.currentRoundIndex >= 0 &&
++				flow->second.qp->snd_una <
++					flow->second.qp->crfm.releasedBytes)
++			baseIncumbents.push_back(flow->first);
++
++	std::map<uint32_t, uint64_t> effective;
++	std::map<uint32_t, uint64_t> queue;
++	for (std::map<uint32_t, CbapLinkRuntime>::const_iterator link =
++			s_cbapLinks.begin(); link != s_cbapLinks.end(); ++link){
++		effective[link->first] = link->second.initialized ?
++			link->second.latest.effectiveCapacityBps :
++			link->second.previousEffectiveCapacityBps;
++		queue[link->first] = link->second.initialized ?
++			link->second.latest.queueBytes : 0;
++	}
++	std::map<uint32_t, uint64_t> candidateFloor;
++	for (uint32_t i = 0; i < incumbents.size(); ++i){
++		Ptr<RdmaQueuePair> qp = s_cbapFlows[incumbents[i]].qp;
++		uint64_t measured = (qp->cbap.recentActualRateBps[0] +
++			qp->cbap.recentActualRateBps[1]) / 2;
++		if (measured == 0)
++			measured = qp->m_rate.GetBitRate();
++		candidateFloor[incumbents[i]] =
++			(uint64_t)std::floor(0.90L * measured);
++	}
++	for (uint32_t i = 0; i < baseIncumbents.size(); ++i)
++		candidateFloor[baseIncumbents[i]] = (uint64_t)std::floor(
++			0.90L * s_cbapScopeBaseFlows[baseIncumbents[i]].qp->
++			m_rate.GetBitRate());
++	std::map<uint32_t, double> linkScale;
++	for (std::map<uint32_t, CbapLinkRuntime>::const_iterator link =
++			s_cbapLinks.begin(); link != s_cbapLinks.end(); ++link){
++		long double sum = 0;
++		for (uint32_t i = 0; i < incumbents.size(); ++i){
++			const std::vector<uint32_t> &path =
++				s_cbapFlowPaths[incumbents[i]];
++			if (std::find(path.begin(), path.end(), link->first) !=
++					path.end())
++				sum += candidateFloor[incumbents[i]];
++		}
++		for (uint32_t i = 0; i < baseIncumbents.size(); ++i){
++			const std::vector<uint32_t> &path =
++				s_cbapFlowPaths[baseIncumbents[i]];
++			if (std::find(path.begin(), path.end(), link->first) !=
++					path.end())
++				sum += candidateFloor[baseIncumbents[i]];
++		}
++		linkScale[link->first] = sum > effective[link->first] && sum > 0 ?
++			(double)((long double)effective[link->first] / sum) : 1.0;
++	}
++	std::map<uint32_t, uint64_t> floor;
++	for (uint32_t i = 0; i < incumbents.size(); ++i){
++		double scale = 1.0;
++		const std::vector<uint32_t> &path =
++			s_cbapFlowPaths[incumbents[i]];
++		for (uint32_t hop = 0; hop < path.size(); ++hop)
++			scale = std::min(scale, linkScale[path[hop]]);
++		floor[incumbents[i]] = (uint64_t)std::floor(
++			candidateFloor[incumbents[i]] * scale);
++	}
++	for (uint32_t i = 0; i < baseIncumbents.size(); ++i){
++		double scale = 1.0;
++		const std::vector<uint32_t> &path =
++			s_cbapFlowPaths[baseIncumbents[i]];
++		for (uint32_t hop = 0; hop < path.size(); ++hop)
++			scale = std::min(scale, linkScale[path[hop]]);
++		floor[baseIncumbents[i]] = (uint64_t)std::floor(
++			candidateFloor[baseIncumbents[i]] * scale);
++	}
++	std::map<uint32_t, uint64_t> admitCapacity = effective;
++	std::map<uint32_t, uint64_t> scopeBaseCapacity;
++	for (std::map<uint32_t, uint64_t>::iterator capacity =
++			admitCapacity.begin(); capacity != admitCapacity.end();
++			++capacity){
++		uint64_t used = 0;
++		for (uint32_t i = 0; i < incumbents.size(); ++i){
++			const std::vector<uint32_t> &path =
++				s_cbapFlowPaths[incumbents[i]];
++			if (std::find(path.begin(), path.end(), capacity->first) !=
++					path.end())
++				used += floor[incumbents[i]];
++		}
++		for (uint32_t i = 0; i < baseIncumbents.size(); ++i){
++			const std::vector<uint32_t> &path =
++				s_cbapFlowPaths[baseIncumbents[i]];
++			if (std::find(path.begin(), path.end(), capacity->first) !=
++					path.end())
++				used += floor[baseIncumbents[i]];
++		}
++		capacity->second = used < capacity->second ?
++			capacity->second - used : 0;
++		scopeBaseCapacity[capacity->first] = capacity->second;
++		uint32_t count = 0;
++		uint64_t horizon = 0;
++		for (uint32_t i = 0; i < pending.size(); ++i){
++			const std::vector<uint32_t> &path = s_cbapFlowPaths[pending[i]];
++			if (std::find(path.begin(), path.end(), capacity->first) ==
++					path.end())
++				continue;
++			count++;
++			horizon = std::max(horizon,
++				pendingQp[pending[i]]->m_baseRtt +
++				s_cbapConfig.controlDelayNs);
++		}
++		uint64_t margin = (uint64_t)count *
++			s_cbapConfig.maxWirePacketBytes;
++		uint64_t target = (uint64_t)std::floor(0.50 *
++			s_cbapLinks[capacity->first].config.ecnThresholdBytes);
++		uint64_t room = queue[capacity->first] < target &&
++			margin < target - queue[capacity->first] ?
++			target - queue[capacity->first] - margin : 0;
++		long double temporary = (long double)8 * room * 1e9L /
++			std::max((uint64_t)1, horizon);
++		uint64_t queueRate = temporary >
++			std::numeric_limits<uint64_t>::max() ?
++			std::numeric_limits<uint64_t>::max() :
++			(uint64_t)std::floor(temporary);
++		capacity->second = capacity->second <=
++			std::numeric_limits<uint64_t>::max() - queueRate ?
++			capacity->second + queueRate :
++			std::numeric_limits<uint64_t>::max();
++	}
++
++	std::map<uint32_t, uint64_t> independentRate;
++	for (uint32_t i = 0; i < pending.size(); ++i){
++		uint64_t rate = pendingQp[pending[i]]->m_max_rate.GetBitRate();
++		const std::vector<uint32_t> &path = s_cbapFlowPaths[pending[i]];
++		for (uint32_t hop = 0; hop < path.size(); ++hop){
++			uint32_t linkId = path[hop];
++			uint64_t target = (uint64_t)std::floor(0.50 *
++				s_cbapLinks[linkId].config.ecnThresholdBytes);
++			uint64_t margin = s_cbapConfig.maxWirePacketBytes;
++			uint64_t room = queue[linkId] < target &&
++				margin < target - queue[linkId] ?
++				target - queue[linkId] - margin : 0;
++			uint64_t horizon = std::max((uint64_t)1,
++				pendingQp[pending[i]]->m_baseRtt +
++				s_cbapConfig.controlDelayNs);
++			long double temporary = (long double)8 * room * 1e9L /
++				horizon;
++			uint64_t queueRate = temporary >
++				std::numeric_limits<uint64_t>::max() ?
++				std::numeric_limits<uint64_t>::max() :
++				(uint64_t)std::floor(temporary);
++			uint64_t localAdmit = scopeBaseCapacity[linkId] <=
++				std::numeric_limits<uint64_t>::max() - queueRate ?
++				scopeBaseCapacity[linkId] + queueRate :
++				std::numeric_limits<uint64_t>::max();
++			rate = std::min(rate, localAdmit);
++		}
++		independentRate[pending[i]] = std::max((uint64_t)1, rate);
++	}
++
++	bool enabled = false;
++	uint32_t triggerCount = 0;
++	uint32_t maximumPending = 0;
++	double maximumRatio = 0;
++	for (std::set<uint32_t>::const_iterator linkId = usedLinks.begin();
++			linkId != usedLinks.end(); ++linkId){
++		uint32_t count = 0;
++		uint64_t aggregate = 0;
++		for (uint32_t i = 0; i < pending.size(); ++i){
++			const std::vector<uint32_t> &path = s_cbapFlowPaths[pending[i]];
++			if (std::find(path.begin(), path.end(), *linkId) == path.end())
++				continue;
++			count++;
++			aggregate = aggregate <=
++				std::numeric_limits<uint64_t>::max() -
++				independentRate[pending[i]] ?
++				aggregate + independentRate[pending[i]] :
++				std::numeric_limits<uint64_t>::max();
++		}
++		uint64_t capacity = admitCapacity[*linkId];
++		uint64_t tolerance = std::max((uint64_t)1,
++			(uint64_t)std::ceil(1e-9 *
++			s_cbapLinks[*linkId].config.capacityBps));
++		bool linkEnabled = count >= 2 && aggregate > capacity &&
++			aggregate - capacity > tolerance;
++		if (linkEnabled){
++			enabled = true;
++			triggerCount++;
++		}
++		maximumPending = std::max(maximumPending, count);
++		double ratio = (double)aggregate /
++			std::max((uint64_t)1, capacity);
++		maximumRatio = std::max(maximumRatio, ratio);
++		const CbapLinkRuntime &runtime = s_cbapLinks[*linkId];
++		CbapScopeLinkRecord row = {};
++		row.batchId = groupId;
++		row.applicationReadyNs = group.applicationReadyNs;
++		row.newestSummarySampleNs = runtime.initialized ?
++			runtime.latest.sampleTimeNs : 0;
++		row.newestSummaryDeliveryNs = runtime.initialized ?
++			runtime.latest.deliveryTimeNs : 0;
++		row.linkId = *linkId;
++		row.switchId = runtime.config.nodeId;
++		row.egressPort = runtime.config.ifIndex;
++		row.pendingCount = count;
++		row.admissionCapacityBps = capacity;
++		row.independentAggregateBps = aggregate;
++		row.oversubscriptionBps = aggregate > capacity ?
++			aggregate - capacity : 0;
++		row.oversubscriptionRatio = ratio;
++		row.enabledOnLink = linkEnabled;
++		row.preReleaseCausal = !runtime.initialized ||
++			(runtime.latest.sampleTimeNs <= group.applicationReadyNs &&
++			 runtime.latest.deliveryTimeNs <= group.applicationReadyNs);
++		NS_ASSERT_MSG(row.preReleaseCausal,
++			"scope decision attempted to use post-ready telemetry");
++		s_cbapScopeLinkRecords.push_back(row);
++	}
++
++	CbapScopeBatchRecord batch = {};
++	batch.batchId = groupId;
++	batch.applicationReadyNs = group.applicationReadyNs;
++	batch.decisionCompleteNs = group.commonReleaseNs;
++	batch.decisionDelayNs = group.commonReleaseNs -
++		group.applicationReadyNs;
++	batch.flowCount = pending.size();
++	batch.usedLinkCount = usedLinks.size();
++	batch.enabled = enabled;
++	batch.reason = enabled ?
++		CBAP_SCOPE_REASON_SHARED_BATCH_OVERSUBSCRIBED :
++		(maximumPending < 2 ? CBAP_SCOPE_REASON_NO_SHARED_LINK :
++		 CBAP_SCOPE_REASON_WITHIN_ADMISSION_CAPACITY);
++	batch.triggeringLinkCount = triggerCount;
++	batch.maximumPendingCount = maximumPending;
++	batch.maximumOversubscriptionRatio = maximumRatio;
++	NS_ASSERT_MSG(batch.decisionDelayNs == UINT64_C(5000),
++		"v1.2 scope decision delay must be exactly 5 us");
++	s_cbapScopeBatchRecords.push_back(batch);
++
++	if (enabled){
++		PlanCbapBatch(groupId);
++	}else{
++		for (uint32_t i = 0; i < pending.size(); ++i){
++			CbapScopeBaseFlowRuntime base;
++			base.qp = pendingQp[pending[i]];
++			base.flowId = pending[i];
++			s_cbapScopeBaseFlows[pending[i]] = base;
++		}
++		Simulator::Schedule(NanoSeconds(group.earliestReleaseNs -
++			Simulator::Now().GetTimeStep()),
++			&RdmaHw::PlanRoundGroup, groupId);
++	}
++}
++
+ void RdmaHw::PlanCbapBatch(uint32_t groupId)
+ {
+ 	RoundGroupRuntime &group = s_roundGroups[groupId];
+@@ -578,6 +908,17 @@
+ 			s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow)
+ 		if (flow->second.active && !flow->second.finished)
+ 			incumbents.push_back(flow->first);
++	std::vector<uint32_t> scopedBaseIncumbents;
++	if (group.members.front().hw->m_cc_mode ==
++			CC_MODE_CBAP_FULL_SCOPED)
++		for (std::map<uint32_t, CbapScopeBaseFlowRuntime>::const_iterator
++				flow = s_cbapScopeBaseFlows.begin();
++				flow != s_cbapScopeBaseFlows.end(); ++flow)
++			if (flow->second.qp &&
++					flow->second.qp->crfm.currentRoundIndex >= 0 &&
++					flow->second.qp->snd_una <
++						flow->second.qp->crfm.releasedBytes)
++				scopedBaseIncumbents.push_back(flow->first);
+ 	std::map<uint32_t, uint64_t> effective;
+ 	std::map<uint32_t, uint64_t> queue;
+ 	for (std::map<uint32_t, CbapLinkRuntime>::const_iterator link =
+@@ -599,6 +940,11 @@
+ 		candidateFloor[incumbents[i]] =
+ 			(uint64_t)std::floor(0.90L * measured);
+ 	}
++	for (uint32_t i = 0; i < scopedBaseIncumbents.size(); ++i)
++		candidateFloor[scopedBaseIncumbents[i]] =
++			(uint64_t)std::floor(0.90L *
++			s_cbapScopeBaseFlows[scopedBaseIncumbents[i]].qp->
++			m_rate.GetBitRate());
+ 	std::map<uint32_t, double> linkScale;
+ 	for (std::map<uint32_t, CbapLinkRuntime>::const_iterator link =
+ 			s_cbapLinks.begin(); link != s_cbapLinks.end(); ++link){
+@@ -610,6 +956,13 @@
+ 					path.end())
+ 				sum += candidateFloor[incumbents[i]];
+ 		}
++		for (uint32_t i = 0; i < scopedBaseIncumbents.size(); ++i){
++			const std::vector<uint32_t> &path =
++				s_cbapFlowPaths[scopedBaseIncumbents[i]];
++			if (std::find(path.begin(), path.end(), link->first) !=
++					path.end())
++				sum += candidateFloor[scopedBaseIncumbents[i]];
++		}
+ 		linkScale[link->first] = sum > effective[link->first] && sum > 0 ?
+ 			(double)((long double)effective[link->first] / sum) : 1.0;
+ 	}
+@@ -625,6 +978,15 @@
+ 		Ptr<RdmaQueuePair> incumbent = s_cbapFlows[incumbents[i]].qp;
+ 		incumbent->cbap.protectionFloorBps = floor[incumbents[i]];
+ 	}
++	for (uint32_t i = 0; i < scopedBaseIncumbents.size(); ++i){
++		double scale = 1.0;
++		const std::vector<uint32_t> &path =
++			s_cbapFlowPaths[scopedBaseIncumbents[i]];
++		for (uint32_t hop = 0; hop < path.size(); ++hop)
++			scale = std::min(scale, linkScale[path[hop]]);
++		floor[scopedBaseIncumbents[i]] = (uint64_t)std::floor(
++			candidateFloor[scopedBaseIncumbents[i]] * scale);
++	}
+ 	std::map<uint32_t, uint64_t> baseCapacity = effective;
+ 	for (std::map<uint32_t, uint64_t>::iterator capacity =
+ 			baseCapacity.begin(); capacity != baseCapacity.end();
+@@ -637,6 +999,13 @@
+ 					path.end())
+ 				used += floor[incumbents[i]];
+ 		}
++		for (uint32_t i = 0; i < scopedBaseIncumbents.size(); ++i){
++			const std::vector<uint32_t> &path =
++				s_cbapFlowPaths[scopedBaseIncumbents[i]];
++			if (std::find(path.begin(), path.end(), capacity->first) !=
++					path.end())
++				used += floor[scopedBaseIncumbents[i]];
++		}
+ 		capacity->second = used < capacity->second ?
+ 			capacity->second - used : 0;
+ 	}
+@@ -746,7 +1115,8 @@
+ 		}
+ 		if (credit == std::numeric_limits<uint64_t>::max())
+ 			credit = 0;
+-		bool full = flow.hw->m_cc_mode == CC_MODE_CBAP_FULL;
++		bool full = flow.hw->m_cc_mode == CC_MODE_CBAP_FULL ||
++			flow.hw->m_cc_mode == CC_MODE_CBAP_FULL_SCOPED;
+ 		qp->cbap.enabled = true;
+ 		qp->cbap.fullCredit = full;
+ 		qp->cbap.initOnly =
+@@ -1842,9 +2212,14 @@
+ 	if (cbap){
+ 		NS_ASSERT_MSG(s_cbapConfig.enabled,
+ 			"CBAP mode has no coordinator configuration");
+-		Simulator::Schedule(NanoSeconds(commonReleaseNs -
+-			Simulator::Now().GetTimeStep()),
+-			&RdmaHw::PlanCbapBatch, groupId);
++		if (owner->m_cc_mode == CC_MODE_CBAP_FULL_SCOPED)
++			Simulator::Schedule(NanoSeconds(commonReleaseNs -
++				Simulator::Now().GetTimeStep()),
++				&RdmaHw::PlanScopedCbapBatch, groupId);
++		else
++			Simulator::Schedule(NanoSeconds(commonReleaseNs -
++				Simulator::Now().GetTimeStep()),
++				&RdmaHw::PlanCbapBatch, groupId);
+ 	}else{
+ 		Simulator::Schedule(NanoSeconds(
+ 			(uint64_t)earliest - Simulator::Now().GetTimeStep()),
+@@ -3041,7 +3416,7 @@
+ 
+ 	qp->crfm.currentRoundIndex = roundIndex;
+ 	qp->crfm.releasedBytes = round.endSeq;
+-	if (IsCbapMode(m_cc_mode)){
++	if (IsCbapMode(m_cc_mode) && qp->cbap.enabled){
+ 		NS_ASSERT_MSG(qp->cbap.enabled &&
+ 			qp->cbap.phase == RdmaQueuePair::CBAP_PREPARE,
+ 			"CBAP release without completed batch plan");
+@@ -3316,7 +3691,10 @@
+ 			m_cc_mode == CC_MODE_CBAP_INIT_ONLY &&
+ 			qp->cbap.enabled &&
+ 			qp->cbap.firstFreshFeedbackNs == 0;
+-		if (IsDcqcnMode(m_cc_mode) && !cbapInitHolding){
++		bool scopedCbapHolding =
++			m_cc_mode == CC_MODE_CBAP_FULL_SCOPED && qp->cbap.enabled;
++		if (IsDcqcnMode(m_cc_mode) && !cbapInitHolding &&
++				!scopedCbapHolding){
+ 			// Exact Mellanox/DCQCN path.  CBAP-INIT-ONLY deliberately
+ 			// hands off only after the first causally fresh summary.
+ 			if (qp->crfm.enabled && ch.ack.seq > 0){
+@@ -3409,7 +3787,7 @@
+ 
+ void RdmaHw::QpComplete(Ptr<RdmaQueuePair> qp){
+ 	NS_ASSERT(!m_qpCompleteCallback.IsNull());
+-	if (IsCbapMode(m_cc_mode))
++	if (IsCbapMode(m_cc_mode) && qp->cbap.enabled)
+ 		FinishCbapFlow(qp);
+ 	if (IsDcqcnMode(m_cc_mode)){
+ 		Simulator::Cancel(qp->mlx.m_eventUpdateAlpha);
+--- a/simulation/scratch/third.cc
++++ b/simulation/scratch/third.cc
+@@ -136,11 +136,14 @@
+ string cbap_packet_trace_file;
+ uint32_t cbap_packet_trace_max_mb = 96;
+ string cbap_tx_event_file;
++string cbap_scope_summary_file, cbap_scope_link_file;
+ uint32_t cbap_tx_trace_tracking_packets = 4096;
+ uint32_t cbap_increase_policy = RdmaHw::CBAP_INCREASE_LEGACY_V1;
+ double cbap_increase_fraction = 0.10;
+ uint64_t cbap_increase_absolute_bps = UINT64_C(2000000000);
+ string cbap_version = "v1";
++uint32_t cbap_scope_policy = RdmaHw::CBAP_SCOPE_ALWAYS;
++uint32_t cbap_scope_base_cc = 1;
+ 
+ double alpha_resume_interval = 55, rp_timer, ewma_gain = 1 / 16;//恢复间隔；在reaction阶段的时候多久做一次AI；EWMA增益
+ double rate_decrease_interval = 4;//速率降低间隔，也就是在降速的时候多久降速一次
+@@ -561,6 +564,8 @@
+ 	config.increasePolicy = cbap_increase_policy;
+ 	config.increaseFraction = cbap_increase_fraction;
+ 	config.increaseAbsoluteBps = cbap_increase_absolute_bps;
++	config.scopePolicy = cbap_scope_policy;
++	config.scopeBaseCc = cbap_scope_base_cc;
+ 	config.scenario = scenario_name;
+ 	config.algorithm = algorithm_name;
+ 	config.cbapVersion = cbap_version;
+@@ -855,6 +860,53 @@
+ 			<< cbap_control_delay_us * 1000 << ','
+ 			<< cbap_planning_delay_us * 1000 << '\n';
+ 	}
++	if (!cbap_scope_summary_file.empty()){
++		ofstream output(cbap_scope_summary_file.c_str());
++		output << "batch_id,application_ready_ns,decision_complete_ns,"
++			"decision_delay_ns,flow_count,used_link_count,enabled,reason,"
++			"triggering_link_count,maximum_pending_count,"
++			"maximum_oversubscription_ratio\n";
++		const vector<RdmaHw::CbapScopeBatchRecord> &rows =
++			RdmaHw::GetCbapScopeBatchRecords();
++		for (uint32_t i = 0; i < rows.size(); ++i){
++			const RdmaHw::CbapScopeBatchRecord &r = rows[i];
++			const char *reason = r.reason ==
++				RdmaHw::CBAP_SCOPE_REASON_SHARED_BATCH_OVERSUBSCRIBED ?
++				"SHARED_BATCH_OVERSUBSCRIBED" : r.reason ==
++				RdmaHw::CBAP_SCOPE_REASON_NO_SHARED_LINK ?
++				"NO_SHARED_LINK" : r.reason ==
++				RdmaHw::CBAP_SCOPE_REASON_WITHIN_ADMISSION_CAPACITY ?
++				"WITHIN_ADMISSION_CAPACITY" : "ALWAYS";
++			output << r.batchId << ',' << r.applicationReadyNs << ','
++				<< r.decisionCompleteNs << ',' << r.decisionDelayNs << ','
++				<< r.flowCount << ',' << r.usedLinkCount << ','
++				<< r.enabled << ',' << reason << ','
++				<< r.triggeringLinkCount << ',' << r.maximumPendingCount
++				<< ',' << r.maximumOversubscriptionRatio << '\n';
++		}
++	}
++	if (!cbap_scope_link_file.empty()){
++		ofstream output(cbap_scope_link_file.c_str());
++		output << "batch_id,application_ready_ns,newest_summary_sample_ns,"
++			"newest_summary_delivery_ns,link_id,switch_id,egress_port,"
++			"pending_count,A_admit_bps,independent_aggregate_bps,"
++			"oversubscription_bps,oversubscription_ratio,enabled_on_link,"
++			"pre_release_causal\n";
++		const vector<RdmaHw::CbapScopeLinkRecord> &rows =
++			RdmaHw::GetCbapScopeLinkRecords();
++		for (uint32_t i = 0; i < rows.size(); ++i){
++			const RdmaHw::CbapScopeLinkRecord &r = rows[i];
++			output << r.batchId << ',' << r.applicationReadyNs << ','
++				<< r.newestSummarySampleNs << ','
++				<< r.newestSummaryDeliveryNs << ',' << r.linkId << ','
++				<< r.switchId << ',' << r.egressPort << ','
++				<< r.pendingCount << ',' << r.admissionCapacityBps << ','
++				<< r.independentAggregateBps << ','
++				<< r.oversubscriptionBps << ','
++				<< r.oversubscriptionRatio << ',' << r.enabledOnLink << ','
++				<< r.preReleaseCausal << '\n';
++		}
++	}
+ }
+ 
+ void ReadRoundSchedule(){
+@@ -1337,6 +1389,14 @@
+ 			double st=q->crfm.enabled ?
+ 				q->crfm.rounds.front().releaseTimeNs*1e-9 :
+ 				q->startTime.GetSeconds();
++			if (cc_mode == RdmaHw::CC_MODE_CBAP_FULL_SCOPED &&
++					q->crfm.enabled){
++				uint64_t applicationReadyNs = 0;
++				if (RdmaHw::GetCbapScopeApplicationReadyNs(
++						q->crfm.rounds.front().roundGroupId,
++						applicationReadyNs))
++					st = applicationReadyNs * 1e-9;
++			}
+ 			double fin=Simulator::Now().GetSeconds(),fct=fin-st;
+ 			fprintf(flow_summary_csv,"%s,%s,%u,%u,%08x-%08x-%u-%u,%u,%u,%lu,%.9f,%.9f,%.9f,%lu,1,%.3f\n",
+ 				scenario_name.c_str(),algorithm_name.c_str(),sim_seed,experiment_flows[i].id,
+@@ -1437,8 +1497,15 @@
+ 				round.injectionEndTimeNs * 1e-9 : 0;
+ 			double completion = round.ackCompletionTimeNs ?
+ 				round.ackCompletionTimeNs * 1e-9 : 0;
++			uint64_t accountingReleaseNs = round.releaseTimeNs;
++			if (cc_mode == RdmaHw::CC_MODE_CBAP_FULL_SCOPED){
++				uint64_t applicationReadyNs = 0;
++				if (RdmaHw::GetCbapScopeApplicationReadyNs(
++						round.roundGroupId, applicationReadyNs))
++					accountingReleaseNs = applicationReadyNs;
++			}
+ 			double rct = round.ackCompletionTimeNs ?
+-				(round.ackCompletionTimeNs-round.releaseTimeNs)*1e-9 : 0;
++				(round.ackCompletionTimeNs-accountingReleaseNs)*1e-9 : 0;
+ 			double loop = round.firstFeedbackTimeNs ?
+ 				(round.firstFeedbackTimeNs-round.releaseTimeNs)*1e-9 : 0;
+ 			uint32_t firstAfterInjection =
+@@ -2286,6 +2353,14 @@
+ 				conf>>cbap_packet_trace_max_mb;
+ 			else if(key.compare("CBAP_TX_EVENT_FILE")==0)
+ 				conf>>cbap_tx_event_file;
++			else if(key.compare("CBAP_SCOPE_SUMMARY_FILE")==0)
++				conf>>cbap_scope_summary_file;
++			else if(key.compare("CBAP_SCOPE_LINK_FILE")==0)
++				conf>>cbap_scope_link_file;
++			else if(key.compare("CBAP_SCOPE_POLICY")==0)
++				conf>>cbap_scope_policy;
++			else if(key.compare("CBAP_SCOPE_BASE_CC")==0)
++				conf>>cbap_scope_base_cc;
+ 			else if(key.compare("CBAP_TX_TRACE_TRACKING_PACKETS")==0)
+ 				conf>>cbap_tx_trace_tracking_packets;
+ 			else if(key.compare("ROUND_SCHEDULE_FILE")==0) conf>>round_schedule_file;
+@@ -2734,7 +2809,7 @@
+ 					if (!(cc_mode == 0 || cc_mode == 1 ||
+ 							cc_mode == 3 || cc_mode == 7 ||
+ 							cc_mode == 8 ||
+-							(cc_mode >= 11 && cc_mode <= 23)))
++							(cc_mode >= 11 && cc_mode <= 24)))
+ 					ConfigError("ROUND_MODE CC_MODE is not registered");
+ 		if (crfm_trace_sample_us < 10)
+ 			ConfigError("CRFM_TRACE_SAMPLE_US must be at least 10");
+@@ -2768,7 +2843,7 @@
+ 				if (cc_mode == RdmaHw::CC_MODE_BOP_QB_MAX &&
+ 						bop_packet_bytes < packet_payload_size)
+ 					ConfigError("invalid BOP-QB-Max parameter");
+-			}else if (cc_mode >= 11 && cc_mode <= 23){
++			}else if (cc_mode >= 11 && cc_mode <= 24){
+ 				ConfigError("CRFM CC_MODE requires ROUND_MODE=1");
+ 			}
+ 	if (cbap_enable){
+@@ -2786,6 +2861,14 @@
+ 				!std::isfinite(cbap_increase_fraction) ||
+ 				std::fabs(cbap_increase_fraction - 0.10) > 1e-12 ||
+ 				cbap_increase_absolute_bps != UINT64_C(2000000000) ||
++				cbap_scope_policy >
++					RdmaHw::CBAP_SCOPE_SHARED_BATCH_OVERSUBSCRIPTION ||
++				cbap_scope_base_cc != 1 ||
++				(cc_mode == RdmaHw::CC_MODE_CBAP_FULL_SCOPED &&
++				 cbap_scope_policy !=
++					RdmaHw::CBAP_SCOPE_SHARED_BATCH_OVERSUBSCRIPTION) ||
++				(cc_mode != RdmaHw::CC_MODE_CBAP_FULL_SCOPED &&
++				 cbap_scope_policy != RdmaHw::CBAP_SCOPE_ALWAYS) ||
+ 				cbap_version.empty())
+ 			ConfigError("invalid CBAP mode or configuration");
+ 	}else if (RdmaHw::IsCbapMode(cc_mode)){
+--- /dev/null
++++ b/cbap_exp_v12_scoped/scripts/analyze_core_results.py
+@@ -0,0 +1,56 @@
++#!/usr/bin/env python3
++import csv,gzip,json,math,os,statistics
++ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),".."));RUN=os.path.join(ROOT,'runs_core')
++def rows(d,n):
++ p=os.path.join(d,n);p=p if os.path.isfile(p) else p+'.gz'
++ if not os.path.isfile(p):return []
++ op=gzip.open if p.endswith('.gz') else open
++ with op(p,'rt',newline='') as f:return list(csv.DictReader(f))
++def fnum(x,*keys):
++ for k in keys:
++  try:return float(x[k])
++  except:pass
++ return 0.0
++def measured_pre(d,load):
++ samples=rows(d,'selected_link_timeseries.csv')
++ vals=[]
++ for x in samples:
++  t=fnum(x,'time_ns','time')
++  if t<1 and 'time' in x:t*=1e9
++  if 2000000<=t<3000000:vals.append(fnum(x,'utilization'))
++ return 100*statistics.mean(vals) if vals else (0.0 if load==0 else float('nan'))
++def fct_us(x):
++ if x.get('fct_us','')!='':return float(x['fct_us'])
++ return float(x.get('fct',0))*1e6
++def pause_duration_us(events):
++ starts={};total=0
++ for x in events:
++  key=(x.get('node_id'),x.get('if_index'),x.get('q_index'));t=int(x.get('time_ns',0));event=x.get('event_type','').lower()
++  if 'pause' in event and 'resume' not in event:starts[key]=t
++  elif ('resume' in event or 'end' in event) and key in starts:total+=max(0,t-starts.pop(key))
++ return total/1000.0
++def main():
++ out=[];invalid=[]
++ for m in csv.DictReader(open(os.path.join(ROOT,'configs','core_manifest.csv'))):
++  d=os.path.join(RUN,m['scenario'],m['algorithm_name'],'seed_1')
++  if not os.path.isfile(os.path.join(d,'completed.flag')):invalid.append((m['run_id'],'missing_or_invalid'));continue
++  r=json.load(open(os.path.join(d,'result.json')));meta=json.load(open(os.path.join(d,'run_meta.json')))
++  util=measured_pre(d,int(m['incumbent_load_percent']));ok=math.isfinite(util) and abs(util-int(m['incumbent_load_percent']))<=2
++  if not ok:invalid.append((m['run_id'],'pre_release_utilization_outside_2pp'))
++  scope=rows(d,'scope_summary.csv');admit=rows(d,'cbap_admission.csv');control=rows(d,'control_summary.csv')
++  flow=rows(d,'flow_summary.csv');case=json.load(open(os.path.join(d,'scenario_meta.json')));pending=set(case.get('pending_flow_ids',[]))
++  fcts=[fct_us(x) for x in flow if int(x.get('flow_id',-1)) in pending]
++  incumbents=[x for x in flow if int(x.get('flow_id',-1)) in set(case.get('incumbent_flow_ids',[]))]
++  offered=int(m['incumbent_load_percent'])*1e9
++  worst_drop=max([max(0.0,1-fnum(x,'flow_goodput','average_goodput')/offered) for x in incumbents],default=0.0) if offered else 0.0
++  cbap_state=rows(d,'cbap_flow_state.csv');pfc=rows(d,'pfc_events.csv');total_packets=max(1,sum(int(x.get('total_size_bytes',x.get('size_bytes',0))) for x in flow)//1000)
++  link_scope=rows(d,'scope_link_summary.csv');triggering=';'.join(x['link_id'] for x in link_scope if int(x.get('enabled_on_link',0)))
++  out.append({"run_id":m['run_id'],"scenario":m['scenario'],"algorithm":m['algorithm_name'],"scope_decision":('ENABLE' if any(int(x['enabled']) for x in scope) else 'BYPASS') if int(m['cc_mode'])==24 else 'NOT_APPLICABLE',"scope_reason":scope[-1]['reason'] if scope else 'NOT_APPLICABLE',"triggering_links":triggering,"batch_size":m['fan_in'],"message_bytes":m['message_bytes'],"incumbent_offered_load_percent":m['incumbent_load_percent'],"measured_pre_release_utilization_percent":util,"new_batch_cct_us":max(fcts) if fcts else r.get('group_rct_max_us',0),"median_flow_fct_us":statistics.median(fcts) if fcts else r.get('flow_fct_mean_us',0),"max_flow_fct_us":max(fcts) if fcts else r.get('flow_fct_max_us',0),"completion_skew_us":(max(fcts)-min(fcts)) if fcts else 0,"peak_queue_bytes":r.get('queue_max_bytes',0),"queue_auc_byte_seconds":r.get('queue_auc_byte_seconds',0),"ecn_count":r.get('ecn_marks',0),"ecn_ratio":float(r.get('ecn_marks',0))/total_packets,"pfc_count":r.get('pfc_event_rows',0),"pfc_duration_us":pause_duration_us(pfc),"bottleneck_utilization":r.get('mean_utilization',0),"incumbent_worst_throughput_drop":worst_drop,"bytes_before_first_fresh_feedback":sum(int(x.get('bytes_sent_before_fresh_feedback',0)) for x in cbap_state),"admission_aggregate_rate_bps":sum(int(x.get('admit_rate_bps',0)) for x in admit),"control_message_count":sum(int(x.get('summary_messages',0))+int(x.get('grant_messages',0)) for x in control),"control_bytes":sum(int(x.get('total_control_bytes',0)) for x in control),"capacity_violation":r.get('capacity_violations',0),"credit_violation":r.get('credit_violations',0),"pacing_violation":r.get('pacing_violations',0),"valid":ok})
++ os.makedirs(os.path.join(ROOT,'processed'),exist_ok=True)
++ fields=list(out[0]) if out else ['run_id']
++ with open(os.path.join(ROOT,'processed','core_results.csv'),'w',newline='') as f:w=csv.DictWriter(f,fieldnames=fields);w.writeheader();w.writerows(out)
++ with open(os.path.join(ROOT,'processed','invalid_core_runs.csv'),'w',newline='') as f:w=csv.writer(f);w.writerow(('run_id','reason'));w.writerows(invalid)
++ text=['# Core comparison analysis','','This report computes the deterministic parameter scan without treating repeats as random seeds.','', 'Valid runs: %d/170.'%(len(out)-len(invalid)),'Invalid runs: %d.'%len(invalid),'','No research conclusion is inferred by this script.']
++ open(os.path.join(ROOT,'reports','core_comparison_report.md'),'w').write('\n'.join(text)+'\n')
++ print('core_checked=%d invalid=%d'%(len(out),len(invalid)))
++if __name__=='__main__':main()
+--- /dev/null
++++ b/cbap_exp_v12_scoped/scripts/analyze_scope_regression.py
+@@ -0,0 +1,56 @@
++#!/usr/bin/env python3
++import csv,json,math,os
++ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),".."));RUN=os.path.join(ROOT,'runs_scope')
++def rows(p):
++ if not os.path.isfile(p):return []
++ return list(csv.DictReader(open(p)))
++def rct(d):
++ data=rows(os.path.join(d,'round_summary.csv'))
++ values=[]
++ for x in data:
++  try:
++   if int(x.get('round_group_id',x.get('group_id','-1')))==1:values.append(float(x.get('round_completion_time',x.get('round_completion_time_us',0))))
++  except:pass
++ if values:return max(values)
++ return float(json.load(open(os.path.join(d,'result.json'))).get('group_rct_max_us',0))
++def main():
++ manifest=list(csv.DictReader(open(os.path.join(ROOT,'configs','scope_manifest.csv'))));audit=[];valid=True;by={}
++ for m in manifest:
++  d=os.path.join(RUN,m['scenario'],m['algorithm_name'],'seed_1');by[(m['scenario'],m['algorithm_name'])]=d
++  if not os.path.isfile(os.path.join(d,'completed.flag')):valid=False;continue
++  result=json.load(open(os.path.join(d,'result.json')));scope=rows(os.path.join(d,'scope_summary.csv'));links=rows(os.path.join(d,'scope_link_summary.csv'))
++  decision='NOT_APPLICABLE'
++  if m['algorithm_name']=='cbap_full_v12_scoped':decision='ENABLE' if any(int(x['enabled']) for x in scope) else 'BYPASS'
++  if m['algorithm_name']=='cbap_full_v12_scoped' and decision!=m['expected_scope_decision']:valid=False
++  admissions=rows(os.path.join(d,'cbap_admission.csv'));rates=rows(os.path.join(d,'cbap_rate_transitions.csv'))
++  credit=sum(int(x.get('credit_bytes',0)) for x in admissions)
++  grants=len(admissions)
++  triggers=sum(int(x.get('enabled_on_link',0)) for x in links)
++  causal=all(int(x.get('pre_release_causal',0))==1 for x in links)
++  if decision=='BYPASS' and (grants or credit or rates or triggers):valid=False
++  if decision=='ENABLE' and not triggers:valid=False
++  if decision=='ENABLE' and any(int(result.get(k,0)) for k in ('capacity_violations','credit_violations','pacing_violations')):valid=False
++  audit.append(dict(run_id=m['run_id'],scenario=m['scenario'],algorithm=m['algorithm_name'],expected=m['expected_scope_decision'],decision=decision,triggering_links=triggers,grant_count=grants,credit_bytes=credit,rate_transition_count=len(rates),pre_release_causal=causal,valid=valid))
++ # Relative semantic checks are performed only after all 18 valid runs exist.
++ if len(audit)==18:
++  for scenario in ('single_pending','batch_incast'):
++   ds=by[(scenario,'cbap_full_v12_scoped')];base='dcqcn' if scenario=='single_pending' else 'cbap_full_v11_unscoped';db=by[(scenario,base)]
++   a,b=rct(ds),rct(db);limit=.01 if scenario=='single_pending' else .02
++   if b<=0 or abs(a-b)/b>limit:valid=False
++   if scenario=='batch_incast':
++    rs=json.load(open(os.path.join(ds,'result.json')));rb=json.load(open(os.path.join(db,'result.json')))
++    for key in ('queue_max_bytes','queue_auc_byte_seconds'):
++     den=float(rb.get(key,0));
++     if den>0 and abs(float(rs.get(key,0))-den)/den>.05:valid=False
++  parking=by[('synchronous_parking_lot','cbap_full_v12_scoped')]
++  rates=[float(x['admit_rate_bps']) for x in rows(os.path.join(parking,'cbap_admission.csv'))]
++  if len(rates)!=3:valid=False
++  else:
++   jain=sum(rates)**2/(len(rates)*sum(x*x for x in rates))
++   if jain<.95 or min(rates)<.40*max(rates):valid=False
++ os.makedirs(os.path.join(ROOT,'processed'),exist_ok=True)
++ fields=('run_id','scenario','algorithm','expected','decision','triggering_links','grant_count','credit_bytes','rate_transition_count','pre_release_causal','valid')
++ with open(os.path.join(ROOT,'processed','scope_decision_audit.csv'),'w',newline='') as f:w=csv.DictWriter(f,fieldnames=fields);w.writeheader();w.writerows(audit)
++ status='SCOPE_REGRESSION_PASS' if valid and len(audit)==18 else 'SCOPE_REGRESSION_FAIL'
++ open(os.path.join(ROOT,'reports','scope_regression_report.md'),'w').write(status+'\n');print(status)
++if __name__=='__main__':main()
+--- /dev/null
++++ b/cbap_exp_v12_scoped/scripts/build_only.sh
+@@ -0,0 +1,4 @@
++#!/usr/bin/env bash
++set -euo pipefail
++ROOT="$(cd "$(dirname "$0")/../.."&&pwd)"
++cd "$ROOT/simulation";python2 ./waf build
+--- /dev/null
++++ b/cbap_exp_v12_scoped/scripts/check_outputs.py
+@@ -0,0 +1,34 @@
++#!/usr/bin/env python3
++import argparse,csv,gzip,json,math,os,sys
++def path(d,n):
++ for p in (os.path.join(d,n),os.path.join(d,n)+".gz"):
++  if os.path.isfile(p) and os.path.getsize(p)>0:return p
++ return ""
++def readrows(d,n):
++ p=path(d,n)
++ if not p:return []
++ op=gzip.open if p.endswith('.gz') else open
++ with op(p,'rt',newline='') as f:return list(csv.DictReader(f))
++def fail(s):print("INVALID "+s,file=sys.stderr);raise SystemExit(1)
++def main():
++ p=argparse.ArgumentParser();p.add_argument('run_dir');p.add_argument('--allow-no-complete-flag',action='store_true');a=p.parse_args();d=os.path.abspath(a.run_dir)
++ for n in ('manifest.json','run_meta.json','config.txt','command.txt','stdout.log','exit_status.txt','result.json','flow_summary.csv','queue_summary.csv','scope_summary.csv','rate_summary.csv','control_summary.csv'):
++  if not path(d,n):fail('missing '+n)
++ if not a.allow_no_complete_flag and not os.path.isfile(os.path.join(d,'completed.flag')):fail('missing completed.flag')
++ if int(open(os.path.join(d,'exit_status.txt')).read().strip()):fail('nonzero exit')
++ m=json.load(open(os.path.join(d,'run_meta.json')));r=json.load(open(os.path.join(d,'result.json')))
++ if not r.get('all_flows_completed'):fail('incomplete flows')
++ if m.get('log_truncated') or r.get('log_truncated'):fail('truncated')
++ if any(isinstance(v,float) and not math.isfinite(v) for v in r.values()):fail('nonfinite result')
++ if int(m['cc_mode'])==24:
++  scope=readrows(d,'scope_summary.csv');links=readrows(d,'scope_link_summary.csv')
++  if not scope:fail('missing scoped decision')
++  for x in scope:
++   if int(x['decision_delay_ns'])!=5000:fail('scope delay')
++   enabled=int(x['enabled']);triggers=int(x['triggering_link_count'])
++   if enabled!=(triggers>0):fail('trigger consistency')
++  if any(int(x['pre_release_causal'])!=1 for x in links):fail('future scope telemetry')
++  if all(int(x['enabled'])==0 for x in scope):
++   if readrows(d,'cbap_admission.csv') or readrows(d,'cbap_rate_transitions.csv'):fail('CBAP state on bypass')
++ print('VALID '+d)
++if __name__=='__main__':main()
+--- /dev/null
++++ b/cbap_exp_v12_scoped/scripts/common.sh
+@@ -0,0 +1,52 @@
++#!/usr/bin/env bash
++set -uo pipefail
++V12_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.."&&pwd)"
++REPO_ROOT="$(cd "$V12_ROOT/.."&&pwd)"; SIM_ROOT="$REPO_ROOT/simulation"
++MAX_JOBS="${MAX_JOBS:-4}";MIN_FREE_GB="${MIN_FREE_GB:-5}";RUN_TIMEOUT_MIN="${RUN_TIMEOUT_MIN:-60}";KEEP_RAW="${KEEP_RAW:-0}"
++export NS_LOG="";ulimit -c 0
++disk_check(){ mkdir -p "$1";local free need;free="$(df -Pk "$1"|awk 'NR==2{print $4}')";need="$(awk -v x="$MIN_FREE_GB" 'BEGIN{printf "%.0f",x*1024*1024}')";((free>=need))||{ echo "REFUSE less than $MIN_FREE_GB GiB free" >&2;return 1;};}
++finalize_meta(){ python3 - "$1" "$2" "$3" <<'PY'
++import csv,json,os,sys,time
++d,s,e=sys.argv[1],int(sys.argv[2]),float(sys.argv[3]);p=os.path.join(d,'run_meta.json');m=json.load(open(p));log=open(os.path.join(d,'stdout.log'),errors='replace').read()
++m.update(exit_status=s,runtime_seconds=e,end_time_unix=time.time(),status='finished' if s==0 else 'failed',log_truncated='TRUNCATED' in log)
++sp=os.path.join(d,'scope_summary.csv');lp=os.path.join(d,'scope_link_summary.csv')
++if os.path.isfile(sp):
++ rows=list(csv.DictReader(open(sp)))
++ if rows:
++  enabled=any(int(x['enabled']) for x in rows);m['scope_decision']='ENABLE' if enabled else 'BYPASS';m['scope_reason']=rows[-1]['reason']
++q=p+'.tmp';open(q,'w').write(json.dumps(m,indent=2,sort_keys=True)+'\n');os.replace(q,p)
++mp=os.path.join(d,'manifest.json');manifest=json.load(open(mp));manifest.update({k:m[k] for k in ('scope_decision','scope_reason') if k in m})
++links=list(csv.DictReader(open(lp))) if os.path.isfile(lp) else [];triggers=[x for x in links if int(x.get('enabled_on_link',0))]
++if triggers:
++ x=max(triggers,key=lambda y:float(y['oversubscription_ratio']));manifest.update(triggering_link=x['link_id'],pending_count_on_triggering_link=int(x['pending_count']),independent_aggregate_rate_bps=int(x['independent_aggregate_bps']),batch_admission_capacity_bps=int(x['A_admit_bps']),oversubscription_ratio=float(x['oversubscription_ratio']))
++q=mp+'.tmp';open(q,'w').write(json.dumps(manifest,indent=2,sort_keys=True)+'\n');os.replace(q,mp)
++PY
++}
++empty_scope(){ [[ -s "$1/scope_summary.csv" ]]||echo 'batch_id,application_ready_ns,decision_complete_ns,decision_delay_ns,flow_count,used_link_count,enabled,reason,triggering_link_count,maximum_pending_count,maximum_oversubscription_ratio' >"$1/scope_summary.csv";[[ -s "$1/scope_link_summary.csv" ]]||echo 'batch_id,application_ready_ns,newest_summary_sample_ns,newest_summary_delivery_ns,link_id,switch_id,egress_port,pending_count,A_admit_bps,independent_aggregate_bps,oversubscription_bps,oversubscription_ratio,enabled_on_link,pre_release_causal' >"$1/scope_link_summary.csv";}
++run_one(){ local manifest="$1" root="$2" id="$3" scenario algorithm seed dir start status elapsed;read -r scenario algorithm seed < <(python3 - "$manifest" "$id" <<'PY'
++import csv,sys
++for r in csv.DictReader(open(sys.argv[1])):
++ if r['run_id']==sys.argv[2]:print(r['scenario'],r['algorithm_name'],r['seed']);break
++else:raise SystemExit('unknown run')
++PY
++);dir="$root/$scenario/$algorithm/seed_$seed"
++ if [[ -f "$dir/completed.flag" ]]&&python3 "$V12_ROOT/scripts/check_outputs.py" "$dir" >/dev/null 2>&1;then echo "SKIP valid $id";return 0;fi
++ disk_check "$root"||return;mkdir -p "$dir";python3 "$V12_ROOT/scripts/prepare_run.py" "$manifest" "$id" "$dir" --min-free-gb "$MIN_FREE_GB"||return
++ rm -f "$dir/completed.flag" "$dir/exit_status.txt";start="$(date +%s)";set +e
++ (cd "$SIM_ROOT"&&timeout --signal=TERM --kill-after=30s "${RUN_TIMEOUT_MIN}m" python2 ./waf --cwd="$dir" --run "scratch/third $dir/config.txt") >"$dir/stdout.full.log" 2>&1;status=$?;set -e
++ tail -c 10485760 "$dir/stdout.full.log" >"$dir/stdout.log";[[ "$KEEP_RAW" == 1 ]]||rm -f "$dir/stdout.full.log";elapsed="$(($(date +%s)-start))";echo "$status">"$dir/exit_status.txt";empty_scope "$dir";finalize_meta "$dir" "$status" "$elapsed"
++ if ((status!=0));then echo "FAIL $id exit=$status" >&2;return "$status";fi
++ python3 "$REPO_ROOT/cbap_exp/scripts/collect_run_metrics.py" "$dir"||return
++ python3 "$REPO_ROOT/cbap_exp/scripts/materialize_required_summaries.py" "$dir"||return
++ empty_scope "$dir";python3 "$V12_ROOT/scripts/check_outputs.py" --allow-no-complete-flag "$dir"||return;touch "$dir/completed.flag"
++ if [[ "$KEEP_RAW" != 1 ]];then for f in selected_link_timeseries.csv selected_flow_timeseries.csv cbap_packet_trace.csv cbap_tx_events.csv;do [[ ! -f "$dir/$f" ]]||gzip -f "$dir/$f";done;fi
++ echo "PASS $id";
++}
++run_manifest(){ local manifest="$1" root="$2" failed=0 id;trap 'jobs -pr|xargs -r kill;wait;exit 130' INT TERM
++ while IFS= read -r id;do while (( $(jobs -pr|wc -l)>=MAX_JOBS));do wait -n||failed=1;done;run_one "$manifest" "$root" "$id"&done < <(python3 - "$manifest" <<'PY'
++import csv,sys
++for r in csv.DictReader(open(sys.argv[1])):print(r['run_id'])
++PY
++)
++ while (( $(jobs -pr|wc -l) ));do wait -n||failed=1;done;return "$failed";
++}
+--- /dev/null
++++ b/cbap_exp_v12_scoped/scripts/generate_framework.py
+@@ -0,0 +1,256 @@
++#!/usr/bin/env python3
++"""Generate deterministic CBAP-v1.2 scope/core inputs; never runs ns-3."""
++import csv, hashlib, json, os, shutil
++
++ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
++REPO = os.path.abspath(os.path.join(ROOT, ".."))
++TEMPLATE = os.path.join(REPO, "cbap_exp_v11_freeze", "cases",
++                        "e2_batch_incast", "default", "config.txt")
++V11 = os.path.join(REPO, "cbap_exp_v11_freeze", "cases")
++
++ALGOS = {
++    "dctcp": (8, False, "baseline", "ALWAYS"),
++    "dcqcn": (1, False, "baseline", "ALWAYS"),
++    "timely": (7, False, "baseline", "ALWAYS"),
++    "hpcc_int": (3, False, "baseline", "ALWAYS"),
++    "bop_qb": (15, False, "bop_qb_v1", "ALWAYS"),
++    "independent_min_grant": (20, True, "v1", "ALWAYS"),
++    "cbap_init_only": (21, True, "v1.1", "ALWAYS"),
++    "cbap_rateonly_v11": (22, True, "v1.1", "ALWAYS"),
++    "cbap_full_v11_unscoped": (23, True, "v1.1", "ALWAYS"),
++    "cbap_full_v12_scoped": (24, True, "v1.2", "SHARED_BATCH_OVERSUBSCRIPTION"),
++}
++
++def digest(path):
++    h = hashlib.sha256()
++    with open(path, "rb") as f:
++        for block in iter(lambda: f.read(1 << 20), b""):
++            h.update(block)
++    return h.hexdigest()
++
++def rewrite(path, updates):
++    lines, seen = [], set()
++    for line in open(path):
++        words = line.split(); key = words[0] if words else ""
++        if key in updates:
++            lines.append("%s %s\n" % (key, updates[key])); seen.add(key)
++        else:
++            lines.append(line)
++    for key in sorted(set(updates) - seen):
++        lines.append("%s %s\n" % (key, updates[key]))
++    with open(path, "w") as f: f.writelines(lines)
++
++def finish_case(path, meta, switch, bottleneck_if, flow_count):
++    shutil.copy2(TEMPLATE, os.path.join(path, "config.txt"))
++    selected = ",".join(str(i) for i in range(min(4, flow_count))) or "0"
++    rewrite(os.path.join(path, "config.txt"), {
++        "SIMULATOR_STOP_TIME": "0.10", "ROUND_TRACE_SELECTED_FLOWS": selected,
++        "ROUND_TRACE_SELECTED_LINKS": "%d:%d" % (switch, bottleneck_if),
++        "KMAX_MAP": "6 10000000000 1600 50000000000 1600 80000000000 1600 95000000000 1600 100000000000 1600 400000000000 1600",
++        "KMIN_MAP": "6 10000000000 400 50000000000 400 80000000000 400 95000000000 400 100000000000 400 400000000000 400",
++        "PMAX_MAP": "6 10000000000 0.2 50000000000 0.2 80000000000 0.2 95000000000 0.2 100000000000 0.2 400000000000 0.2",
++        "CBAP_SCOPE_POLICY": 0, "CBAP_SCOPE_BASE_CC": 1,
++        "CBAP_SCOPE_SUMMARY_FILE": "scope_summary.csv",
++        "CBAP_SCOPE_LINK_FILE": "scope_link_summary.csv",
++    })
++    with open(os.path.join(path, "scenario_meta.json"), "w") as f:
++        json.dump(meta, f, indent=2, sort_keys=True); f.write("\n")
++    names = ("topology.txt", "flow.txt", "rounds.txt", "fixed_paths.txt",
++             "controlled_links.txt", "controlled_paths.txt",
++             "group_schedule.txt", "trace.txt")
++    with open(os.path.join(path, "input_hashes.json"), "w") as f:
++        json.dump({n: digest(os.path.join(path, n)) for n in names}, f,
++                  indent=2, sort_keys=True); f.write("\n")
++
++def star_case(root, name, pending, message, load=0, delay_us=1,
++              pending_access=100, expected="ENABLE"):
++    path = os.path.join(root, name); os.makedirs(path, exist_ok=True)
++    incumbent_count = 1 if load else 0
++    senders = incumbent_count + pending
++    receiver, switch = senders, senders + 1
++    with open(os.path.join(path, "topology.txt"), "w") as f:
++        f.write("%d 1 %d\n%d\n" % (senders + 2, senders + 1, switch))
++        for node in range(senders):
++            rate = load if node < incumbent_count else pending_access
++            f.write("%d %d %gGbps 0.%03dms 0\n" %
++                    (node, switch, rate, delay_us))
++        f.write("%d %d 100Gbps 0.%03dms 0\n" %
++                (receiver, switch, delay_us))
++    incumbent_size = 512 * 1024 * 1024
++    with open(os.path.join(path, "flow.txt"), "w") as f:
++        f.write("%d\n" % senders)
++        if incumbent_count:
++            f.write("0 %d 3 100 %d 0.000490000\n" %
++                    (receiver, incumbent_size))
++        for i in range(pending):
++            flow = incumbent_count + i
++            f.write("%d %d 3 100 %d 0.002990000\n" %
++                    (flow, receiver, message))
++    with open(os.path.join(path, "rounds.txt"), "w") as f:
++        f.write("%d\n" % senders)
++        group = 0
++        if incumbent_count:
++            f.write("0 0 0 1 %d 0 0 0 500000\n" % incumbent_size)
++            group = 1
++        for i in range(pending):
++            flow = incumbent_count + i
++            f.write("%d 0 %d %d %d 0 0 %d 3000000\n" %
++                    (flow, group, pending, message, i))
++    with open(os.path.join(path, "group_schedule.txt"), "w") as f:
++        f.write("%d\n" % (1 + incumbent_count))
++        if incumbent_count: f.write("0 -1 0 500000\n1 -1 0 3000000\n")
++        else: f.write("0 -1 0 3000000\n")
++    with open(os.path.join(path, "fixed_paths.txt"), "w") as f:
++        for i in range(senders): f.write("%d -1\n" % i)
++    with open(os.path.join(path, "controlled_links.txt"), "w") as f:
++        f.write("1\n1 %d %d 100000000000 400000 0 1\n" %
++                (switch, senders + 1))
++    with open(os.path.join(path, "controlled_paths.txt"), "w") as f:
++        f.write("%d\n" % senders)
++        for i in range(senders): f.write("%d 1 1\n" % i)
++    open(os.path.join(path, "trace.txt"), "w").write("0\n")
++    meta = {"scenario": name, "pending_count": pending,
++            "message_bytes": message, "incumbent_offered_load_percent": load,
++            "expected_scope_decision": expected, "fixed_path": True,
++            "common_release_ns": 3000000, "capacity_bps": 100000000000,
++            "application_ready_to_network_release_ns": 5000,
++            "pending_flow_ids": list(range(incumbent_count, senders)),
++            "incumbent_flow_ids": list(range(incumbent_count))}
++    finish_case(path, meta, switch, senders + 1, senders)
++
++def no_shared_case(root):
++    name = "no_shared_link"; path = os.path.join(root, name)
++    os.makedirs(path, exist_ok=True); count = 8
++    # sender[0..7], receiver[8..15], switch 16; eight distinct egresses.
++    switch = 16
++    with open(os.path.join(path, "topology.txt"), "w") as f:
++        f.write("17 1 16\n16\n")
++        for i in range(8): f.write("%d 16 100Gbps 0.001ms 0\n" % i)
++        for i in range(8, 16): f.write("%d 16 100Gbps 0.001ms 0\n" % i)
++    with open(os.path.join(path, "flow.txt"), "w") as f:
++        f.write("8\n")
++        for i in range(8): f.write("%d %d 3 100 1048576 0.002990000\n" % (i, i+8))
++    with open(os.path.join(path, "rounds.txt"), "w") as f:
++        f.write("8\n")
++        for i in range(8): f.write("%d 0 0 8 1048576 0 0 %d 3000000\n" % (i, i))
++    open(os.path.join(path, "group_schedule.txt"), "w").write("1\n0 -1 0 3000000\n")
++    with open(os.path.join(path, "fixed_paths.txt"), "w") as f:
++        for i in range(8): f.write("%d -1\n" % i)
++    with open(os.path.join(path, "controlled_links.txt"), "w") as f:
++        f.write("8\n")
++        for i in range(8): f.write("%d 16 %d 100000000000 400000 0 1\n" % (i+1, i+9))
++    with open(os.path.join(path, "controlled_paths.txt"), "w") as f:
++        f.write("8\n")
++        for i in range(8): f.write("%d 1 %d\n" % (i, i+1))
++    open(os.path.join(path, "trace.txt"), "w").write("0\n")
++    finish_case(path, {"scenario": name, "pending_count": 8,
++        "message_bytes": 1048576, "incumbent_offered_load_percent": 0,
++        "expected_scope_decision": "BYPASS", "fixed_path": True,
++        "common_release_ns": 3000000, "capacity_bps": 100000000000,
++        "distinct_egress_links": 8, "pending_flow_ids": list(range(8)),
++        "incumbent_flow_ids": []}, switch, 9, 8)
++
++def copy_parking(scope_root):
++    src = os.path.join(V11, "e4_parking_lot", "synchronous")
++    dst = os.path.join(scope_root, "synchronous_parking_lot")
++    if os.path.isdir(dst): shutil.rmtree(dst)
++    shutil.copytree(src, dst)
++    topology=os.path.join(dst,"topology.txt")
++    text=open(topology).read().replace("0.001ms","0.020ms")
++    open(topology,"w").write(text)
++    meta = json.load(open(os.path.join(dst, "scenario_meta.json")))
++    meta.update(scenario="synchronous_parking_lot",
++                expected_scope_decision="ENABLE", pending_count=3,
++                incumbent_offered_load_percent=0)
++    with open(os.path.join(dst, "scenario_meta.json"), "w") as f:
++        json.dump(meta, f, indent=2, sort_keys=True); f.write("\n")
++    rewrite(os.path.join(dst, "config.txt"), {
++        "LINK_DELAY": "0.020ms",
++        "CBAP_SCOPE_POLICY": 0, "CBAP_SCOPE_BASE_CC": 1,
++        "CBAP_SCOPE_SUMMARY_FILE": "scope_summary.csv",
++        "CBAP_SCOPE_LINK_FILE": "scope_link_summary.csv"})
++
++def copy_batch(scope_root):
++    src=os.path.join(V11,"e2_batch_incast","default")
++    dst=os.path.join(scope_root,"batch_incast")
++    if os.path.isdir(dst):shutil.rmtree(dst)
++    shutil.copytree(src,dst)
++    meta=json.load(open(os.path.join(dst,"scenario_meta.json")))
++    meta.update(scenario="batch_incast",expected_scope_decision="ENABLE",
++                pending_count=8,incumbent_offered_load_percent=100,
++                pending_flow_ids=list(range(4,12)),incumbent_flow_ids=list(range(4)))
++    with open(os.path.join(dst,"scenario_meta.json"),"w") as f:json.dump(meta,f,indent=2,sort_keys=True);f.write("\n")
++    rewrite(os.path.join(dst,"config.txt"),{"CBAP_SCOPE_POLICY":0,
++        "CBAP_SCOPE_BASE_CC":1,"CBAP_SCOPE_SUMMARY_FILE":"scope_summary.csv",
++        "CBAP_SCOPE_LINK_FILE":"scope_link_summary.csv"})
++
++def manifests():
++    os.makedirs(os.path.join(ROOT, "configs"), exist_ok=True)
++    scope_scenarios = [("single_pending", "BYPASS"),
++        ("batch_incast", "ENABLE"), ("two_pending_overload", "ENABLE"),
++        ("two_pending_low_demand", "BYPASS"),
++        ("no_shared_link", "BYPASS"),
++        ("synchronous_parking_lot", "ENABLE")]
++    scope_algos = ("dcqcn", "cbap_full_v11_unscoped", "cbap_full_v12_scoped")
++    scope = []
++    for scenario, expected in scope_scenarios:
++        for algorithm in scope_algos:
++            mode, _, version, policy = ALGOS[algorithm]
++            scope.append({"run_id": "%s__%s__seed1" % (scenario, algorithm),
++                "scenario": scenario, "algorithm_name": algorithm,
++                "cc_mode": mode, "cbap_version": version,
++                "scope_policy": policy, "expected_scope_decision": expected,
++                "seed": 1})
++    fields = list(scope[0])
++    with open(os.path.join(ROOT, "configs", "scope_manifest.csv"), "w", newline="") as f:
++        w=csv.DictWriter(f, fieldnames=fields); w.writeheader(); w.writerows(scope)
++
++    formal = ("dctcp", "dcqcn", "timely", "hpcc_int", "bop_qb",
++              "independent_min_grant", "cbap_full_v12_scoped")
++    core_scenarios=[]
++    for fan in (4,8,16,32,64):
++        for label, size in (("64k",65536),("256k",262144),
++                            ("1m",1048576),("4m",4194304)):
++            core_scenarios.append(("fan%d_msg%s_load80"%(fan,label),fan,size,80))
++    for load in (0,50,95): core_scenarios.append(("fan16_msg1m_load%d"%load,16,1048576,load))
++    rows=[]
++    for scenario, fan, size, load in core_scenarios:
++        for algorithm in formal:
++            mode, _, version, policy=ALGOS[algorithm]
++            rows.append({"run_id":"%s__%s__seed1"%(scenario,algorithm),
++                "scenario":scenario,"algorithm_name":algorithm,"cc_mode":mode,
++                "cbap_version":version,"scope_policy":policy,"seed":1,
++                "fan_in":fan,"message_bytes":size,"incumbent_load_percent":load,
++                "ablation":0})
++    representatives=("fan4_msg64k_load80","fan16_msg1m_load80","fan64_msg4m_load80")
++    for scenario in representatives:
++        fan=int(scenario.split("_")[0][3:]); size={"64k":65536,"1m":1048576,"4m":4194304}[scenario.split("_")[1][3:]]
++        for algorithm in ("cbap_init_only","cbap_rateonly_v11","cbap_full_v11_unscoped"):
++            mode,_,version,policy=ALGOS[algorithm]
++            rows.append({"run_id":"%s__%s__seed1"%(scenario,algorithm),
++                "scenario":scenario,"algorithm_name":algorithm,"cc_mode":mode,
++                "cbap_version":version,"scope_policy":policy,"seed":1,
++                "fan_in":fan,"message_bytes":size,"incumbent_load_percent":80,
++                "ablation":1})
++    fields=list(rows[0])
++    with open(os.path.join(ROOT,"configs","core_manifest.csv"),"w",newline="") as f:
++        w=csv.DictWriter(f,fieldnames=fields);w.writeheader();w.writerows(rows)
++
++def main():
++    scope=os.path.join(ROOT,"cases","scope")
++    core=os.path.join(ROOT,"cases","core")
++    os.makedirs(scope,exist_ok=True);os.makedirs(core,exist_ok=True)
++    star_case(scope,"single_pending",1,2*1024*1024,80,expected="BYPASS")
++    copy_batch(scope)
++    star_case(scope,"two_pending_overload",2,1024*1024,0,20,100,"ENABLE")
++    star_case(scope,"two_pending_low_demand",2,1024*1024,0,1,10,"BYPASS")
++    no_shared_case(scope); copy_parking(scope)
++    for fan in (4,8,16,32,64):
++        for label,size in (("64k",65536),("256k",262144),("1m",1048576),("4m",4194304)):
++            star_case(core,"fan%d_msg%s_load80"%(fan,label),fan,size,80)
++    for load in (0,50,95):
++        star_case(core,"fan16_msg1m_load%d"%load,16,1048576,load)
++    manifests()
++    print("scope_runs=18 core_runs=170")
++
++if __name__ == "__main__": main()
+--- /dev/null
++++ b/cbap_exp_v12_scoped/scripts/package_results.sh
+@@ -0,0 +1,5 @@
++#!/usr/bin/env bash
++set -euo pipefail
++ROOT="$(cd "$(dirname "$0")/.."&&pwd)";STAMP="$(date +%Y%m%d_%H%M%S)"
++cd "$(dirname "$ROOT")";tar -czf "cbap_v12_scoped_results_${STAMP}.tar.gz" cbap_exp_v12_scoped/{reports,processed,configs,scripts,preflight,runs_scope,runs_core}
++echo "cbap_v12_scoped_results_${STAMP}.tar.gz"
+--- /dev/null
++++ b/cbap_exp_v12_scoped/scripts/prepare_run.py
+@@ -0,0 +1,59 @@
++#!/usr/bin/env python3
++import argparse,csv,hashlib,json,os,shutil,subprocess,time
++
++ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),".."))
++REPO=os.path.abspath(os.path.join(ROOT,"..")); SIM=os.path.join(REPO,"simulation")
++
++def sha(path):
++ h=hashlib.sha256()
++ with open(path,"rb") as f:
++  for b in iter(lambda:f.read(1<<20),b""):h.update(b)
++ return h.hexdigest()
++def rewrite(src,dst,updates):
++ lines=[];seen=set()
++ for line in open(src):
++  w=line.split();key=w[0] if w else ""
++  if key in updates:lines.append("%s %s\n"%(key,updates[key]));seen.add(key)
++  else:lines.append(line)
++ for key in sorted(set(updates)-seen):lines.append("%s %s\n"%(key,updates[key]))
++ with open(dst,"w") as f:f.writelines(lines)
++
++def main():
++ p=argparse.ArgumentParser();p.add_argument("manifest");p.add_argument("run_id");p.add_argument("run_dir");p.add_argument("--min-free-gb",type=float,default=5);a=p.parse_args()
++ rows={r["run_id"]:r for r in csv.DictReader(open(a.manifest))}
++ if a.run_id not in rows:raise SystemExit("unknown run_id")
++ r=rows[a.run_id]; scope="scope" if "scope_manifest" in os.path.basename(a.manifest) else "core"
++ case=os.path.join(ROOT,"cases",scope,r["scenario"]);run=os.path.abspath(a.run_dir);os.makedirs(run,exist_ok=True)
++ for name in os.listdir(case):
++  src=os.path.join(case,name)
++  if os.path.isfile(src) and name!="config.txt":shutil.copy2(src,os.path.join(run,name))
++ mode=int(r["cc_mode"]);cbap=20<=mode<=24;scoped=mode==24
++ policy=1 if scoped else 0
++ updates={"CC_MODE":mode,"SIM_SEED":r["seed"],"ALGORITHM":r["algorithm_name"],
++  "SCENARIO":r["scenario"],"CBAP_ENABLE":int(cbap),"CBAP_VERSION":r["cbap_version"],
++  "CBAP_INCREASE_POLICY":1 if mode in (21,22,23,24) else 0,
++  "CBAP_INCREASE_FRACTION":"0.10","CBAP_INCREASE_ABSOLUTE_BPS":2000000000,
++  "CBAP_SCOPE_POLICY":policy,"CBAP_SCOPE_BASE_CC":1,
++  "CBAP_SCOPE_SUMMARY_FILE":"scope_summary.csv" if cbap else "/dev/null",
++  "CBAP_SCOPE_LINK_FILE":"scope_link_summary.csv" if cbap else "/dev/null",
++  "CBAP_PACKET_TRACE_FILE":"cbap_packet_trace.csv" if cbap else "/dev/null",
++  "CBAP_PACKET_TRACE_MAX_MB":128,"CBAP_TX_EVENT_FILE":"cbap_tx_events.csv" if cbap else "/dev/null",
++  "CBAP_INCREASE_AUDIT_FILE":"increase_policy_events.csv" if cbap else "/dev/null",
++  "CRFM_MIN_FREE_GB":a.min_free_gb}
++ rewrite(os.path.join(case,"config.txt"),os.path.join(run,"config.txt"),updates)
++ hashes={n:sha(os.path.join(run,n)) for n in os.listdir(run) if os.path.isfile(os.path.join(run,n)) and n!="config.txt"}
++ commit=subprocess.check_output(["git","rev-parse","HEAD"],cwd=REPO,text=True).strip()
++ manifest=dict(r);manifest.update({"algorithm_name":r["algorithm_name"],"scope_decision":"PENDING" if scoped else "NOT_APPLICABLE",
++  "scope_reason":"PENDING" if scoped else "NOT_APPLICABLE","scope_decision_delay_ns":5000 if scoped else 0,
++  "triggering_link":"PENDING" if scoped else "NOT_APPLICABLE","pending_count_on_triggering_link":"PENDING" if scoped else 0,
++  "independent_aggregate_rate_bps":"PENDING" if scoped else 0,"batch_admission_capacity_bps":"PENDING" if scoped else 0,
++  "oversubscription_ratio":"PENDING" if scoped else 0,"base_cc":"dcqcn","git_commit":commit,"input_hashes":hashes})
++ meta={"run_id":a.run_id,"scenario":r["scenario"],"algorithm":r["algorithm_name"],"algorithm_name":r["algorithm_name"],
++  "cc_mode":mode,"cbap_version":r["cbap_version"],"scope_policy":r["scope_policy"],"base_cc":"dcqcn",
++  "scope_decision_delay_ns":5000 if scoped else 0,"seed":int(r["seed"]),"git_commit":commit,"input_hashes":hashes,
++  "status":"prepared","exit_status":None,"prepared_time_unix":time.time(),"log_truncated":False}
++ for name,obj in (("manifest.json",manifest),("run_meta.json",meta)):
++  with open(os.path.join(run,name),"w") as f:json.dump(obj,f,indent=2,sort_keys=True);f.write("\n")
++ with open(os.path.join(run,"command.txt"),"w") as f:f.write('python2 ./waf --cwd="%s" --run "scratch/third %s/config.txt"\n'%(run,run))
++
++if __name__=="__main__":main()
+--- /dev/null
++++ b/cbap_exp_v12_scoped/scripts/run_core_comparison.sh
+@@ -0,0 +1,7 @@
++#!/usr/bin/env bash
++set -euo pipefail
++ROOT="$(cd "$(dirname "$0")/.."&&pwd)"
++grep -qx 'SCOPE_REGRESSION_PASS' "$ROOT/reports/scope_regression_report.md"||{ echo 'REFUSE: scope regression has not passed' >&2;exit 2;}
++source "$ROOT/scripts/common.sh"
++run_manifest "$ROOT/configs/core_manifest.csv" "$ROOT/runs_core"
++python3 "$ROOT/scripts/analyze_core_results.py"
+--- /dev/null
++++ b/cbap_exp_v12_scoped/scripts/run_scope_regression.sh
+@@ -0,0 +1,5 @@
++#!/usr/bin/env bash
++set -euo pipefail
++ROOT="$(cd "$(dirname "$0")/.."&&pwd)";source "$ROOT/scripts/common.sh"
++run_manifest "$ROOT/configs/scope_manifest.csv" "$ROOT/runs_scope"
++python3 "$ROOT/scripts/analyze_scope_regression.py"
+--- /dev/null
++++ b/cbap_exp_v12_scoped/tests/test_scope_model.py
+@@ -0,0 +1,15 @@
++#!/usr/bin/env python3
++import unittest
++def enabled(pending_count, independent_aggregate_bps, admit_bps, capacity_bps=100_000_000_000):
++ tolerance=max(1,1e-9*capacity_bps)
++ return pending_count>=2 and independent_aggregate_bps>admit_bps+tolerance
++class ScopeModel(unittest.TestCase):
++ def test_single_pending_bypass(self):self.assertFalse(enabled(1,100e9,50e9))
++ def test_shared_overload_enable(self):self.assertTrue(enabled(2,200e9,150e9))
++ def test_low_demand_bypass(self):self.assertFalse(enabled(2,20e9,95e9))
++ def test_distinct_links_bypass(self):
++  self.assertTrue(all(not enabled(1,100e9,95e9) for _ in range(8)))
++ def test_numerical_tolerance_only(self):
++  self.assertFalse(enabled(2,100_000_000_050,100_000_000_000))
++  self.assertTrue(enabled(2,100_000_000_101,100_000_000_000))
++if __name__=='__main__':unittest.main(verbosity=2)
+--- /dev/null
++++ b/cbap_exp_v12_scoped/tests/test_v12_static.py
+@@ -0,0 +1,38 @@
++#!/usr/bin/env python3
++import csv,hashlib,os,re,subprocess,unittest
++ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),".."));REPO=os.path.abspath(os.path.join(ROOT,".."))
++SRC=open(os.path.join(REPO,'simulation/src/point-to-point/model/rdma-hw.cc')).read();HDR=open(os.path.join(REPO,'simulation/src/point-to-point/model/rdma-hw.h')).read()
++class Static(unittest.TestCase):
++ def test_modes_and_identity(self):
++  self.assertRegex(HDR,r'CC_MODE_CBAP_FULL\s*=\s*23')
++  self.assertRegex(HDR,r'CC_MODE_CBAP_FULL_SCOPED\s*=\s*24')
++  self.assertIn('CBAP_SCOPE_SHARED_BATCH_OVERSUBSCRIPTION',HDR)
++ def test_structural_rule(self):
++  body=SRC[SRC.index('void RdmaHw::PlanScopedCbapBatch'):SRC.index('void RdmaHw::PlanCbapBatch')]
++  self.assertIn('count >= 2 && aggregate > capacity',body)
++  self.assertIn('std::ceil(1e-9 *',body)
++  self.assertNotRegex(body,r'1\.1\s*\*|1\.3\s*\*|messageBytes')
++  self.assertIn('latest.sampleTimeNs <= group.applicationReadyNs',body)
++ def test_frozen_dispatch_and_bypass(self):
++  self.assertIn('PlanCbapBatch(groupId);',SRC)
++  self.assertIn('!scopedCbapHolding',SRC)
++  self.assertIn('qp->cbap.enabled',SRC)
++  self.assertIn('batch.decisionDelayNs == UINT64_C(5000)',SRC)
++ def test_manifests(self):
++  with open(os.path.join(ROOT,'configs','scope_manifest.csv')) as f:s=list(csv.DictReader(f))
++  with open(os.path.join(ROOT,'configs','core_manifest.csv')) as f:c=list(csv.DictReader(f))
++  self.assertEqual(len(s),18);self.assertEqual(len(c),170)
++  self.assertEqual(len(set(x['run_id'] for x in s)),18);self.assertEqual(len(set(x['run_id'] for x in c)),170)
++  self.assertEqual(sum(int(x['ablation'])==0 for x in c),161);self.assertEqual(sum(int(x['ablation'])==1 for x in c),9)
++ def test_cases(self):
++  self.assertEqual(len(next(os.walk(os.path.join(ROOT,'cases','scope')))[1]),6)
++  self.assertEqual(len(next(os.walk(os.path.join(ROOT,'cases','core')))[1]),23)
++  for family in ('scope','core'):
++   for case in next(os.walk(os.path.join(ROOT,'cases',family)))[1]:
++    d=os.path.join(ROOT,'cases',family,case)
++    for n in ('topology.txt','flow.txt','rounds.txt','fixed_paths.txt','controlled_links.txt','controlled_paths.txt','group_schedule.txt','trace.txt','config.txt','scenario_meta.json'):
++     self.assertTrue(os.path.isfile(os.path.join(d,n)),(family,case,n))
++ def test_frozen_archive_unchanged(self):
++  listing=os.path.join(ROOT,'preflight','cbap_v11_freeze.sha256')
++  self.assertEqual(subprocess.call(['sha256sum','-c',listing],cwd=REPO,stdout=subprocess.DEVNULL),0)
++if __name__=='__main__':unittest.main(verbosity=2)

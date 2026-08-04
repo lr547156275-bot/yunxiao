@@ -1,0 +1,35 @@
+Source files modified for v1.3:
+simulation/scratch/third.cc
+simulation/src/point-to-point/model/qbb-net-device.cc
+simulation/src/point-to-point/model/rdma-hw.cc
+simulation/src/point-to-point/model/rdma-hw.h
+simulation/src/point-to-point/model/rdma-queue-pair.cc
+simulation/src/point-to-point/model/rdma-queue-pair.h
+
+New framework:
+cbap_exp_v13_ratefloor_fix/cases/ (six self-contained cases)
+cbap_exp_v13_ratefloor_fix/configs/semantic_manifest.csv
+cbap_exp_v13_ratefloor_fix/configs/reduced_manifest.csv
+cbap_exp_v13_ratefloor_fix/scripts/analyze_ratefloor_semantic.py
+cbap_exp_v13_ratefloor_fix/scripts/analyze_reduced_results.py
+cbap_exp_v13_ratefloor_fix/scripts/build_only.sh
+cbap_exp_v13_ratefloor_fix/scripts/check_outputs.py
+cbap_exp_v13_ratefloor_fix/scripts/common.sh
+cbap_exp_v13_ratefloor_fix/scripts/generate_framework.py
+cbap_exp_v13_ratefloor_fix/scripts/package_results.sh
+cbap_exp_v13_ratefloor_fix/scripts/prepare_run.py
+cbap_exp_v13_ratefloor_fix/scripts/run_ratefloor_semantic.sh
+cbap_exp_v13_ratefloor_fix/scripts/run_reduced_validation.sh
+cbap_exp_v13_ratefloor_fix/tests/test_ratefloor_static.py
+cbap_exp_v13_ratefloor_fix/reports/build_report.md
+cbap_exp_v13_ratefloor_fix/reports/experiment_design.md
+cbap_exp_v13_ratefloor_fix/reports/implementation_report.md
+cbap_exp_v13_ratefloor_fix/reports/run_instructions.md
+cbap_exp_v13_ratefloor_fix/reports/v12_to_v13_diff.md
+
+Generated verification records:
+cbap_exp_v13_ratefloor_fix/reports/build.log
+cbap_exp_v13_ratefloor_fix/reports/build_incremental_initial.log
+cbap_exp_v13_ratefloor_fix/reports/static_tests.log
+
+Pre-existing modified files and cbap_exp_v12_scoped/ results were preserved.

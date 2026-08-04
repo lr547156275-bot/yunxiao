@@ -1,0 +1,8 @@
+cbap_final_paper_experiments/README.md
+cbap_final_paper_experiments/configs/cases/ (198 generated scenario blueprints)
+cbap_final_paper_experiments/manifests/ (1408 formal rows + 7 preflight rows)
+cbap_final_paper_experiments/scripts/ (generation, run, audit, analysis, figures, package)
+cbap_final_paper_experiments/processed/ (empty/incomplete-state analysis contract)
+cbap_final_paper_experiments/reports/ (design and paper-report skeletons)
+
+No simulation C++ source file was modified by this task.

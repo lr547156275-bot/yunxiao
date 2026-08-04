@@ -1,0 +1,7 @@
+Generated-file preparation summary (not an apply-ready source patch):
+
+- Added the self-contained cbap_final_paper_experiments framework.
+- Reused existing verified input schemas and imported generator logic.
+- Added no C++ hunk and changed no congestion-control implementation.
+- Frozen identities: CBAP-v1.3 CC_MODE 25; BOP-QB CC_MODE 15.
+- Exact formal manifest count: 1408; separate preflight count: 7.

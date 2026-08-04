@@ -1,0 +1,25 @@
+{
+  "collector_version": "cbap_full_work_collector_v1",
+  "generated_time_unix": 1785640722.0226388,
+  "input_file_hashes": {
+    "config.txt": "b9f2c0871ed842ed953e89b64c91a0f400e638216fccd597fdf314a3a8ed55f1",
+    "control_summary.csv": "94aa9102df87f3f9624e06b97e13d7625cf9af6e459e0bfba7c177cf44e307d4",
+    "flow_plan.csv": "0560ca29e5177dea68f831140209395f540c3cebff3e322f9b6fa6cc0a573f4c",
+    "flow_summary.csv": "b9996a14d82a3e746fe49d589f780f1a9a23a63c761aaab1351be947e7f7fa46",
+    "group_schedule.txt": "74474fd7495d2aae31ac9007d6819e7b96bfea4ae62d3c26a3d2b0230a2b20c7",
+    "incumbent_summary.csv": "bf8e3f42389342f3062cd3cd8bb223c3030998d9a219936a0194a45853f9056f",
+    "rate_summary.csv": "0b496b94b68789be616a5dc8fdb4b191f3bb036b520f64ff184601debf27d7fb",
+    "round_summary.csv": "34ce9623328e9d0d9bff423b7583f72a58b68500974e20c0b16b509e04067175",
+    "rounds.txt": "98a014cfe8809d80ec94fa8f39a58747a97b46c3385b87a40036b4e41f6086e6",
+    "run_meta.json": "0f727dc0a6c077f2e31dd6ff1d4e12f1e2dc40de2e813542e0cdce63f6315cc4",
+    "scenario_meta.json": "bd4176515b64c4e2d18c36c35cd4a4bbda9eba8495a2d49aafa6db6ca1cec8b9",
+    "selected_link_timeseries.csv.gz": "5f61059a6629611f961b5335e702840342fee84814e02552825c9d1d8f0560f4"
+  },
+  "metric_definitions_version": "cbap_full_work_metrics_v1",
+  "original_files_modified": false,
+  "source_run": "/home/lr/workspace/yunxiao/High-Precision-Congestion-Control/cbap_exp_v15_guarded_delegation/runs_validation/fan64_msg4m_load80/cbap_full_v14_stable_handoff/seed_1",
+  "suspicious_findings": [],
+  "unresolved_fields": [
+    "pfc_threshold_not_reliably_reconstructable"
+  ]
+}

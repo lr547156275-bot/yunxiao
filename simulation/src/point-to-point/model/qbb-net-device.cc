@@ -103,7 +103,8 @@ namespace ns3 {
 		for (qIndex = 1; qIndex <= fcount; qIndex++){
 			uint32_t idx = (qIndex + m_rrlast) % fcount;
 			Ptr<RdmaQueuePair> qp = m_qpGrp->Get(idx);
-			if (!paused[qp->m_pg] && qp->GetBytesLeft() > 0 && !qp->IsWinBound()){
+			if (!paused[qp->m_pg] && !qp->cbap.zeroGrantPaused &&
+					qp->GetBytesLeft() > 0 && !qp->IsWinBound()){
 				if (m_qpGrp->Get(idx)->m_nextAvail.GetTimeStep() > Simulator::Now().GetTimeStep()) //not available now
 					continue;
 				res = idx;
@@ -213,6 +214,9 @@ namespace ns3 {
 					MakeTraceSourceAccessor (&QbbNetDevice::m_traceQpDequeue))
 			.AddTraceSource ("QbbPfc", "get a PFC packet. 0: resume, 1: pause",
 					MakeTraceSourceAccessor (&QbbNetDevice::m_tracePfc))
+			.AddTraceSource ("PfcSemantic",
+					"Event-level PFC receive/state trace: priority, event, queue, pause quanta.",
+					MakeTraceSourceAccessor (&QbbNetDevice::m_tracePfcSemantic))
 			;
 
 		return tid;
@@ -232,6 +236,11 @@ namespace ns3 {
 	QbbNetDevice::~QbbNetDevice()
 	{
 		NS_LOG_FUNCTION(this);
+	}
+
+	bool QbbNetDevice::IsPaused(uint32_t qIndex) const
+	{
+		return qIndex < qCnt && m_paused[qIndex];
 	}
 
 	void
@@ -285,7 +294,7 @@ namespace ns3 {
 				Time t = Simulator::GetMaximumSimulationTime();
 				for (uint32_t i = 0; i < m_rdmaEQ->GetFlowCount(); i++){
 					Ptr<RdmaQueuePair> qp = m_rdmaEQ->GetQp(i);
-					if (qp->GetBytesLeft() == 0)
+					if (qp->GetBytesLeft() == 0 || qp->cbap.zeroGrantPaused)
 						continue;
 					t = Min(qp->m_nextAvail, t);
 				}
@@ -322,7 +331,8 @@ namespace ns3 {
 					Time t = Simulator::GetMaximumSimulationTime();
 					for (uint32_t i = 0; i < m_rdmaEQ->GetFlowCount(); i++){
 						Ptr<RdmaQueuePair> qp = m_rdmaEQ->GetQp(i);
-						if (qp->GetBytesLeft() == 0)
+						if (qp->GetBytesLeft() == 0 ||
+								qp->cbap.zeroGrantPaused)
 							continue;
 						t = Min(qp->m_nextAvail, t);
 					}
@@ -373,11 +383,15 @@ namespace ns3 {
 			if (!m_qbbEnabled) return;
 			unsigned qIndex = ch.pfc.qIndex;
 			if (ch.pfc.time > 0){
-				m_tracePfc(1);
+				m_tracePfcSemantic(qIndex, 1, ch.pfc.qlen, ch.pfc.time);
+				m_tracePfc(qIndex, 1);
 				m_paused[qIndex] = true;
+				m_tracePfcSemantic(qIndex, 2, ch.pfc.qlen, ch.pfc.time);
 			}else{
-				m_tracePfc(0);
+				m_tracePfcSemantic(qIndex, 4, ch.pfc.qlen, ch.pfc.time); 
+				m_tracePfc(qIndex, 0);
 				Resume(qIndex);
+				m_tracePfcSemantic(qIndex, 5, ch.pfc.qlen, ch.pfc.time);
 			}
 		}else { // non-PFC packets (data, ACK, NACK, CNP...)
 			if (m_node->GetNodeType() > 0){ // switch
@@ -528,5 +542,14 @@ namespace ns3 {
 			Time delta = t < Simulator::Now() ? Time(0) : t - Simulator::Now();
 			m_nextSend = Simulator::Schedule(delta, &QbbNetDevice::DequeueAndTransmit, this);
 		}
+	}
+
+	void QbbNetDevice::InvalidateAndRescheduleRdma(void){
+		if (!m_nextSend.IsExpired())
+			Simulator::Cancel(m_nextSend);
+		// DequeueAndTransmit scans every QP.  If the link is busy its normal
+		// TransmitComplete callback performs the scan; otherwise this call
+		// schedules the minimum currently eligible m_nextAvail.
+		DequeueAndTransmit();
 	}
 } // namespace ns3

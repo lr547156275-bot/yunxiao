@@ -1,0 +1,335 @@
+--- a/simulation/src/point-to-point/model/rdma-hw.h
++++ b/simulation/src/point-to-point/model/rdma-hw.h
+@@ -9,6 +9,7 @@
+ #include <unordered_map>
+ #include <map>
+ #include <set>
++#include <string>
+ #include "pint.h"
+ 
+ namespace ns3 {
+@@ -138,6 +139,10 @@
+ 		CBAP_PORT_PROPAGATED = 3,
+ 		CBAP_PORT_MIXED_OR_UNCERTAIN = 4
+ 	};
++	enum CbapIncreasePolicy {
++		CBAP_INCREASE_LEGACY_V1 = 0,
++		CBAP_INCREASE_ADAPTIVE_V11 = 1
++	};
+ 	struct CbapConfig {
+ 		bool enabled;
+ 		uint64_t controlEpochNs;
+@@ -150,12 +155,23 @@
+ 		uint32_t summaryBytes;
+ 		uint32_t grantBytes;
+ 		uint32_t txTraceTrackingPackets;
++		uint32_t increasePolicy;
++		double increaseFraction;
++		uint64_t increaseAbsoluteBps;
++		std::string scenario;
++		std::string algorithm;
++		std::string cbapVersion;
+ 		CbapConfig()
+ 			: enabled(false), controlEpochNs(5000),
+ 			  planningDelayNs(5000), controlDelayNs(5000),
+ 			  rho(0.95), epsilonRate(0.02), priority(3),
+ 			  maxWirePacketBytes(1064), summaryBytes(64),
+-			  grantBytes(48), txTraceTrackingPackets(4096) {}
++			  grantBytes(48), txTraceTrackingPackets(4096),
++			  increasePolicy(CBAP_INCREASE_LEGACY_V1),
++			  increaseFraction(0.10),
++			  increaseAbsoluteBps(UINT64_C(2000000000)),
++			  scenario("unknown"), algorithm("unknown"),
++			  cbapVersion("v1") {}
+ 	};
+ 	struct CbapPortSnapshot {
+ 		bool valid;
+@@ -241,9 +257,34 @@
+ 		uint32_t rootId;
+ 		uint64_t feedbackAgeNs;
+ 		uint64_t creditRemainingBytes;
++		uint64_t protectionFloorBps;
++		uint64_t rebalanceStartNs;
++		uint64_t rebalanceEndNs;
+ 		bool staleFeedback;
+ 		bool capacityValid;
+ 	};
++	struct CbapIncreaseRecord {
++		uint64_t timestampNs;
++		std::string scenario;
++		std::string algorithm;
++		std::string cbapVersion;
++		uint32_t increasePolicy;
++		uint32_t flowId;
++		uint32_t batchId;
++		uint32_t phase;
++		uint64_t currentRateBeforeBps;
++		uint64_t targetRateBps;
++		uint64_t maxRateBps;
++		uint64_t fractionalCandidateBps;
++		uint64_t absoluteCandidateBps;
++		uint64_t selectedDeltaBps;
++		uint64_t newRateBps;
++		uint32_t stableEpochCount;
++		uint64_t feedbackAgeNs;
++		bool staleFeedback;
++		uint32_t limitingLink;
++		uint32_t reason;
++	};
+ 	struct CbapFlowRecord {
+ 		uint32_t flowId;
+ 		uint32_t batchId;
+@@ -328,6 +369,8 @@
+ 	static const std::vector<CbapAdmissionRecord> &
+ 		GetCbapAdmissionRecords();
+ 	static const std::vector<CbapRateRecord> &GetCbapRateRecords();
++	static const std::vector<CbapIncreaseRecord> &
++		GetCbapIncreaseRecords();
+ 	static const std::vector<CbapFlowRecord> &GetCbapFlowRecords();
+ 	static const std::vector<CbapTxRecord> &GetCbapTxRecords();
+ 	static uint64_t GetCbapSummaryMessageCount();
+@@ -607,6 +650,7 @@
+ 	static std::vector<CbapPortRecord> s_cbapPortRecords;
+ 	static std::vector<CbapAdmissionRecord> s_cbapAdmissionRecords;
+ 	static std::vector<CbapRateRecord> s_cbapRateRecords;
++	static std::vector<CbapIncreaseRecord> s_cbapIncreaseRecords;
+ 	static std::vector<CbapFlowRecord> s_cbapFlowRecords;
+ 	static std::vector<CbapTxRecord> s_cbapTxRecords;
+ 	static uint64_t s_cbapSummaryMessages;
+--- a/simulation/src/point-to-point/model/rdma-hw.cc
++++ b/simulation/src/point-to-point/model/rdma-hw.cc
+@@ -47,6 +47,7 @@
+ std::vector<RdmaHw::CbapPortRecord> RdmaHw::s_cbapPortRecords;
+ std::vector<RdmaHw::CbapAdmissionRecord> RdmaHw::s_cbapAdmissionRecords;
+ std::vector<RdmaHw::CbapRateRecord> RdmaHw::s_cbapRateRecords;
++std::vector<RdmaHw::CbapIncreaseRecord> RdmaHw::s_cbapIncreaseRecords;
+ std::vector<RdmaHw::CbapFlowRecord> RdmaHw::s_cbapFlowRecords;
+ std::vector<RdmaHw::CbapTxRecord> RdmaHw::s_cbapTxRecords;
+ uint64_t RdmaHw::s_cbapSummaryMessages = 0;
+@@ -164,6 +165,7 @@
+ 	s_cbapPortRecords.clear();
+ 	s_cbapAdmissionRecords.clear();
+ 	s_cbapRateRecords.clear();
++	s_cbapIncreaseRecords.clear();
+ 	s_cbapFlowRecords.clear();
+ 	s_cbapTxRecords.clear();
+ 	s_cbapSummaryMessages = 0;
+@@ -175,7 +177,10 @@
+ 			config.controlDelayNs > 0 &&
+ 			config.rho > 0 && config.rho <= 1 &&
+ 			config.epsilonRate > 0 &&
+-			config.maxWirePacketBytes > 0,
++			config.maxWirePacketBytes > 0 &&
++			config.increasePolicy <= CBAP_INCREASE_ADAPTIVE_V11 &&
++			std::fabs(config.increaseFraction - 0.10) < 1e-12 &&
++			config.increaseAbsoluteBps == UINT64_C(2000000000),
+ 			"invalid CBAP configuration");
+ 	for (uint32_t i = 0; i < links.size(); ++i){
+ 		NS_ASSERT_MSG(links[i].capacityBps > links[i].backgroundBps &&
+@@ -234,6 +239,12 @@
+ 	return s_cbapRateRecords;
+ }
+ 
++const std::vector<RdmaHw::CbapIncreaseRecord> &
++RdmaHw::GetCbapIncreaseRecords()
++{
++	return s_cbapIncreaseRecords;
++}
++
+ const std::vector<RdmaHw::CbapFlowRecord> &
+ RdmaHw::GetCbapFlowRecords()
+ {
+@@ -813,6 +824,9 @@
+ 		record.timeNs >= qp->cbap.lastFreshFeedbackNs ?
+ 		record.timeNs - qp->cbap.lastFreshFeedbackNs : 0;
+ 	record.creditRemainingBytes = qp->cbap.creditRemainingBytes;
++	record.protectionFloorBps = qp->cbap.protectionFloorBps;
++	record.rebalanceStartNs = qp->cbap.rebalanceStartNs;
++	record.rebalanceEndNs = qp->cbap.rebalanceEndNs;
+ 	record.staleFeedback = stale;
+ 	record.capacityValid = true;
+ 	if (newRate != oldRate){
+@@ -1164,9 +1178,67 @@
+ 				qp->cbap.increaseFreezeEpochs == 0 &&
+ 				qp->cbap.stableEpochCount >= 2 &&
+ 				target * 100 > current * 105){
++			// Keep the legacy candidate bit-for-bit identical to CBAP-v1.
++			uint64_t fractionalCandidate = (uint64_t)std::floor(
++				1.10L * current);
++			uint64_t absoluteCandidate = current <=
++				std::numeric_limits<uint64_t>::max() -
++					s_cbapConfig.increaseAbsoluteBps ?
++				current + s_cbapConfig.increaseAbsoluteBps :
++				std::numeric_limits<uint64_t>::max();
++			uint64_t policyCandidate =
++				s_cbapConfig.increasePolicy ==
++					CBAP_INCREASE_ADAPTIVE_V11 ?
++				std::max(fractionalCandidate, absoluteCandidate) :
++				std::min(fractionalCandidate, absoluteCandidate);
+ 			uint64_t increased = std::min(target,
+-				std::min((uint64_t)std::floor(1.10L * current),
+-					current + UINT64_C(2000000000)));
++				std::min(qp->m_max_rate.GetBitRate(), policyCandidate));
++			uint32_t limitingLink = 0;
++			long double smallestSlack =
++				std::numeric_limits<long double>::max();
++			for (uint32_t hop = 0; hop < path.size(); ++hop){
++				uint64_t used = 0;
++				for (uint32_t peer = 0; peer < active.size(); ++peer){
++					const std::vector<uint32_t> &peerPath =
++						s_cbapFlowPaths[active[peer]];
++					if (std::find(peerPath.begin(), peerPath.end(),
++							path[hop]) != peerPath.end())
++						used += targets[active[peer]];
++				}
++				long double slack = capacities[path[hop]] > used ?
++					capacities[path[hop]] - used : 0;
++				if (slack < smallestSlack){
++					smallestSlack = slack;
++					limitingLink = path[hop];
++				}
++			}
++			NS_ASSERT_MSG(increased >= current && increased <= target &&
++				increased <= qp->m_max_rate.GetBitRate(),
++				"CBAP increase violates rate bounds");
++			CbapIncreaseRecord increase = {};
++			increase.timestampNs = now;
++			increase.scenario = s_cbapConfig.scenario;
++			increase.algorithm = s_cbapConfig.algorithm;
++			increase.cbapVersion = s_cbapConfig.cbapVersion;
++			increase.increasePolicy = s_cbapConfig.increasePolicy;
++			increase.flowId = flow.flowId;
++			increase.batchId = qp->cbap.batchId;
++			increase.phase = qp->cbap.phase;
++			increase.currentRateBeforeBps = current;
++			increase.targetRateBps = target;
++			increase.maxRateBps = qp->m_max_rate.GetBitRate();
++			increase.fractionalCandidateBps = fractionalCandidate;
++			increase.absoluteCandidateBps = absoluteCandidate;
++			increase.selectedDeltaBps = increased - current;
++			increase.newRateBps = increased;
++			increase.stableEpochCount = qp->cbap.stableEpochCount;
++			increase.feedbackAgeNs = qp->cbap.lastFreshFeedbackNs > 0 &&
++				now >= qp->cbap.lastFreshFeedbackNs ?
++				now - qp->cbap.lastFreshFeedbackNs : 0;
++			increase.staleFeedback = stale;
++			increase.limitingLink = limitingLink;
++			increase.reason = 3;
++			s_cbapIncreaseRecords.push_back(increase);
+ 			SetCbapRate(flow, increased, 3, rootId, stale);
+ 		}else{
+ 			SetCbapRate(flow, current, 5, rootId, stale);
+--- a/simulation/scratch/third.cc
++++ b/simulation/scratch/third.cc
+@@ -131,11 +131,16 @@
+ uint32_t cbap_summary_bytes = 64, cbap_grant_bytes = 48;
+ string cbap_port_summary_file, cbap_admission_file;
+ string cbap_rate_transition_file, cbap_flow_state_file;
++string cbap_increase_audit_file;
+ string cbap_control_overhead_file;
+ string cbap_packet_trace_file;
+ uint32_t cbap_packet_trace_max_mb = 96;
+ string cbap_tx_event_file;
+ uint32_t cbap_tx_trace_tracking_packets = 4096;
++uint32_t cbap_increase_policy = RdmaHw::CBAP_INCREASE_LEGACY_V1;
++double cbap_increase_fraction = 0.10;
++uint64_t cbap_increase_absolute_bps = UINT64_C(2000000000);
++string cbap_version = "v1";
+ 
+ double alpha_resume_interval = 55, rp_timer, ewma_gain = 1 / 16;//恢复间隔；在reaction阶段的时候多久做一次AI；EWMA增益
+ double rate_decrease_interval = 4;//速率降低间隔，也就是在降速的时候多久降速一次
+@@ -553,6 +558,12 @@
+ 	config.summaryBytes = cbap_summary_bytes;
+ 	config.grantBytes = cbap_grant_bytes;
+ 	config.txTraceTrackingPackets = cbap_tx_trace_tracking_packets;
++	config.increasePolicy = cbap_increase_policy;
++	config.increaseFraction = cbap_increase_fraction;
++	config.increaseAbsoluteBps = cbap_increase_absolute_bps;
++	config.scenario = scenario_name;
++	config.algorithm = algorithm_name;
++	config.cbapVersion = cbap_version;
+ 	if (!cbap_enable){
+ 		RdmaHw::ConfigureCbap(config, cbap_links, cbap_flow_paths);
+ 		return;
+@@ -708,6 +719,7 @@
+ 		output << "time_ns,epoch,batch_id,flow_id,phase_before,"
+ 			"phase_after,old_rate_bps,target_rate_bps,new_rate_bps,"
+ 			"reason,root_id,feedback_age_ns,credit_remaining_bytes,"
++			"protection_floor_bps,rebalance_start_ns,rebalance_end_ns,"
+ 			"stale_feedback,capacity_valid\n";
+ 		const vector<RdmaHw::CbapRateRecord> &rows =
+ 			RdmaHw::GetCbapRateRecords();
+@@ -718,11 +730,38 @@
+ 				<< r.phaseAfter << ',' << r.oldRateBps << ','
+ 				<< r.targetRateBps << ',' << r.newRateBps << ','
+ 				<< r.reason << ',' << r.rootId << ','
+-				<< r.feedbackAgeNs << ',' << r.creditRemainingBytes
+-				<< ',' << r.staleFeedback << ',' << r.capacityValid
++				<< r.feedbackAgeNs << ',' << r.creditRemainingBytes << ','
++				<< r.protectionFloorBps << ',' << r.rebalanceStartNs << ','
++				<< r.rebalanceEndNs << ',' << r.staleFeedback << ',' << r.capacityValid
+ 				<< '\n';
+ 		}
+ 	}
++	if (!cbap_increase_audit_file.empty()){
++		ofstream output(cbap_increase_audit_file.c_str());
++		output << "timestamp_ns,scenario,algorithm,cbap_version,"
++			"increase_policy,flow_id,batch_id,phase,"
++			"current_rate_before_bps,target_rate_bps,max_rate_bps,"
++			"fractional_candidate_bps,absolute_candidate_bps,"
++			"selected_delta_bps,new_rate_bps,stable_epoch_count,"
++			"feedback_age_ns,stale_feedback,limiting_link,reason\n";
++		const vector<RdmaHw::CbapIncreaseRecord> &rows =
++			RdmaHw::GetCbapIncreaseRecords();
++		for (uint32_t i = 0; i < rows.size(); ++i){
++			const RdmaHw::CbapIncreaseRecord &r = rows[i];
++			output << r.timestampNs << ',' << r.scenario << ','
++				<< r.algorithm << ',' << r.cbapVersion << ','
++				<< r.increasePolicy << ',' << r.flowId << ','
++				<< r.batchId << ',' << r.phase << ','
++				<< r.currentRateBeforeBps << ',' << r.targetRateBps
++				<< ',' << r.maxRateBps << ','
++				<< r.fractionalCandidateBps << ','
++				<< r.absoluteCandidateBps << ','
++				<< r.selectedDeltaBps << ',' << r.newRateBps << ','
++				<< r.stableEpochCount << ',' << r.feedbackAgeNs << ','
++				<< r.staleFeedback << ',' << r.limitingLink << ','
++				<< r.reason << '\n';
++		}
++	}
+ 	if (!cbap_flow_state_file.empty()){
+ 		ofstream output(cbap_flow_state_file.c_str());
+ 		output << "flow_id,batch_id,application_ready_ns,"
+@@ -2227,6 +2266,16 @@
+ 				conf>>cbap_admission_file;
+ 			else if(key.compare("CBAP_RATE_TRANSITION_FILE")==0)
+ 				conf>>cbap_rate_transition_file;
++			else if(key.compare("CBAP_INCREASE_AUDIT_FILE")==0)
++				conf>>cbap_increase_audit_file;
++			else if(key.compare("CBAP_INCREASE_POLICY")==0)
++				conf>>cbap_increase_policy;
++			else if(key.compare("CBAP_INCREASE_FRACTION")==0)
++				conf>>cbap_increase_fraction;
++			else if(key.compare("CBAP_INCREASE_ABSOLUTE_BPS")==0)
++				conf>>cbap_increase_absolute_bps;
++			else if(key.compare("CBAP_VERSION")==0)
++				conf>>cbap_version;
+ 			else if(key.compare("CBAP_FLOW_STATE_FILE")==0)
+ 				conf>>cbap_flow_state_file;
+ 			else if(key.compare("CBAP_CONTROL_OVERHEAD_FILE")==0)
+@@ -2731,7 +2780,13 @@
+ 				!(cbap_epsilon_rate > 0) ||
+ 				cbap_priority >= QbbNetDevice::qCnt ||
+ 				cbap_max_wire_packet_bytes < packet_payload_size ||
+-				cbap_tx_trace_tracking_packets == 0)
++				cbap_tx_trace_tracking_packets == 0 ||
++				cbap_increase_policy >
++					RdmaHw::CBAP_INCREASE_ADAPTIVE_V11 ||
++				!std::isfinite(cbap_increase_fraction) ||
++				std::fabs(cbap_increase_fraction - 0.10) > 1e-12 ||
++				cbap_increase_absolute_bps != UINT64_C(2000000000) ||
++				cbap_version.empty())
+ 			ConfigError("invalid CBAP mode or configuration");
+ 	}else if (RdmaHw::IsCbapMode(cc_mode)){
+ 		ConfigError("CBAP CC_MODE requires CBAP_ENABLE=1");
+

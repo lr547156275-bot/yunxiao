@@ -1,0 +1,52 @@
+# Focused v1.3 change record
+#
+# The repository was already a large dirty working tree before this task.
+# This focused record intentionally excludes unrelated pre-existing hunks;
+# files_changed.txt and implementation_report.md provide the full inventory.
+
+--- simulation/src/point-to-point/model/rdma-hw.h
++++ simulation/src/point-to-point/model/rdma-hw.h
+@@
++ CC_MODE_CBAP_FULL_SCOPED_RATEFLOOR_FIX = 25
++ CBAP_RATE_FLOOR_ONE_PACKET_PER_EPOCH_LEGACY = 0
++ CBAP_RATE_FLOOR_EXACT_GRANT_PACING = 1
++ struct CbapAppliedRateAuditRecord { /* per-link post-apply fields */ };
+
+--- simulation/src/point-to-point/model/rdma-hw.cc
++++ simulation/src/point-to-point/model/rdma-hw.cc
+@@ SetCbapRate
++ if (exact)
++     newRate = requestedRate;
++ else
++     newRate = max(one_packet_per_epoch_floor, legacy_capped_rate);
++ if (exact && newRate == 0) {
++     qp->cbap.zeroGrantPaused = true;
++     qp->m_nextAvail = Simulator::GetMaximumSimulationTime();
++ }
+@@ packet pacing
++ packet_gap_ns = ceil(8 * wire_bytes * 1e9 / applied_rate_bps);
++ next_tx = max(now, last_actual_tx + packet_gap_ns);
+@@ audit
++ RecordCbapAppliedRateAudit();
++ applied_capacity_violation = applied_rate_sum > C_effective + tolerance;
+
+--- simulation/src/point-to-point/model/qbb-net-device.cc
++++ simulation/src/point-to-point/model/qbb-net-device.cc
+@@ DATA selection
++ skip QP when qp->cbap.zeroGrantPaused
+
+--- simulation/scratch/third.cc
++++ simulation/scratch/third.cc
+@@ config and output
++ CBAP_RATE_FLOOR_POLICY
++ CBAP_APPLIED_RATE_AUDIT_FILE
++ CBAP_RATEFLOOR_SEMANTIC_ZERO_TEST
++ applied_rate_audit.csv writer
+
+--- /dev/null
++++ cbap_exp_v13_ratefloor_fix/
+@@
++ deterministic cases and 5/25-run manifests
++ bounded, resumable manual runners
++ semantic/reduced analyzers and output checker
++ static tests, build records, and implementation documentation

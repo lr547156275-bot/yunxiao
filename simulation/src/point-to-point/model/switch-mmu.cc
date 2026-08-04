@@ -96,6 +96,12 @@ namespace ns3 {
 		uint32_t used = ingress_bytes[port][qIndex];
 		return used > reserve ? used - reserve : 0;
 	}
+	uint32_t SwitchMmu::GetPfcOccupancy(uint32_t port, uint32_t qIndex){
+		return GetSharedUsed(port, qIndex) + hdrm_bytes[port][qIndex];
+	}
+	bool SwitchMmu::IsPaused(uint32_t port, uint32_t qIndex) const {
+		return paused[port][qIndex] != 0;
+	}
 	bool SwitchMmu::ShouldSendCN(uint32_t ifindex, uint32_t qIndex){
 		if (qIndex == 0)
 			return false;

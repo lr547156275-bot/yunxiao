@@ -59,7 +59,7 @@ namespace ns3 {
 	uint32_t qbbHeader::GetSeq() const
 	{
 		return m_seq;
-	}
+	} 
 
 	uint16_t qbbHeader::GetSport() const{
 		return sport;
