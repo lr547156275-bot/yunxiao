@@ -222,6 +222,7 @@ public:
 		double migrationRiseBase;
 		double migrationRiseSkew;
 		uint32_t migrationMaxRtt;
+		bool migrationTrace;
 		std::string scenario;
 		std::string algorithm;
 		std::string cbapVersion;
@@ -252,6 +253,7 @@ public:
 			  migrationEnabled(false), migrationReleaseRatio(0.5),
 			  migrationDecayBase(0.30), migrationRiseBase(0.30),
 			  migrationRiseSkew(0.35), migrationMaxRtt(5),
+			  migrationTrace(false),
 			  scenario("unknown"), algorithm("unknown"),
 			  cbapVersion("v1") {}
 	};
@@ -1002,6 +1004,17 @@ public:
 	// Batches whose capacity migration has already been planned, so the
 	// epoch tick plans each batch exactly once after it releases.
 	static std::set<uint32_t> s_cbapSbaMigrationPlanned;
+	// Active-set fingerprint at the last migration replan.  Any change --
+	// a new batch arriving, a migrating flow finishing, any active-flow
+	// churn -- makes the next epoch recompute targets, so released
+	// capacity is never left stranded.
+	static std::set<uint32_t> s_cbapSbaMigrationActiveSet;
+	// Set when a migration deadline lapses; the next epoch replans before
+	// stepping any envelope, so an unreachable target is recomputed from
+	// the live link state instead of being chased forever.
+	static bool s_cbapSbaMigrationReplanPending;
+	static void ReplanCbapSbaMigrationTargets(uint64_t nowNs,
+			const char *reason);
 	static std::map<uint32_t, CbapFlowRuntime> s_cbapFlows;
 	static std::map<uint32_t, CbapScopeBaseFlowRuntime>
 		s_cbapScopeBaseFlows;
@@ -1049,7 +1062,6 @@ public:
 	// Capacity migration: plan targets at batch arrival, then advance
 	// the per-flow envelope once per control epoch.  See
 	// docs/cbap_sba_capacity_migration_design.md.
-	static void PlanCbapSbaMigration(uint32_t batchId, uint64_t nowNs);
 	static void EvaluateCbapSbaMigration(uint64_t nowNs);
 	static void EvaluateCbapV20Batches(uint64_t nowNs);
 	static void EvaluateCbapV20Lease(uint32_t groupId);
