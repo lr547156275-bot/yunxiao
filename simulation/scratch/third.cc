@@ -162,6 +162,10 @@ double cbap_migration_rise_base = 0.30;
 double cbap_migration_rise_skew = 0.35;
 uint32_t cbap_migration_max_rtt = 5;
 bool cbap_migration_trace = false;
+// Fixed application-layer rate cap for a background flow, so a target
+// background load level can be constructed (0 = disabled).
+uint32_t app_rate_cap_flow = 0;
+uint64_t app_rate_cap_bps = 0;
 double cbap_queue_target_fraction = 0.25;
 uint32_t cbap_tx_trace_tracking_packets = 4096;
 uint32_t cbap_increase_policy = RdmaHw::CBAP_INCREASE_LEGACY_V1;
@@ -1657,7 +1661,7 @@ void ApplyBackgroundRateCap(uint32_t src, uint32_t dip, uint16_t sport, uint16_t
 	Ptr<RdmaDriver> driver = n.Get(src)->GetObject<RdmaDriver>();
 	Ptr<RdmaQueuePair> qp = driver->m_rdma->GetQp(dip, sport, pg);
 	NS_ASSERT_MSG(qp, "background flow QP not found for cap");
-	qp->m_appRateCapBps = UINT64_C(8000000000);
+	qp->m_appRateCapBps = app_rate_cap_bps;
 }
 
 void ScheduleFlowInputs(){//开始规划流
@@ -1691,16 +1695,18 @@ void ScheduleFlowInputs(){//开始规划流
 		ApplicationContainer appCon = clientHelper.Install(n.Get(flow_input.src));//在install后会在源host上建立一个QP（怎么建立的可以去看文件rdma-client.cc中的void RdmaClient）
 		appCon.Start(Time(0));
 
-		// TEMPORARY (scheme1_sba S1 validation only): hard-code an
-		// 8Gbps application rate cap on flow 0, the background flow.
-		// This proves out RdmaHw::ChangeRate/UpdateNextAvail's new
-		// m_appRateCapBps clamp before a real flow-file column exists.
-		if (flow_input.idx == 0){
+		// Background flows in the CBAP-SBA scenarios need a fixed
+		// application-layer rate so a given background load level can
+		// actually be constructed: an unconstrained flow with no
+		// competitor climbs to line rate, it does not sit at 80%.
+		// APP_RATE_CAP_FLOW selects the flow, APP_RATE_CAP_BPS the rate.
+		if (app_rate_cap_bps > 0 && flow_input.idx == app_rate_cap_flow){
 			uint32_t capSrc = flow_input.src;
 			uint32_t capDip = serverAddress[flow_input.dst].Get();
 			uint16_t capSport = port;
 			uint16_t capPg = flow_input.pg;
-			Simulator::Schedule(NanoSeconds(1), &ApplyBackgroundRateCap, capSrc, capDip, capSport, capPg);
+			Simulator::Schedule(NanoSeconds(1), &ApplyBackgroundRateCap,
+				capSrc, capDip, capSport, capPg);
 		}
 
 		// get the next flow input
@@ -2777,6 +2783,10 @@ int main(int argc, char *argv[])
 				conf>>cbap_migration_max_rtt;
 			else if(key.compare("CBAP_MIGRATION_TRACE")==0)
 				conf>>cbap_migration_trace;
+			else if(key.compare("APP_RATE_CAP_FLOW")==0)
+				conf>>app_rate_cap_flow;
+			else if(key.compare("APP_RATE_CAP_BPS")==0)
+				conf>>app_rate_cap_bps;
 			else if(key.compare("CBAP_QUEUE_TARGET_FRACTION")==0)
 				conf>>cbap_queue_target_fraction;
 			else if(key.compare("CBAP_SCOPE_POLICY")==0)
