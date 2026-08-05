@@ -161,6 +161,7 @@ double cbap_migration_decay_base = 0.30;
 double cbap_migration_rise_base = 0.30;
 double cbap_migration_rise_skew = 0.35;
 uint32_t cbap_migration_max_rtt = 5;
+bool cbap_migration_trace = false;
 double cbap_queue_target_fraction = 0.25;
 uint32_t cbap_tx_trace_tracking_packets = 4096;
 uint32_t cbap_increase_policy = RdmaHw::CBAP_INCREASE_LEGACY_V1;
@@ -632,6 +633,7 @@ void ReadCbapInputs(){
 	config.migrationRiseBase = cbap_migration_rise_base;
 	config.migrationRiseSkew = cbap_migration_rise_skew;
 	config.migrationMaxRtt = cbap_migration_max_rtt;
+	config.migrationTrace = cbap_migration_trace;
 	config.scenario = scenario_name;
 	config.algorithm = algorithm_name;
 	config.cbapVersion = cbap_version;
@@ -2773,6 +2775,8 @@ int main(int argc, char *argv[])
 				conf>>cbap_migration_rise_skew;
 			else if(key.compare("CBAP_MIGRATION_MAX_RTT")==0)
 				conf>>cbap_migration_max_rtt;
+			else if(key.compare("CBAP_MIGRATION_TRACE")==0)
+				conf>>cbap_migration_trace;
 			else if(key.compare("CBAP_QUEUE_TARGET_FRACTION")==0)
 				conf>>cbap_queue_target_fraction;
 			else if(key.compare("CBAP_SCOPE_POLICY")==0)
@@ -3598,6 +3602,44 @@ int main(int argc, char *argv[])
 		// The simulation uses host serverAddress values for RDMA flows and
 		// separate 10.x.x.0/24 addresses for point-to-point connectivity.
 	nic_rate = get_nic_rate(n);
+
+	// Resolve and validate CBAP telemetry ports now that the topology and
+	// nbr2if exist (ReadCbapInputs runs before n.Create, so it cannot do
+	// this).  A telemetry-eligible CBAP link must name a real switch
+	// egress port: if it names a host, ReadCbapPort silently falls back to
+	// its static-capacity branch and every queue/ECN/PFC reading comes
+	// back 0, which looks like 'no congestion' but is really 'not
+	// measured'.
+	for (uint32_t ci = 0; ci < cbap_links.size(); ++ci){
+		const RdmaHw::BopMultilinkLink &cl = cbap_links[ci];
+		if (!cl.telemetryEligible)
+			continue;
+		if (cl.nodeId >= n.GetN())
+			ConfigError("CBAP telemetry link node out of range");
+		Ptr<Node> tnode = n.Get(cl.nodeId);
+		if (tnode->GetNodeType() != 1)
+			ConfigError("CBAP telemetry link node is not a switch");
+		if (cl.ifIndex == 0 || cl.ifIndex >= tnode->GetNDevices())
+			ConfigError("CBAP telemetry ifIndex out of range");
+		if (!DynamicCast<QbbNetDevice>(tnode->GetDevice(cl.ifIndex)))
+			ConfigError("CBAP telemetry ifIndex is not a QbbNetDevice");
+		int32_t peer = -1;
+		for (auto nb = nbr2if[tnode].begin(); nb != nbr2if[tnode].end();
+				++nb)
+			if (nb->second.idx == cl.ifIndex)
+				peer = (int32_t)nb->first->GetId();
+		uint64_t devRate = DynamicCast<QbbNetDevice>(
+			tnode->GetDevice(cl.ifIndex))->GetDataRate().GetBitRate();
+		std::cout << "CBAP_TELEMETRY_LINK link_id=" << cl.linkId
+			<< " node=" << cl.nodeId << " if=" << cl.ifIndex
+			<< " faces_node=" << peer
+			<< " dev_rate_bps=" << devRate
+			<< " cfg_capacity_bps=" << cl.capacityBps << std::endl;
+		if (peer < 0)
+			ConfigError("CBAP telemetry ifIndex has no topology peer");
+		if (devRate != cl.capacityBps)
+			ConfigError("CBAP telemetry capacity differs from device rate");
+	}
 
 	// config switch
 	for (uint32_t i = 0; i < node_num; i++){
