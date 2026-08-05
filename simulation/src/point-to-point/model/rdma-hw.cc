@@ -1605,7 +1605,8 @@ void RdmaHw::PlanCbapSbaBatch(uint32_t groupId)
 	const std::map<uint32_t, uint64_t> available =
 		GetCbapSbaAvailableCapacity();
 	std::map<uint32_t, uint64_t> grants = s_cbapSbaController.AdmitBatch(
-		groupId, group.commonReleaseNs, inputs, available);
+		groupId, group.commonReleaseNs, inputs, available,
+		s_cbapConfig.oldBatchWeight, s_cbapConfig.newBatchWeight);
 	NS_ASSERT_MSG(s_cbapSbaController.CheckConservation(groupId, available),
 		"CBAP-SBA batch admission violates link conservation");
 

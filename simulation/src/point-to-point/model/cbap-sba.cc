@@ -168,7 +168,8 @@ std::map<uint32_t, uint64_t> CbapSbaController::ProgressiveFill(
 std::map<uint32_t, uint64_t> CbapSbaController::AdmitBatch(
 		uint32_t batchId, uint64_t releaseTimeNs,
 		const std::vector<FlowInput> &flows,
-		const std::map<uint32_t, uint64_t> &availableCapacity)
+		const std::map<uint32_t, uint64_t> &availableCapacity,
+		double oldBatchWeight, double newBatchWeight)
 {
 	if (flows.empty())
 		throw std::invalid_argument("SBA batch is empty");
@@ -204,7 +205,20 @@ std::map<uint32_t, uint64_t> CbapSbaController::AdmitBatch(
 		ids.push_back(state.flowId);
 	}
 
-	std::map<uint32_t, uint64_t> grants = ProgressiveFill(ids, residual);
+	// Scheme-1 batch-to-batch reclaim redesign: aggregate 50:50 (by
+	// default) target weighting between this new batch and every
+	// pre-existing ("old") flow sharing a link, per-link.  All
+	// pre-existing batches are pooled into a single old weight rather
+	// than each holding its own share (see design notes).
+	std::map<uint32_t, uint64_t> newBatchResidual = residual;
+	if (oldBatchWeight > 0.0 && newBatchWeight > 0.0) {
+		double share = newBatchWeight / (oldBatchWeight + newBatchWeight);
+		for (std::map<uint32_t, uint64_t>::iterator link =
+				newBatchResidual.begin(); link != newBatchResidual.end(); ++link)
+			link->second = (uint64_t)std::floor(
+				(long double)link->second * share);
+	}
+	std::map<uint32_t, uint64_t> grants = ProgressiveFill(ids, newBatchResidual);
 	for (uint32_t i = 0; i < ids.size(); ++i) {
 		FlowState &flow = m_flows[ids[i]];
 		flow.grantRateBps = grants[flow.flowId];

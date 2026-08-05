@@ -62,7 +62,8 @@ public:
 	void Reset();
 	std::map<uint32_t, uint64_t> AdmitBatch(uint32_t batchId,
 		uint64_t releaseTimeNs, const std::vector<FlowInput> &flows,
-		const std::map<uint32_t, uint64_t> &availableCapacity);
+		const std::map<uint32_t, uint64_t> &availableCapacity,
+		double oldBatchWeight = 1.0, double newBatchWeight = 1.0);
 	std::vector<uint32_t> ReadmitHeld(uint32_t batchId, uint64_t nowNs,
 		const std::map<uint32_t, uint64_t> &availableCapacity,
 		const std::string &reason);
