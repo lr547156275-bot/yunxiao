@@ -205,6 +205,15 @@ public:
 		// calibrated against any measured distribution and must be
 		// revisited once S1-S6 first-feedback timestamps are available.
 		uint64_t sbaLeaseNs;
+		// Scheme-1 batch-to-batch reclaim redesign: dynamic per-link
+		// budget based on queue occupancy (independent of the
+		// portState qLow/qTarget/qHigh classification thresholds).
+		double budgetQLowFraction;
+		double budgetQHighFraction;
+		double maxDrainRatio;
+		// Batch-level target weights (old vs new) for the 50:50 split.
+		double oldBatchWeight;
+		double newBatchWeight;
 		std::string scenario;
 		std::string algorithm;
 		std::string cbapVersion;
@@ -229,6 +238,9 @@ public:
 			  delegationDiagnosticForceStaleEpochs(0),
 			  queueTargetFraction(0.25),
 			  sbaLeaseNs(UINT64_C(1000000)),
+			  budgetQLowFraction(0.5), budgetQHighFraction(1.0),
+			  maxDrainRatio(0.20), oldBatchWeight(1.0),
+			  newBatchWeight(1.0),
 			  scenario("unknown"), algorithm("unknown"),
 			  cbapVersion("v1") {}
 	};

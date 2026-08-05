@@ -147,6 +147,13 @@ string cbap_sba_event_file;
 // UNCALIBRATED (doc 3.3): fixed placeholder deadline, not derived from a
 // measured DCQCN/HPCC feedback blind-window distribution.
 uint64_t cbap_sba_lease_us = 1000;
+// Scheme-1 batch-to-batch reclaim redesign: dynamic per-link budget
+// and batch-level target weights (see cbap-sba design notes).
+double cbap_budget_q_low_fraction = 0.5;
+double cbap_budget_q_high_fraction = 1.0;
+double cbap_max_drain_ratio = 0.20;
+double cbap_old_batch_weight = 1.0;
+double cbap_new_batch_weight = 1.0;
 double cbap_queue_target_fraction = 0.25;
 uint32_t cbap_tx_trace_tracking_packets = 4096;
 uint32_t cbap_increase_policy = RdmaHw::CBAP_INCREASE_LEGACY_V1;
@@ -607,6 +614,11 @@ void ReadCbapInputs(){
 		cbap_delegation_diagnostic_force_stale_epochs;
 	config.queueTargetFraction = cbap_queue_target_fraction;
 	config.sbaLeaseNs = cbap_sba_lease_us * 1000;
+	config.budgetQLowFraction = cbap_budget_q_low_fraction;
+	config.budgetQHighFraction = cbap_budget_q_high_fraction;
+	config.maxDrainRatio = cbap_max_drain_ratio;
+	config.oldBatchWeight = cbap_old_batch_weight;
+	config.newBatchWeight = cbap_new_batch_weight;
 	config.scenario = scenario_name;
 	config.algorithm = algorithm_name;
 	config.cbapVersion = cbap_version;
@@ -2726,6 +2738,16 @@ int main(int argc, char *argv[])
 				conf>>cbap_sba_event_file;
 			else if(key.compare("CBAP_SBA_LEASE_US")==0)
 				conf>>cbap_sba_lease_us;
+			else if(key.compare("CBAP_BUDGET_Q_LOW_FRACTION")==0)
+				conf>>cbap_budget_q_low_fraction;
+			else if(key.compare("CBAP_BUDGET_Q_HIGH_FRACTION")==0)
+				conf>>cbap_budget_q_high_fraction;
+			else if(key.compare("CBAP_MAX_DRAIN_RATIO")==0)
+				conf>>cbap_max_drain_ratio;
+			else if(key.compare("CBAP_OLD_BATCH_WEIGHT")==0)
+				conf>>cbap_old_batch_weight;
+			else if(key.compare("CBAP_NEW_BATCH_WEIGHT")==0)
+				conf>>cbap_new_batch_weight;
 			else if(key.compare("CBAP_QUEUE_TARGET_FRACTION")==0)
 				conf>>cbap_queue_target_fraction;
 			else if(key.compare("CBAP_SCOPE_POLICY")==0)
