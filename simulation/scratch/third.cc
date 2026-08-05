@@ -1622,6 +1622,17 @@ void ReadFlowInput(){
 		NS_ASSERT(n.Get(flow_input.src)->GetNodeType() == 0 && n.Get(flow_input.dst)->GetNodeType() == 0);
 	}
 }//读取flow.txt文件中的flow特征
+// TEMPORARY (scheme1_sba S1 validation only): applies a fixed
+// application-layer rate cap, independent of any CC decision.
+// Simulator::Schedule needs a free function (this codebase predates
+// lambda support in its Schedule overloads).
+void ApplyBackgroundRateCap(uint32_t src, uint32_t dip, uint16_t sport, uint16_t pg){
+	Ptr<RdmaDriver> driver = n.Get(src)->GetObject<RdmaDriver>();
+	Ptr<RdmaQueuePair> qp = driver->m_rdma->GetQp(dip, sport, pg);
+	NS_ASSERT_MSG(qp, "background flow QP not found for cap");
+	qp->m_appRateCapBps = UINT64_C(8000000000);
+}
+
 void ScheduleFlowInputs(){//开始规划流
 	while (flow_input.idx < flow_num && Seconds(flow_input.start_time) == Simulator::Now()){//开始执行流
 		uint32_t port = portNumder[flow_input.src][flow_input.dst]++; // get a new port number
@@ -1662,14 +1673,7 @@ void ScheduleFlowInputs(){//开始规划流
 			uint32_t capDip = serverAddress[flow_input.dst].Get();
 			uint16_t capSport = port;
 			uint16_t capPg = flow_input.pg;
-			Simulator::Schedule(Time(0), [capSrc, capDip, capSport, capPg](){
-				Ptr<RdmaDriver> driver =
-					n.Get(capSrc)->GetObject<RdmaDriver>();
-				Ptr<RdmaQueuePair> qp =
-					driver->m_rdma->GetQp(capDip, capSport, capPg);
-				NS_ASSERT_MSG(qp, "background flow QP not found for cap");
-				qp->m_appRateCapBps = UINT64_C(8000000000);
-			});
+			Simulator::Schedule(Time(0), &ApplyBackgroundRateCap, capSrc, capDip, capSport, capPg);
 		}
 
 		// get the next flow input
