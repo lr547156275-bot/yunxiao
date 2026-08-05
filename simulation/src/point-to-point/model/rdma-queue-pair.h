@@ -24,6 +24,9 @@ public:
 	uint32_t m_win; // bound of on-the-fly packets
 	uint64_t m_baseRtt; // base RTT of this qp
 	DataRate m_max_rate; // max rate
+	// Application-imposed rate ceiling, independent of any congestion
+	// controller's decisions.  Zero (default) means no cap is applied.
+	uint64_t m_appRateCapBps;
 	bool m_var_win; // variable window size
 	Time m_nextAvail;	//< Soonest time of next send
 	uint32_t wp; // current window of packets

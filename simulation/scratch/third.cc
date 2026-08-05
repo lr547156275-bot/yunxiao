@@ -1653,6 +1653,25 @@ void ScheduleFlowInputs(){//开始规划流
 		ApplicationContainer appCon = clientHelper.Install(n.Get(flow_input.src));//在install后会在源host上建立一个QP（怎么建立的可以去看文件rdma-client.cc中的void RdmaClient）
 		appCon.Start(Time(0));
 
+		// TEMPORARY (scheme1_sba S1 validation only): hard-code an
+		// 8Gbps application rate cap on flow 0, the background flow.
+		// This proves out RdmaHw::ChangeRate/UpdateNextAvail's new
+		// m_appRateCapBps clamp before a real flow-file column exists.
+		if (flow_input.idx == 0){
+			uint32_t capSrc = flow_input.src;
+			uint32_t capDip = serverAddress[flow_input.dst].Get();
+			uint16_t capSport = port;
+			uint16_t capPg = flow_input.pg;
+			Simulator::Schedule(Time(0), [capSrc, capDip, capSport, capPg](){
+				Ptr<RdmaDriver> driver =
+					n.Get(capSrc)->GetObject<RdmaDriver>();
+				Ptr<RdmaQueuePair> qp =
+					driver->m_rdma->GetQp(capDip, capSport, capPg);
+				NS_ASSERT_MSG(qp, "background flow QP not found for cap");
+				qp->m_appRateCapBps = UINT64_C(8000000000);
+			});
+		}
+
 		// get the next flow input
 		flow_input.idx++;
 		ReadFlowInput();//也就是说按仿真时间一条条启动，不是一次性启动的

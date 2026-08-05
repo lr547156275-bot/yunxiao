@@ -6199,12 +6199,20 @@ void RdmaHw::UpdateNextAvail(Ptr<RdmaQueuePair> qp, Time interframeGap, uint32_t
 			CbapPacketGapNs(pkt_size, qp->m_rate.GetBitRate()));
 	}else if (m_rateBound)
 		sendingTime = interframeGap + Seconds(qp->m_rate.CalculateTxTime(pkt_size));
-	else
-		sendingTime = interframeGap + Seconds(qp->m_max_rate.CalculateTxTime(pkt_size));
+	else{
+		DataRate uncapped = qp->m_max_rate;
+		if (qp->m_appRateCapBps > 0 &&
+				uncapped.GetBitRate() > qp->m_appRateCapBps)
+			uncapped = DataRate(qp->m_appRateCapBps);
+		sendingTime = interframeGap + Seconds(uncapped.CalculateTxTime(pkt_size));
+	}
 	qp->m_nextAvail = Simulator::Now() + sendingTime;
 }
 
 void RdmaHw::ChangeRate(Ptr<RdmaQueuePair> qp, DataRate new_rate){
+	if (qp->m_appRateCapBps > 0 &&
+			new_rate.GetBitRate() > qp->m_appRateCapBps)
+		new_rate = DataRate(qp->m_appRateCapBps);
 	#if 1
 	if (qp->cbap.enabled){
 		Time next = Simulator::Now();
