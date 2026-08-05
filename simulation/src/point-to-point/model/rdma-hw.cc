@@ -905,33 +905,32 @@ void RdmaHw::DeliverCbapPortSummary(uint32_t linkId,
 		record.portState == CBAP_PORT_STABLE ?
 			runtime.clearStableEpochs + 1 : 0;
 	// Scheme-1 batch-to-batch reclaim redesign (dynamic per-link
-	// budget): independent of rho and of the portState qLow/qTarget/
-	// qHigh classification thresholds above.  Below budgetQHigh the
-	// link gets full capacity; at or above it, the budget is throttled
-	// by a bounded drain rate and recovers fully once queue drops back
-	// below budgetQHigh (two-sided, unlike the legacy one-sided decay).
-	uint64_t budgetQLow = (uint64_t)std::floor(
+	// budget): a RED-style three-region tolerance band on queue
+	// occupancy, applied to the NEW-FLOW ADMISSION BUDGET (not to
+	// existing flows' ECN rate reduction, which DCQCN still owns).
+	// Independent of rho and of the portState qLow/qTarget/qHigh
+	// classification thresholds above.
+	//   Q <  Qmin          -> full residual capacity
+	//   Qmin <= Q < Qmax   -> continuous linear decay toward the floor
+	//   Q >= Qmax          -> floor; stop releasing extra capacity
+	// The decay is continuous at both boundaries (0 at Qmin, exactly
+	// maxDrainRatio at Qmax), so there is no step discontinuity.
+	uint64_t budgetQMin = (uint64_t)std::floor(
 		s_cbapConfig.budgetQLowFraction * qEcn);
-	uint64_t budgetQHigh = (uint64_t)std::floor(
+	uint64_t budgetQMax = (uint64_t)std::floor(
 		s_cbapConfig.budgetQHighFraction * qEcn);
-	long double effective;
-	if (record.queueBytes < budgetQHigh){
-		effective = (long double)snapshot.capacityBps -
-			runtime.config.backgroundBps;
-	}else{
-		uint64_t drainHorizon = std::max(s_cbapConfig.controlDelayNs,
-			2 * s_cbapConfig.controlEpochNs);
-		long double maxDrainRate = s_cbapConfig.maxDrainRatio *
-			(long double)snapshot.capacityBps;
-		long double queueAboveTarget = record.queueBytes > budgetQLow ?
-			(long double)(record.queueBytes - budgetQLow) : 0.0L;
-		long double drainRate = std::min(maxDrainRate,
-			queueAboveTarget * 8.0L * 1e9L / drainHorizon);
-		effective = std::max(
-			(long double)snapshot.capacityBps * (1.0L - s_cbapConfig.maxDrainRatio),
-			(long double)snapshot.capacityBps - drainRate) -
-			runtime.config.backgroundBps;
-	}
+	long double decayFraction;
+	if (record.queueBytes < budgetQMin)
+		decayFraction = 0.0L;
+	else if (budgetQMax > budgetQMin && record.queueBytes < budgetQMax)
+		decayFraction = s_cbapConfig.maxDrainRatio *
+			(long double)(record.queueBytes - budgetQMin) /
+			(long double)(budgetQMax - budgetQMin);
+	else
+		decayFraction = s_cbapConfig.maxDrainRatio;
+	long double effective =
+		(long double)snapshot.capacityBps * (1.0L - decayFraction) -
+		runtime.config.backgroundBps;
 	effective = std::max(0.0L, effective);
 	if (record.portState == CBAP_PORT_MIXED_OR_UNCERTAIN)
 		effective = std::min(effective,
