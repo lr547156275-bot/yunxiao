@@ -214,6 +214,14 @@ public:
 		// Batch-level target weights (old vs new) for the 50:50 split.
 		double oldBatchWeight;
 		double newBatchWeight;
+		// Capacity migration (docs/cbap_sba_capacity_migration_design.md).
+		// Disabled by default so existing baselines are untouched.
+		bool migrationEnabled;
+		double migrationReleaseRatio;
+		double migrationDecayBase;
+		double migrationRiseBase;
+		double migrationRiseSkew;
+		uint32_t migrationMaxRtt;
 		std::string scenario;
 		std::string algorithm;
 		std::string cbapVersion;
@@ -241,6 +249,9 @@ public:
 			  budgetQLowFraction(0.5), budgetQHighFraction(1.0),
 			  maxDrainRatio(0.20), oldBatchWeight(1.0),
 			  newBatchWeight(1.0),
+			  migrationEnabled(false), migrationReleaseRatio(0.5),
+			  migrationDecayBase(0.30), migrationRiseBase(0.30),
+			  migrationRiseSkew(0.35), migrationMaxRtt(5),
 			  scenario("unknown"), algorithm("unknown"),
 			  cbapVersion("v1") {}
 	};
@@ -1032,6 +1043,11 @@ public:
 	static void EvaluateCbapSbaReadmission(uint64_t nowNs,
 			const std::string &reason);
 	static void EvaluateCbapSbaLease(uint64_t nowNs);
+	// Capacity migration: plan targets at batch arrival, then advance
+	// the per-flow envelope once per control epoch.  See
+	// docs/cbap_sba_capacity_migration_design.md.
+	static void PlanCbapSbaMigration(uint32_t batchId, uint64_t nowNs);
+	static void EvaluateCbapSbaMigration(uint64_t nowNs);
 	static void EvaluateCbapV20Batches(uint64_t nowNs);
 	static void EvaluateCbapV20Lease(uint32_t groupId);
 	static void FinalizeCbapV20Lease(uint32_t groupId);

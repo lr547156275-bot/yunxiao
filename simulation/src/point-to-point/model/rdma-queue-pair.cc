@@ -297,6 +297,15 @@ RdmaQueuePair::RdmaQueuePair(uint16_t pg, Ipv4Address _sip, Ipv4Address _dip, ui
 	cbap.sbaHandoffCount = 0;
 	cbap.sbaLeaseExpiryNs = 0;
 	cbap.sbaLeaseExpiryCount = 0;
+	cbap.migrationActive = false;
+	cbap.migrationIsOldFlow = false;
+	cbap.migrationTargetBps = 0;
+	cbap.migrationEnvelopeBps = 0;
+	cbap.migrationStartNs = 0;
+	cbap.migrationRetargetCount = 0;
+	cbap.migrationBreachCount = 0;
+	cbap.migrationMaxBreachBps = 0;
+	cbap.migrationBreachBytes = 0;
 }
 
 void RdmaQueuePair::SetSize(uint64_t size){

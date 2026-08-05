@@ -756,6 +756,7 @@ void RdmaHw::CbapEpochTick()
 	uint64_t now = Simulator::Now().GetTimeStep();
 	EvaluateCbapSbaReadmission(now, "control_tick");
 	EvaluateCbapSbaLease(now);
+	EvaluateCbapSbaMigration(now);
 	for (std::map<uint32_t, CbapFlowRuntime>::iterator flow =
 			s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow){
 		if (!flow->second.active || flow->second.finished ||
@@ -1676,6 +1677,10 @@ void RdmaHw::PlanCbapSbaBatch(uint32_t groupId)
 		s_cbapBatchGrantMessages[groupId]++;
 	}
 
+	// Synchronized capacity handover: decide both sides' targets now,
+	// in the same epoch as the admission grant.
+	PlanCbapSbaMigration(groupId, group.commonReleaseNs);
+
 	Simulator::Schedule(NanoSeconds(group.earliestReleaseNs -
 		Simulator::Now().GetTimeStep()), &RdmaHw::PlanRoundGroup, groupId);
 }
@@ -1752,6 +1757,193 @@ void RdmaHw::EvaluateCbapSbaLease(uint64_t nowNs)
 		flow->second.hw->HandoffCbapSbaFlow(qp, nowNs);
 	}
 }
+
+// Capacity migration: at batch arrival, compute synchronized targets
+// for the old flows (release eta of their current aggregate) and the
+// new batch (everything the link has left after that release).  See
+// docs/cbap_sba_capacity_migration_design.md sections 3 and 6.
+void RdmaHw::PlanCbapSbaMigration(uint32_t batchId, uint64_t nowNs)
+{
+	if (!s_cbapConfig.migrationEnabled)
+		return;
+	const std::map<uint32_t, uint64_t> available =
+		GetCbapSbaAvailableCapacity();
+	// One pass over every SBA flow, bucketed per link.  No link->flow
+	// reverse index exists, so gather everything we need in one scan.
+	std::map<uint32_t, uint64_t> oldAggregateBps;
+	std::map<uint32_t, std::vector<uint32_t> > oldFlowsByLink;
+	std::map<uint32_t, std::vector<uint32_t> > newFlowsByLink;
+	for (std::map<uint32_t, CbapFlowRuntime>::const_iterator flow =
+			s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow) {
+		if (!flow->second.active || flow->second.finished ||
+				!flow->second.qp || !flow->second.qp->cbap.sbaEnabled)
+			continue;
+		const std::vector<uint32_t> &path = s_cbapFlowPaths[flow->first];
+		bool isNew = flow->second.batchId == batchId;
+		uint64_t rate = flow->second.qp->m_rate.GetBitRate();
+		for (uint32_t hop = 0; hop < path.size(); ++hop) {
+			if (isNew) {
+				newFlowsByLink[path[hop]].push_back(flow->first);
+			} else {
+				oldFlowsByLink[path[hop]].push_back(flow->first);
+				oldAggregateBps[path[hop]] += rate;
+			}
+		}
+	}
+	// Per-link targets: R_old* = (1-eta)*R_old, R_new* = C - R_old*.
+	// A flow crossing several links takes the tightest of them.
+	std::map<uint32_t, uint64_t> oldTarget;
+	std::map<uint32_t, uint64_t> newTarget;
+	for (std::map<uint32_t, uint64_t>::const_iterator link =
+			available.begin(); link != available.end(); ++link) {
+		if (!newFlowsByLink.count(link->first))
+			continue;
+		uint64_t oldAggregate = oldAggregateBps.count(link->first) ?
+			oldAggregateBps[link->first] : 0;
+		uint64_t oldShare = (uint64_t)std::floor(
+			(1.0L - s_cbapConfig.migrationReleaseRatio) *
+			(long double)oldAggregate);
+		uint64_t newShare = link->second > oldShare ?
+			link->second - oldShare : 0;
+		const std::vector<uint32_t> &olds = oldFlowsByLink[link->first];
+		const std::vector<uint32_t> &news = newFlowsByLink[link->first];
+		// Even split within each side; ProgressiveFill already ran for
+		// the new batch's admission grant, this only sets the envelope
+		// destination each side converges toward.
+		if (!olds.empty()) {
+			uint64_t per = oldShare / olds.size();
+			for (uint32_t i = 0; i < olds.size(); ++i)
+				if (!oldTarget.count(olds[i]) || oldTarget[olds[i]] > per)
+					oldTarget[olds[i]] = per;
+		}
+		if (!news.empty()) {
+			uint64_t per = newShare / news.size();
+			for (uint32_t i = 0; i < news.size(); ++i)
+				if (!newTarget.count(news[i]) || newTarget[news[i]] > per)
+					newTarget[news[i]] = per;
+		}
+	}
+	// Arm the envelope on both sides in the same epoch: this is the
+	// 'RTT-synchronized handover' -- the decision is simultaneous even
+	// though the rates converge over several RTTs.
+	for (std::map<uint32_t, uint64_t>::const_iterator it = oldTarget.begin();
+			it != oldTarget.end(); ++it) {
+		Ptr<RdmaQueuePair> qp = s_cbapFlows[it->first].qp;
+		RdmaHw *hw = s_cbapFlows[it->first].hw;
+		if (!qp || !hw)
+			continue;
+		qp->cbap.migrationActive = true;
+		qp->cbap.migrationIsOldFlow = true;
+		qp->cbap.migrationTargetBps = std::max(it->second,
+			(uint64_t)hw->m_minRate.GetBitRate());
+		qp->cbap.migrationEnvelopeBps = qp->m_rate.GetBitRate();
+		qp->cbap.migrationStartNs = nowNs;
+	}
+	for (std::map<uint32_t, uint64_t>::const_iterator it = newTarget.begin();
+			it != newTarget.end(); ++it) {
+		Ptr<RdmaQueuePair> qp = s_cbapFlows[it->first].qp;
+		RdmaHw *hw = s_cbapFlows[it->first].hw;
+		if (!qp || !hw)
+			continue;
+		qp->cbap.migrationActive = true;
+		qp->cbap.migrationIsOldFlow = false;
+		qp->cbap.migrationTargetBps = std::max(it->second,
+			(uint64_t)hw->m_minRate.GetBitRate());
+		qp->cbap.migrationEnvelopeBps = qp->m_rate.GetBitRate();
+		qp->cbap.migrationStartNs = nowNs;
+	}
+}
+
+// Capacity migration, per control epoch: advance each migrating flow's
+// envelope toward its target with a queue-pressure-dependent step, then
+// clamp the live rate.  Coefficients follow design doc section 4:
+// f_inc > f_dec when the queue is idle (close the gap fast), equal
+// mid-band, f_inc < f_dec at/above Qmax (net drain).
+void RdmaHw::EvaluateCbapSbaMigration(uint64_t nowNs)
+{
+	if (!s_cbapConfig.migrationEnabled)
+		return;
+	for (std::map<uint32_t, CbapFlowRuntime>::iterator flow =
+			s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow) {
+		if (!flow->second.active || flow->second.finished ||
+				!flow->second.qp || !flow->second.hw ||
+				!flow->second.qp->cbap.migrationActive)
+			continue;
+		Ptr<RdmaQueuePair> qp = flow->second.qp;
+		// Queue pressure u over this flow's tightest link: 0 = idle,
+		// 1 = at/above Qmax.
+		long double pressure = 0.0L;
+		const std::vector<uint32_t> &path = s_cbapFlowPaths[flow->first];
+		for (uint32_t hop = 0; hop < path.size(); ++hop) {
+			std::map<uint32_t, CbapLinkRuntime>::const_iterator link =
+				s_cbapLinks.find(path[hop]);
+			if (link == s_cbapLinks.end() || !link->second.initialized)
+				continue;
+			uint64_t qEcn = link->second.config.ecnThresholdBytes;
+			long double qMin = s_cbapConfig.budgetQLowFraction * qEcn;
+			long double qMax = s_cbapConfig.budgetQHighFraction * qEcn;
+			long double q = (long double)link->second.latest.queueBytes;
+			long double u = qMax > qMin ? (q - qMin) / (qMax - qMin) : 1.0L;
+			u = std::max(0.0L, std::min(1.0L, u));
+			pressure = std::max(pressure, u);
+		}
+		long double step;
+		if (qp->cbap.migrationIsOldFlow) {
+			step = s_cbapConfig.migrationDecayBase;
+		} else {
+			// f_inc = base * (1 + skew*(1-2u)): above base when idle,
+			// equal to base mid-band, below base at Qmax.
+			step = s_cbapConfig.migrationRiseBase *
+				(1.0L + s_cbapConfig.migrationRiseSkew *
+				(1.0L - 2.0L * pressure));
+		}
+		step = std::max(0.0L, std::min(1.0L, step));
+		// Exponential approach to the target.
+		long double envelope = (long double)qp->cbap.migrationEnvelopeBps;
+		long double target = (long double)qp->cbap.migrationTargetBps;
+		envelope += step * (target - envelope);
+		uint64_t minRate = flow->second.hw ?
+			flow->second.hw->m_minRate.GetBitRate() : 1;
+		// Never let the envelope reach zero: UpdateNextAvail asserts on a
+		// zero pacing rate.
+		qp->cbap.migrationEnvelopeBps = std::max((uint64_t)minRate,
+			(uint64_t)std::floor(envelope));
+		// Bounded-error accounting: DCQCN may have exceeded the envelope
+		// since the previous epoch (design doc section 9).
+		uint64_t live = qp->m_rate.GetBitRate();
+		if (live > qp->cbap.migrationEnvelopeBps) {
+			uint64_t breach = live - qp->cbap.migrationEnvelopeBps;
+			qp->cbap.migrationBreachCount++;
+			if (breach > qp->cbap.migrationMaxBreachBps)
+				qp->cbap.migrationMaxBreachBps = breach;
+			qp->cbap.migrationBreachBytes += (uint64_t)(
+				(long double)breach * s_cbapConfig.controlEpochNs /
+				(8.0L * 1e9L));
+			flow->second.hw->ChangeRate(qp,
+				DataRate(qp->cbap.migrationEnvelopeBps));
+		}
+		// Convergence, or a retarget when the deadline passes.  Never
+		// simply drop the cap on timeout -- that would let the old flow
+		// snap back and recreate the stranded-capacity problem.
+		uint64_t gap = qp->cbap.migrationEnvelopeBps >
+			qp->cbap.migrationTargetBps ?
+			qp->cbap.migrationEnvelopeBps - qp->cbap.migrationTargetBps :
+			qp->cbap.migrationTargetBps - qp->cbap.migrationEnvelopeBps;
+		bool converged = qp->cbap.migrationTargetBps == 0 ? true :
+			gap * 100 < qp->cbap.migrationTargetBps;
+		uint64_t deadline = qp->cbap.migrationStartNs +
+			(uint64_t)s_cbapConfig.migrationMaxRtt *
+			std::max(qp->m_baseRtt, s_cbapConfig.controlEpochNs);
+		if (converged) {
+			qp->cbap.migrationActive = false;
+		} else if (nowNs >= deadline) {
+			qp->cbap.migrationRetargetCount++;
+			qp->cbap.migrationStartNs = nowNs;
+		}
+	}
+}
+
+
 
 void RdmaHw::PlanCbapBatch(uint32_t groupId)
 {
@@ -3603,6 +3795,9 @@ void RdmaHw::FinishCbapFlow(Ptr<RdmaQueuePair> qp)
 		flow->second.finished = true;
 	}
 	uint64_t finishNs = Simulator::Now().GetTimeStep();
+	// Release any capacity-migration envelope so a completed flow never
+	// leaves a stale cap behind.
+	qp->cbap.migrationActive = false;
 	const bool sbaFlow = qp->cbap.sbaEnabled;
 	if (sbaFlow)
 		s_cbapSbaController.Finish(qp->crfm.flowId, finishNs);

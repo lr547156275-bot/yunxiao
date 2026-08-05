@@ -154,6 +154,13 @@ double cbap_budget_q_high_fraction = 1.0;
 double cbap_max_drain_ratio = 0.20;
 double cbap_old_batch_weight = 1.0;
 double cbap_new_batch_weight = 1.0;
+// Capacity migration (docs/cbap_sba_capacity_migration_design.md).
+bool cbap_migration_enable = false;
+double cbap_migration_release_ratio = 0.5;
+double cbap_migration_decay_base = 0.30;
+double cbap_migration_rise_base = 0.30;
+double cbap_migration_rise_skew = 0.35;
+uint32_t cbap_migration_max_rtt = 5;
 double cbap_queue_target_fraction = 0.25;
 uint32_t cbap_tx_trace_tracking_packets = 4096;
 uint32_t cbap_increase_policy = RdmaHw::CBAP_INCREASE_LEGACY_V1;
@@ -619,6 +626,12 @@ void ReadCbapInputs(){
 	config.maxDrainRatio = cbap_max_drain_ratio;
 	config.oldBatchWeight = cbap_old_batch_weight;
 	config.newBatchWeight = cbap_new_batch_weight;
+	config.migrationEnabled = cbap_migration_enable;
+	config.migrationReleaseRatio = cbap_migration_release_ratio;
+	config.migrationDecayBase = cbap_migration_decay_base;
+	config.migrationRiseBase = cbap_migration_rise_base;
+	config.migrationRiseSkew = cbap_migration_rise_skew;
+	config.migrationMaxRtt = cbap_migration_max_rtt;
 	config.scenario = scenario_name;
 	config.algorithm = algorithm_name;
 	config.cbapVersion = cbap_version;
@@ -2748,6 +2761,18 @@ int main(int argc, char *argv[])
 				conf>>cbap_old_batch_weight;
 			else if(key.compare("CBAP_NEW_BATCH_WEIGHT")==0)
 				conf>>cbap_new_batch_weight;
+			else if(key.compare("CBAP_MIGRATION_ENABLE")==0)
+				conf>>cbap_migration_enable;
+			else if(key.compare("CBAP_MIGRATION_RELEASE_RATIO")==0)
+				conf>>cbap_migration_release_ratio;
+			else if(key.compare("CBAP_MIGRATION_DECAY_BASE")==0)
+				conf>>cbap_migration_decay_base;
+			else if(key.compare("CBAP_MIGRATION_RISE_BASE")==0)
+				conf>>cbap_migration_rise_base;
+			else if(key.compare("CBAP_MIGRATION_RISE_SKEW")==0)
+				conf>>cbap_migration_rise_skew;
+			else if(key.compare("CBAP_MIGRATION_MAX_RTT")==0)
+				conf>>cbap_migration_max_rtt;
 			else if(key.compare("CBAP_QUEUE_TARGET_FRACTION")==0)
 				conf>>cbap_queue_target_fraction;
 			else if(key.compare("CBAP_SCOPE_POLICY")==0)

@@ -413,6 +413,20 @@ public:
 		// measured blind-window distribution.  See CBAP_SBA_LEASE_NS.
 		uint64_t sbaLeaseExpiryNs;
 		uint32_t sbaLeaseExpiryCount;
+		// Capacity migration (docs/cbap_sba_capacity_migration_design.md):
+		// SBA layers a rate envelope over DCQCN during a batch handover.
+		// Effective send rate becomes min(DCQCN rate, envelope).
+		bool migrationActive;
+		bool migrationIsOldFlow;
+		uint64_t migrationTargetBps;
+		uint64_t migrationEnvelopeBps;
+		uint64_t migrationStartNs;
+		uint64_t migrationRetargetCount;
+		// Bounded-error instrumentation: DCQCN can exceed the envelope
+		// between two epoch corrections (design doc section 9).
+		uint64_t migrationBreachCount;
+		uint64_t migrationMaxBreachBps;
+		uint64_t migrationBreachBytes;
 	} cbap;
 
 	/***********
