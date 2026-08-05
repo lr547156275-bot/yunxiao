@@ -164,7 +164,7 @@ uint32_t cbap_migration_max_rtt = 5;
 bool cbap_migration_trace = false;
 // Fixed application-layer rate cap for a background flow, so a target
 // background load level can be constructed (0 = disabled).
-uint32_t app_rate_cap_flow = 0;
+std::set<uint32_t> app_rate_cap_flows;
 uint64_t app_rate_cap_bps = 0;
 double cbap_queue_target_fraction = 0.25;
 uint32_t cbap_tx_trace_tracking_packets = 4096;
@@ -1700,7 +1700,8 @@ void ScheduleFlowInputs(){//开始规划流
 		// actually be constructed: an unconstrained flow with no
 		// competitor climbs to line rate, it does not sit at 80%.
 		// APP_RATE_CAP_FLOW selects the flow, APP_RATE_CAP_BPS the rate.
-		if (app_rate_cap_bps > 0 && flow_input.idx == app_rate_cap_flow){
+		if (app_rate_cap_bps > 0 &&
+				app_rate_cap_flows.count(flow_input.idx) > 0){
 			uint32_t capSrc = flow_input.src;
 			uint32_t capDip = serverAddress[flow_input.dst].Get();
 			uint16_t capSport = port;
@@ -2783,8 +2784,21 @@ int main(int argc, char *argv[])
 				conf>>cbap_migration_max_rtt;
 			else if(key.compare("CBAP_MIGRATION_TRACE")==0)
 				conf>>cbap_migration_trace;
-			else if(key.compare("APP_RATE_CAP_FLOW")==0)
-				conf>>app_rate_cap_flow;
+			else if(key.compare("APP_RATE_CAP_FLOW")==0){
+				// Accepts a comma-separated list so a scenario with several
+				// background flows (e.g. one per bottleneck) can cap them all.
+				std::string capList;
+				conf>>capList;
+				app_rate_cap_flows.clear();
+				std::stringstream capss(capList);
+				std::string capTok;
+				while (std::getline(capss, capTok, ',')){
+					if (capTok.empty())
+						continue;
+					app_rate_cap_flows.insert(
+						(uint32_t)strtoul(capTok.c_str(), NULL, 10));
+				}
+			}
 			else if(key.compare("APP_RATE_CAP_BPS")==0)
 				conf>>app_rate_cap_bps;
 			else if(key.compare("CBAP_QUEUE_TARGET_FRACTION")==0)
