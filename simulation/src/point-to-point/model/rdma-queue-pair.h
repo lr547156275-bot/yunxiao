@@ -406,6 +406,10 @@ public:
 		uint64_t sbaLastAppliedRateBps;
 		uint64_t sbaFirstFeedbackNs;
 		uint32_t sbaHandoffCount;
+		// UNCALIBRATED: fixed conservative deadline, not derived from a
+		// measured blind-window distribution.  See CBAP_SBA_LEASE_NS.
+		uint64_t sbaLeaseExpiryNs;
+		uint32_t sbaLeaseExpiryCount;
 	} cbap;
 
 	/***********

@@ -199,6 +199,12 @@ public:
 		uint32_t handoffDiagnosticRecoveryUntilEpoch;
 		uint32_t delegationDiagnosticForceStaleEpochs;
 		double queueTargetFraction;
+		// UNCALIBRATED: SBA startup-admission deadline.  Doc section 3.3
+		// requires measuring the DCQCN/HPCC feedback blind window
+		// (median/p95/p99) before fixing H; this fixed value has not been
+		// calibrated against any measured distribution and must be
+		// revisited once S1-S6 first-feedback timestamps are available.
+		uint64_t sbaLeaseNs;
 		std::string scenario;
 		std::string algorithm;
 		std::string cbapVersion;
@@ -222,6 +228,7 @@ public:
 			  handoffDiagnosticRecoveryUntilEpoch(0),
 			  delegationDiagnosticForceStaleEpochs(0),
 			  queueTargetFraction(0.25),
+			  sbaLeaseNs(UINT64_C(1000000)),
 			  scenario("unknown"), algorithm("unknown"),
 			  cbapVersion("v1") {}
 	};
@@ -1012,6 +1019,7 @@ public:
 	static std::map<uint32_t, uint64_t> GetCbapSbaAvailableCapacity();
 	static void EvaluateCbapSbaReadmission(uint64_t nowNs,
 			const std::string &reason);
+	static void EvaluateCbapSbaLease(uint64_t nowNs);
 	static void EvaluateCbapV20Batches(uint64_t nowNs);
 	static void EvaluateCbapV20Lease(uint32_t groupId);
 	static void FinalizeCbapV20Lease(uint32_t groupId);

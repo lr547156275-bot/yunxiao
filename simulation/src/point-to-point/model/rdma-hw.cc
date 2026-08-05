@@ -755,6 +755,7 @@ void RdmaHw::CbapEpochTick()
 	s_cbapEpoch++;
 	uint64_t now = Simulator::Now().GetTimeStep();
 	EvaluateCbapSbaReadmission(now, "control_tick");
+	EvaluateCbapSbaLease(now);
 	for (std::map<uint32_t, CbapFlowRuntime>::iterator flow =
 			s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow){
 		if (!flow->second.active || flow->second.finished ||
@@ -1625,6 +1626,8 @@ void RdmaHw::PlanCbapSbaBatch(uint32_t groupId)
 			qp->m_nextAvail = Simulator::GetMaximumSimulationTime();
 		} else {
 			qp->cbap.zeroGrantPaused = false;
+			qp->cbap.sbaLeaseExpiryNs =
+				group.commonReleaseNs + s_cbapConfig.sbaLeaseNs;
 			runtime.hw->ChangeRate(qp, DataRate(grant));
 		}
 		uint32_t nic = runtime.hw->GetNicIdxOfQp(qp);
@@ -1698,10 +1701,35 @@ void RdmaHw::EvaluateCbapSbaReadmission(uint64_t nowNs,
 					nowNs - qp->cbap.zeroGrantPauseStartNs;
 			qp->cbap.zeroGrantPauseStartNs = 0;
 			qp->cbap.phase = RdmaQueuePair::CBAP_STARTUP_ADMISSION;
+			qp->cbap.sbaLeaseExpiryNs = nowNs + s_cbapConfig.sbaLeaseNs;
 			runtime.hw->ChangeRate(qp, DataRate(state->appliedRateBps));
 			uint32_t nic = runtime.hw->GetNicIdxOfQp(qp);
 			runtime.hw->m_nic[nic].dev->InvalidateAndRescheduleRdma();
 		}
+	}
+}
+
+void RdmaHw::EvaluateCbapSbaLease(uint64_t nowNs)
+{
+	// UNCALIBRATED backstop (doc section 3.3): if a flow's first-batch
+	// packets never trip ECN, no CNP ever arrives and OnActionableFeedback
+	// is never called from the RX path.  Without this, such a flow would
+	// stay in CBAP_STARTUP_ADMISSION forever.  s_cbapConfig.sbaLeaseNs is a
+	// fixed conservative placeholder, not a value derived from a measured
+	// blind-window distribution; it must be recalibrated once S1-S6
+	// first-feedback timestamps exist.
+	for (std::map<uint32_t, CbapFlowRuntime>::iterator flow =
+			s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow) {
+		if (!flow->second.active || flow->second.finished ||
+				!flow->second.qp || !flow->second.qp->cbap.sbaEnabled ||
+				flow->second.qp->cbap.handedOff)
+			continue;
+		Ptr<RdmaQueuePair> qp = flow->second.qp;
+		if (qp->cbap.phase != RdmaQueuePair::CBAP_STARTUP_ADMISSION ||
+				nowNs < qp->cbap.sbaLeaseExpiryNs)
+			continue;
+		qp->cbap.sbaLeaseExpiryCount++;
+		flow->second.hw->HandoffCbapSbaFlow(qp, nowNs);
 	}
 }
 

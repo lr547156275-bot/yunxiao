@@ -144,6 +144,9 @@ string cbap_envelope_link_file, cbap_envelope_flow_file;
 string cbap_incumbent_progress_file;
 string cbap_v20_batch_file, cbap_v20_flow_file;
 string cbap_sba_event_file;
+// UNCALIBRATED (doc 3.3): fixed placeholder deadline, not derived from a
+// measured DCQCN/HPCC feedback blind-window distribution.
+uint64_t cbap_sba_lease_us = 1000;
 double cbap_queue_target_fraction = 0.25;
 uint32_t cbap_tx_trace_tracking_packets = 4096;
 uint32_t cbap_increase_policy = RdmaHw::CBAP_INCREASE_LEGACY_V1;
@@ -603,6 +606,7 @@ void ReadCbapInputs(){
 	config.delegationDiagnosticForceStaleEpochs =
 		cbap_delegation_diagnostic_force_stale_epochs;
 	config.queueTargetFraction = cbap_queue_target_fraction;
+	config.sbaLeaseNs = cbap_sba_lease_us * 1000;
 	config.scenario = scenario_name;
 	config.algorithm = algorithm_name;
 	config.cbapVersion = cbap_version;
@@ -2697,6 +2701,8 @@ int main(int argc, char *argv[])
 				conf>>cbap_v20_flow_file;
 			else if(key.compare("CBAP_SBA_EVENT_FILE")==0)
 				conf>>cbap_sba_event_file;
+			else if(key.compare("CBAP_SBA_LEASE_US")==0)
+				conf>>cbap_sba_lease_us;
 			else if(key.compare("CBAP_QUEUE_TARGET_FRACTION")==0)
 				conf>>cbap_queue_target_fraction;
 			else if(key.compare("CBAP_SCOPE_POLICY")==0)
@@ -3296,7 +3302,8 @@ int main(int argc, char *argv[])
 				  cbap_rate_floor_policy !=
 					RdmaHw::CBAP_RATE_FLOOR_EXACT_GRANT_PACING ||
 				  cbap_scope_policy != RdmaHw::CBAP_SCOPE_ALWAYS ||
-				  cbap_handoff_enable)) ||
+				  cbap_handoff_enable ||
+				  cbap_sba_lease_us == 0)) ||
 				cbap_version.empty())
 			ConfigError("invalid CBAP mode or configuration");
 	}else if (RdmaHw::IsCbapMode(cc_mode)){
