@@ -210,8 +210,17 @@ std::map<uint32_t, uint64_t> CbapSbaController::AdmitBatch(
 	// pre-existing ("old") flow sharing a link, per-link.  All
 	// pre-existing batches are pooled into a single old weight rather
 	// than each holding its own share (see design notes).
+	bool hasOldFlows = false;
+	for (std::map<uint32_t, FlowState>::const_iterator existing =
+			m_flows.begin();
+			existing != m_flows.end() && !hasOldFlows; ++existing) {
+		if (existing->second.batchId != batchId &&
+				existing->second.state != FINISHED &&
+				existing->second.state != ADMISSION_HOLD)
+			hasOldFlows = true;
+	}
 	std::map<uint32_t, uint64_t> newBatchResidual = residual;
-	if (oldBatchWeight > 0.0 && newBatchWeight > 0.0) {
+	if (hasOldFlows && oldBatchWeight > 0.0 && newBatchWeight > 0.0) {
 		double share = newBatchWeight / (oldBatchWeight + newBatchWeight);
 		for (std::map<uint32_t, uint64_t>::iterator link =
 				newBatchResidual.begin(); link != newBatchResidual.end(); ++link)
