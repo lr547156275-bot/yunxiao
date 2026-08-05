@@ -43,6 +43,7 @@ uint32_t RdmaHw::s_cbapEpoch = 0;
 RdmaHw::CbapPortReadCallback RdmaHw::s_cbapPortRead;
 std::map<uint32_t, RdmaHw::CbapLinkRuntime> RdmaHw::s_cbapLinks;
 std::map<uint32_t, std::vector<uint32_t> > RdmaHw::s_cbapFlowPaths;
+std::set<uint32_t> RdmaHw::s_cbapSbaMigrationPlanned;
 std::map<uint32_t, RdmaHw::CbapFlowRuntime> RdmaHw::s_cbapFlows;
 std::map<uint32_t, RdmaHw::CbapScopeBaseFlowRuntime>
 	RdmaHw::s_cbapScopeBaseFlows;
@@ -252,6 +253,7 @@ void RdmaHw::ConfigureCbap(const CbapConfig &config,
 	s_cbapEpoch = 0;
 	s_cbapLinks.clear();
 	s_cbapFlowPaths = flowPaths;
+	s_cbapSbaMigrationPlanned.clear();
 	s_cbapFlows.clear();
 	s_cbapScopeBaseFlows.clear();
 	s_cbapV20Batches.clear();
@@ -756,6 +758,21 @@ void RdmaHw::CbapEpochTick()
 	uint64_t now = Simulator::Now().GetTimeStep();
 	EvaluateCbapSbaReadmission(now, "control_tick");
 	EvaluateCbapSbaLease(now);
+	// Plan a batch's migration on the first epoch after it actually
+	// releases -- at PlanCbapSbaBatch time the flows are not yet active
+	// and carry no real rate, so there would be nothing to migrate.
+	if (s_cbapConfig.migrationEnabled) {
+		std::set<uint32_t> liveBatches;
+		for (std::map<uint32_t, CbapFlowRuntime>::const_iterator flow =
+				s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow)
+			if (flow->second.active && !flow->second.finished &&
+					flow->second.qp && flow->second.qp->cbap.sbaEnabled)
+				liveBatches.insert(flow->second.batchId);
+		for (std::set<uint32_t>::const_iterator batch = liveBatches.begin();
+				batch != liveBatches.end(); ++batch)
+			if (s_cbapSbaMigrationPlanned.insert(*batch).second)
+				PlanCbapSbaMigration(*batch, now);
+	}
 	EvaluateCbapSbaMigration(now);
 	for (std::map<uint32_t, CbapFlowRuntime>::iterator flow =
 			s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow){
@@ -1676,10 +1693,6 @@ void RdmaHw::PlanCbapSbaBatch(uint32_t groupId)
 		s_cbapGrantMessages++;
 		s_cbapBatchGrantMessages[groupId]++;
 	}
-
-	// Synchronized capacity handover: decide both sides' targets now,
-	// in the same epoch as the admission grant.
-	PlanCbapSbaMigration(groupId, group.commonReleaseNs);
 
 	Simulator::Schedule(NanoSeconds(group.earliestReleaseNs -
 		Simulator::Now().GetTimeStep()), &RdmaHw::PlanRoundGroup, groupId);

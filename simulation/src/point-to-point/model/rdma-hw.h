@@ -999,6 +999,9 @@ public:
 	static CbapPortReadCallback s_cbapPortRead;
 	static std::map<uint32_t, CbapLinkRuntime> s_cbapLinks;
 	static std::map<uint32_t, std::vector<uint32_t> > s_cbapFlowPaths;
+	// Batches whose capacity migration has already been planned, so the
+	// epoch tick plans each batch exactly once after it releases.
+	static std::set<uint32_t> s_cbapSbaMigrationPlanned;
 	static std::map<uint32_t, CbapFlowRuntime> s_cbapFlows;
 	static std::map<uint32_t, CbapScopeBaseFlowRuntime>
 		s_cbapScopeBaseFlows;
