@@ -1673,7 +1673,7 @@ void ScheduleFlowInputs(){//开始规划流
 			uint32_t capDip = serverAddress[flow_input.dst].Get();
 			uint16_t capSport = port;
 			uint16_t capPg = flow_input.pg;
-			Simulator::Schedule(Time(0), &ApplyBackgroundRateCap, capSrc, capDip, capSport, capPg);
+			Simulator::Schedule(NanoSeconds(1), &ApplyBackgroundRateCap, capSrc, capDip, capSport, capPg);
 		}
 
 		// get the next flow input
