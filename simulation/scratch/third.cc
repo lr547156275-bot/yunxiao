@@ -297,6 +297,11 @@ bool cbap_packet_trace_truncated = false;
 uint64_t trace_total_bytes = 0;
 bool trace_truncated = false;
 uint64_t pfc_event_rows = 0, pfc_total_events = 0, pfc_last_sample_events = 0;
+// Per-egress-port PFC transition counts, keyed by (nodeId, ifIndex).  A
+// multi-bottleneck scenario needs to attribute PFC to the port that
+// generated it; the global counter above cannot do that.
+map<pair<uint32_t,uint32_t>, uint64_t> pfc_events_per_port;
+map<pair<uint32_t,uint32_t>, uint64_t> pfc_last_sample_per_port;
 map<uint64_t,uint32_t> pfc_states;
 map<pair<uint32_t,uint32_t>,uint64_t> trace_last_tx, trace_last_ecn;
 set<uint32_t> selected_flow_set;
@@ -1495,7 +1500,13 @@ void LinkTraceTick(){
 		double util=dt*8.0/(crfm_trace_sample_us*1e-6)/d->GetDataRate().GetBitRate();
 		uint64_t queue=d->GetQueue()->GetNBytesTotal();
 		uint64_t ecnDelta=ecn-trace_last_ecn[l];
-		uint64_t pfcDelta=pfc_total_events-pfc_last_sample_events;
+		// Per-port delta: with several monitored bottlenecks the global
+		// counter would report every port's PFC on every row.
+		uint64_t pfcNow=pfc_events_per_port.count(l)?
+			pfc_events_per_port[l]:0;
+		uint64_t pfcWas=pfc_last_sample_per_port.count(l)?
+			pfc_last_sample_per_port[l]:0;
+		uint64_t pfcDelta=pfcNow-pfcWas;
 		if (record){
 			UpdateRoundPeakQueue(queue);
 			RdmaHw::ObserveRoundBottleneck(queue, ecnDelta, pfcDelta);
@@ -1506,6 +1517,7 @@ void LinkTraceTick(){
 			DetailedCsvWrite(link_csv,lim,z.str());
 		}
 		trace_last_tx[l]=tx;trace_last_ecn[l]=ecn;
+		pfc_last_sample_per_port[l]=pfcNow;
 	}
 	pfc_last_sample_events=pfc_total_events;
 	Simulator::Schedule(MicroSeconds(crfm_trace_sample_us),&LinkTraceTick);
@@ -2268,6 +2280,8 @@ void get_pfc(FILE* fout, Ptr<QbbNetDevice> dev, uint32_t q_index, uint32_t type)
 		return;
 	pfc_states[key]=type;
 	pfc_total_events++;
+	pfc_events_per_port[make_pair(dev->GetNode()->GetId(),
+		dev->GetIfIndex())]++;
 	if (pfc_event_rows >= crfm_max_event_rows){
 		if (!trace_truncated){
 			trace_truncated = true;
@@ -3802,9 +3816,14 @@ int main(int argc, char *argv[])
 	SetupCbapPacketTrace();
 	if(selected_flow_set.size()>4)
 		ConfigError("ROUND_TRACE_SELECTED_FLOWS permits at most four flows");
-		if(round_mode && !bop_multilink_enable &&
+		// CBAP may monitor several bottleneck ports (each keeps its own
+		// control state and budget; nothing is merged across links).
+		// BOP keeps the original single-link requirement.
+		if(round_mode && !bop_multilink_enable && !cbap_enable &&
 				selected_link_set.size()!=1)
 			ConfigError("ROUND_TRACE_SELECTED_LINKS must select exactly one bottleneck");
+		if(round_mode && cbap_enable && selected_link_set.empty())
+			ConfigError("CBAP round mode requires at least one telemetry link");
 		if(round_mode && bop_multilink_enable &&
 				selected_link_set.empty())
 			ConfigError("BOP multilink mode requires controlled links");
