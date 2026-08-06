@@ -413,6 +413,9 @@ public:
 		// measured blind-window distribution.  See CBAP_SBA_LEASE_NS.
 		uint64_t sbaLeaseExpiryNs;
 		uint32_t sbaLeaseExpiryCount;
+		// Throttle for the app-cap trace so it prints once per millisecond
+		// per flow rather than once per packet.
+		uint64_t appCapTraceNextNs;
 		// Capacity migration (docs/cbap_sba_capacity_migration_design.md):
 		// SBA layers a rate envelope over DCQCN during a batch handover.
 		// Effective send rate becomes min(DCQCN rate, envelope).

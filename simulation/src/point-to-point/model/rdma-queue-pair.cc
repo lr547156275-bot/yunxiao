@@ -297,6 +297,7 @@ RdmaQueuePair::RdmaQueuePair(uint16_t pg, Ipv4Address _sip, Ipv4Address _dip, ui
 	cbap.sbaHandoffCount = 0;
 	cbap.sbaLeaseExpiryNs = 0;
 	cbap.sbaLeaseExpiryCount = 0;
+	cbap.appCapTraceNextNs = 0;
 	cbap.migrationActive = false;
 	cbap.migrationIsOldFlow = false;
 	cbap.migrationTargetBps = 0;

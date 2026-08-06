@@ -205,7 +205,10 @@ double pint_log_base = 1.05;//PINT对数量化底数
 double pint_prob = 1.0;//PINT概率
 double u_target = 0.95;//目标利用率
 uint32_t int_multi = 1;//INT头里的qLen的量化倍数
-bool rate_bound = true;//速率限制/即是否按照CC算出来的速率来限制nic发包速率
+bool rate_bound = true;
+// Trace controller rate vs application cap vs effective pacing rate
+// for capped flows.  Diagnostic only; off by default.
+bool app_cap_trace = false;//速率限制/即是否按照CC算出来的速率来限制nic发包速率
 
 uint32_t ack_high_prio = 0;//设置ack为高优先级
 uint64_t link_down_time = 0;//链路断开时间
@@ -2815,6 +2818,8 @@ int main(int argc, char *argv[])
 			}
 			else if(key.compare("APP_RATE_CAP_BPS")==0)
 				conf>>app_rate_cap_bps;
+			else if(key.compare("APP_CAP_TRACE")==0)
+				conf>>app_cap_trace;
 			else if(key.compare("CBAP_QUEUE_TARGET_FRACTION")==0)
 				conf>>cbap_queue_target_fraction;
 			else if(key.compare("CBAP_SCOPE_POLICY")==0)
@@ -3758,6 +3763,7 @@ int main(int argc, char *argv[])
 			rdmaHw->SetAttribute("SampleFeedback", BooleanValue(sample_feedback));
 			rdmaHw->SetAttribute("TargetUtil", DoubleValue(u_target));
 			rdmaHw->SetAttribute("RateBound", BooleanValue(rate_bound));
+			rdmaHw->SetAttribute("AppCapTrace", BooleanValue(app_cap_trace));
 			rdmaHw->SetAttribute("RoundMode", BooleanValue(round_mode));
 			rdmaHw->SetAttribute("BopRho", DoubleValue(bop_rho));
 			rdmaHw->SetAttribute("BopBackgroundBps", UintegerValue(bop_background_bps));

@@ -108,36 +108,66 @@ def link_metrics(d):
 
 
 def bg_rate_metrics(d):
-    """Background protection metrics from the per-flow rate trace.
+    """Background protection metrics from the per-flow trace.
 
     Requires flow 0 (the background flow) to be in ROUND_TRACE_SELECTED_FLOWS.
+
+    Deliberately does NOT use the current_rate column: that writes
+    q->m_rate (third.cc FlowTraceTick), which is the CONTROLLER's rate, not
+    what reaches the wire.  Under DCQCN with no congestion feedback m_rate
+    sits at line rate while UpdateNextAvail paces to the application cap, so
+    current_rate overstates delivered throughput by the cap ratio.  Delivered
+    rate is differentiated from snd_una, which counts acknowledged bytes.
     """
     rows = read_csv(os.path.join(d, 'selected_flow_timeseries.csv'))
-    bg = [r for r in rows if r.get('flow_id') == '0']
-    if not bg:
+    bg = [r for r in rows if r.get('flow_id') == '0'
+          and r.get('snd_una') not in (None, '')]
+    if len(bg) < 3:
         return {}
-    pre = [float(r['current_rate']) for r in bg
-           if float(r['time']) < WINDOW_START]
-    post = [(float(r['time']), float(r['current_rate'])) for r in bg
-            if float(r['time']) >= WINDOW_START]
-    if not pre or not post:
+    samples = sorted((float(r['time']), int(r['snd_una'])) for r in bg)
+
+    def delivered(lo, hi):
+        """Mean delivered rate (bps) over [lo, hi) from acked-byte progress."""
+        win = [s for s in samples if lo <= s[0] < hi]
+        if len(win) < 2:
+            return NAN
+        dt = win[-1][0] - win[0][0]
+        db = win[-1][1] - win[0][1]
+        return (db * 8.0 / dt) if dt > 0 else NAN
+
+    # Baseline: steady state before the collective, skipping the flow's own
+    # ramp-up right after it starts.
+    baseline = delivered(WINDOW_START - 0.5, WINDOW_START)
+    if isnan(baseline) or baseline <= 0:
         return {}
-    baseline = mean(pre)
-    rates = [x[1] for x in post]
-    lowest = min(rates)
-    # Recovery: first sample after a real dip that regains 90% of baseline.
+
+    # Sliding windows after release, so a dip is visible rather than averaged
+    # away over the whole post-release period.
+    post = [s for s in samples if s[0] >= WINDOW_START]
+    if len(post) < 3:
+        return {}
+    step = 0.002   # 2ms windows
+    lowest = None
     rec = NAN
+    t = WINDOW_START
+    end = post[-1][0]
     dipped = False
-    for t, r in post:
-        if r < 0.9 * baseline:
-            dipped = True
-        elif dipped and r >= 0.9 * baseline:
-            rec = (t - WINDOW_START) * 1000
-            break
+    while t + step <= end:
+        r = delivered(t, t + step)
+        if not isnan(r):
+            if lowest is None or r < lowest:
+                lowest = r
+            if r < 0.9 * baseline:
+                dipped = True
+            elif dipped and isnan(rec) and r >= 0.9 * baseline:
+                rec = (t - WINDOW_START) * 1000
+        t += step
+    if lowest is None:
+        return {}
     return {
         'bg_baseline_gbps': baseline / 1e9,
         'bg_min_gbps': lowest / 1e9,
-        'bg_drop_pct': (100.0 * (1 - lowest / baseline)) if baseline else NAN,
+        'bg_drop_pct': 100.0 * (1 - lowest / baseline),
         'bg_recovery_ms': rec,
     }
 

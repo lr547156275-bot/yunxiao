@@ -759,7 +759,13 @@ public:
 	Ptr<Packet> GetNxtPacket(Ptr<RdmaQueuePair> qp); // get next packet to send, inc snd_nxt
 	void PktSent(Ptr<RdmaQueuePair> qp, Ptr<Packet> pkt, Time interframeGap);
 	void UpdateNextAvail(Ptr<RdmaQueuePair> qp, Time interframeGap, uint32_t pkt_size);
+	// The single authority for what actually paces the wire:
+	// min(controller rate, application cap).  Shared by every CC algorithm.
+	uint64_t EffectivePacingRateBps(Ptr<RdmaQueuePair> qp) const;
 	void ChangeRate(Ptr<RdmaQueuePair> qp, DataRate new_rate);
+	// Periodic trace of controller rate vs cap vs effective rate, for flows
+	// that have an application cap.  Off by default.
+	bool m_appCapTrace;
 	/******************************
 	 * Mellanox's version of DCQCN
 	 *****************************/

@@ -4180,6 +4180,12 @@ TypeId RdmaHw::GetTypeId (void)
 				BooleanValue(true),
 				MakeBooleanAccessor(&RdmaHw::m_rateBound),
 				MakeBooleanChecker())
+		.AddAttribute("AppCapTrace",
+				"Trace controller rate, app cap and effective pacing "
+				"rate for flows that have an application rate cap",
+				BooleanValue(false),
+				MakeBooleanAccessor(&RdmaHw::m_appCapTrace),
+				MakeBooleanChecker())
 		.AddAttribute("MultiRate",
 				"Maintain multiple rates in HPCC",
 				BooleanValue(true),
@@ -6565,22 +6571,52 @@ void RdmaHw::PktSent(Ptr<RdmaQueuePair> qp, Ptr<Packet> pkt, Time interframeGap)
 	}
 }
 
+uint64_t RdmaHw::EffectivePacingRateBps(Ptr<RdmaQueuePair> qp) const {
+	// The rate that actually paces the wire, for every branch and every CC
+	// algorithm.  Which rate the controller owns depends on m_rateBound:
+	// rate-bound flows are paced by the controller's per-flow rate, others by
+	// the NIC line rate.  The application cap is independent of that choice --
+	// it is a property of the flow, not of a controller decision -- so it
+	// applies to both.  Keeping the min() in one place is the point: two
+	// branches previously duplicated the cap check and a third silently
+	// skipped it, which let a flow configured for 8Gbps pace at 10Gbps.
+	uint64_t controllerRate = m_rateBound ?
+		qp->m_rate.GetBitRate() : qp->m_max_rate.GetBitRate();
+	if (qp->m_appRateCapBps > 0 && qp->m_appRateCapBps < controllerRate)
+		return qp->m_appRateCapBps;
+	return controllerRate;
+}
+
 void RdmaHw::UpdateNextAvail(Ptr<RdmaQueuePair> qp, Time interframeGap, uint32_t pkt_size){
 	Time sendingTime;
+	uint64_t effectiveRate = EffectivePacingRateBps(qp);
+	// Invariant: pacing never exceeds a configured application cap, whatever
+	// the controller asked for and whichever branch computes the gap.
+	NS_ASSERT_MSG(qp->m_appRateCapBps == 0 ||
+			effectiveRate <= qp->m_appRateCapBps,
+		"effective pacing rate exceeds the application rate cap");
 	if (m_rateBound && qp->cbap.exactGrantPacing){
-		NS_ASSERT_MSG(!qp->cbap.zeroGrantPaused &&
-				qp->m_rate.GetBitRate() > 0,
+		NS_ASSERT_MSG(!qp->cbap.zeroGrantPaused && effectiveRate > 0,
 			"zero-grant CBAP flow reached DATA pacing");
 		sendingTime = interframeGap + NanoSeconds(
-			CbapPacketGapNs(pkt_size, qp->m_rate.GetBitRate()));
-	}else if (m_rateBound)
-		sendingTime = interframeGap + Seconds(qp->m_rate.CalculateTxTime(pkt_size));
-	else{
-		DataRate uncapped = qp->m_max_rate;
-		if (qp->m_appRateCapBps > 0 &&
-				uncapped.GetBitRate() > qp->m_appRateCapBps)
-			uncapped = DataRate(qp->m_appRateCapBps);
-		sendingTime = interframeGap + Seconds(uncapped.CalculateTxTime(pkt_size));
+			CbapPacketGapNs(pkt_size, effectiveRate));
+	}else
+		sendingTime = interframeGap +
+			Seconds(DataRate(effectiveRate).CalculateTxTime(pkt_size));
+	if (m_appCapTrace && qp->m_appRateCapBps > 0){
+		uint64_t now = Simulator::Now().GetTimeStep();
+		// One line per cap-limited flow per epoch, not per packet.
+		if (now >= qp->cbap.appCapTraceNextNs){
+			qp->cbap.appCapTraceNextNs = now + 1000000;   // 1ms
+			std::cout << "APP_CAP t=" << now
+				<< " sip=" << qp->sip << " dip=" << qp->dip
+				<< " rate_bound=" << (m_rateBound ? 1 : 0)
+				<< " controller_bps=" << (m_rateBound ?
+					qp->m_rate.GetBitRate() : qp->m_max_rate.GetBitRate())
+				<< " app_cap_bps=" << qp->m_appRateCapBps
+				<< " effective_bps=" << effectiveRate
+				<< std::endl;
+		}
 	}
 	qp->m_nextAvail = Simulator::Now() + sendingTime;
 }
