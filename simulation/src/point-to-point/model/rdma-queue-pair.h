@@ -27,6 +27,9 @@ public:
 	// Application-imposed rate ceiling, independent of any congestion
 	// controller's decisions.  Zero (default) means no cap is applied.
 	uint64_t m_appRateCapBps;
+	// Go-back-N retransmission accounting, filled in by RdmaHw::RecoverQueue.
+	uint64_t retxBytes;
+	uint32_t retxEvents;
 	bool m_var_win; // variable window size
 	Time m_nextAvail;	//< Soonest time of next send
 	uint32_t wp; // current window of packets

@@ -6193,6 +6193,14 @@ uint16_t RdmaHw::EtherToPpp (uint16_t proto){
 }
 
 void RdmaHw::RecoverQueue(Ptr<RdmaQueuePair> qp){
+	// Go-back-N: everything between snd_una and snd_nxt will be sent again.
+	// Count it here because this rewind is the only place retransmission
+	// originates, and nothing downstream can distinguish a resent byte from a
+	// fresh one.
+	if (qp->snd_nxt > qp->snd_una){
+		qp->retxBytes += qp->snd_nxt - qp->snd_una;
+		qp->retxEvents++;
+	}
 	qp->snd_nxt = qp->snd_una;
 }
 

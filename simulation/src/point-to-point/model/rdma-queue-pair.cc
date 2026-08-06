@@ -99,6 +99,8 @@ RdmaQueuePair::RdmaQueuePair(uint16_t pg, Ipv4Address _sip, Ipv4Address _dip, ui
 	m_baseRtt = 0;
 	m_max_rate = 0;
 	m_appRateCapBps = 0;
+	retxBytes = 0;
+	retxEvents = 0;
 	m_var_win = false;
 	m_rate = 0;
 	m_nextAvail = Time(0);

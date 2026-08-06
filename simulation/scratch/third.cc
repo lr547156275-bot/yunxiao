@@ -1783,10 +1783,10 @@ void qp_finish(FILE* fout, Ptr<RdmaQueuePair> q){//一条流/QP发完之后的�
 					st = applicationReadyNs * 1e-9;
 			}
 			double fin=Simulator::Now().GetSeconds(),fct=fin-st;
-			fprintf(flow_summary_csv,"%s,%s,%u,%u,%08x-%08x-%u-%u,%u,%u,%lu,%.9f,%.9f,%.9f,%lu,1,%.3f\n",
+			fprintf(flow_summary_csv,"%s,%s,%u,%u,%08x-%08x-%u-%u,%u,%u,%lu,%.9f,%.9f,%.9f,%lu,1,%.3f,%lu,%u\n",
 				scenario_name.c_str(),algorithm_name.c_str(),sim_seed,experiment_flows[i].id,
 				q->sip.Get(),q->dip.Get(),q->sport,q->m_pg,sid,did,q->m_size,
-				st,fin,fct,q->snd_una,q->m_size*8.0/fct);
+				st,fin,fct,q->snd_una,q->m_size*8.0/fct,q->retxBytes,q->retxEvents);
 			fflush(flow_summary_csv);
 		}
 		break;
@@ -3860,7 +3860,7 @@ int main(int argc, char *argv[])
 	if(!flow_summary_file.empty()){
 		flow_summary_csv=fopen(flow_summary_file.c_str(),"w");
 		if(!flow_summary_csv)ConfigError("cannot open FLOW_SUMMARY_FILE");
-		fprintf(flow_summary_csv,"scenario,algorithm,seed,flow_id,qp_id,src,dst,total_size_bytes,start_time,finish_time,fct,acked_bytes,completed,flow_goodput\n");
+		fprintf(flow_summary_csv,"scenario,algorithm,seed,flow_id,qp_id,src,dst,total_size_bytes,start_time,finish_time,fct,acked_bytes,completed,flow_goodput,retx_bytes,retx_events\n");
 	}
 	if(!round_summary_file.empty()){
 		round_summary_csv=fopen(round_summary_file.c_str(),"w");
@@ -4106,6 +4106,37 @@ int main(int argc, char *argv[])
 		WriteFinalReleaseQueueSummary();
 	}
 	WritePfcSemanticSummary();
+	// flow_summary.csv is written from qp_finish, which only fires when a
+	// QP completes.  A flow still in flight at SIMULATOR_STOP_TIME would
+	// therefore vanish from every aggregate -- including the background
+	// flow, whose partial progress is exactly what the background
+	// protection and service-debt metrics are computed from.  Emit a row
+	// per unfinished flow with completed=0 so it is counted, not lost.
+	if (flow_summary_csv){
+		double nowSec = Simulator::Now().GetSeconds();
+		for (size_t i = 0; i < experiment_flows.size(); i++){
+			if (experiment_flows[i].completed)
+				continue;
+			Ptr<RdmaQueuePair> q = FindExperimentQp(experiment_flows[i]);
+			if (!q)
+				continue;
+			double st = q->crfm.enabled && !q->crfm.rounds.empty() ?
+				q->crfm.rounds.front().releaseTimeNs * 1e-9 :
+				q->startTime.GetSeconds();
+			double elapsed = nowSec - st;
+			// fct is left empty: the flow never completed.  goodput is the
+			// delivered rate over the observation window instead.
+			fprintf(flow_summary_csv,
+				"%s,%s,%u,%u,%08x-%08x-%u-%u,%u,%u,%lu,%.9f,,,%lu,0,%.3f,%lu,%u\n",
+				scenario_name.c_str(),algorithm_name.c_str(),sim_seed,
+				experiment_flows[i].id,q->sip.Get(),q->dip.Get(),q->sport,
+				q->m_pg,ip_to_node_id(q->sip),ip_to_node_id(q->dip),
+				q->m_size,st,q->snd_una,
+				elapsed > 0 ? q->snd_una * 8.0 / elapsed : 0.0,
+				q->retxBytes,q->retxEvents);
+		}
+		fflush(flow_summary_csv);
+	}
 	Simulator::Destroy();
 	NS_LOG_INFO("Done.");
 	fclose(trace_output);
