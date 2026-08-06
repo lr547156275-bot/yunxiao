@@ -196,8 +196,10 @@ def background_metrics(d, bg_srcs, release, sim_end):
         if not isnan(before) and before > 0:
             out['bg_drop_pct'] = 100.0 * (1 - lowest / before)
 
-    # Recovery: first time the rate climbs back to 90% / 95% of baseline
-    # after having dipped below it.
+    # Recovery: first time the rate climbs back to 90% / 95% of baseline after
+    # having dipped below it.  A background flow that never dips has nothing to
+    # recover from, which is a different statement from "not measured" -- it is
+    # reported as 0ms and flagged, so an aggregate cannot silently drop it.
     if not isnan(before) and before > 0:
         for frac, key in ((0.90, 'bg_recovery90_ms'), (0.95, 'bg_recovery95_ms')):
             dipped = False
@@ -212,16 +214,30 @@ def background_metrics(d, bg_srcs, release, sim_end):
                         val = (t - release) * 1000
                         break
                 t += step
-            out[key] = val
+            if not dipped:
+                out[key] = 0.0
+                out[key + '_never_dipped'] = 1
+            else:
+                out[key] = val
+                out[key + '_never_dipped'] = 0
     return out
 
 
 # ---------------------------------------------------------------- group 3
 
-def system_metrics(d, release, qmax, log_path):
+def system_metrics(d, release, qmax, log_path, window_end=None):
+    """Queue and link statistics.
+
+    window_end bounds the statistics to when the collective was actually on
+    the link.  Without it the window runs to SIMULATOR_STOP_TIME and is
+    dominated by idle samples -- CBAP-SBA occupies the link for 6ms out of a
+    1.1s window, so p95/p99 would both read 0 while the peak sat at 14kB.
+    Percentiles have to describe the congested period to mean anything.
+    """
     rows = read_csv(os.path.join(d, 'selected_link_timeseries.csv'))
     w = [r for r in rows if num(r, 'time') is not None
-         and num(r, 'time') >= release and num(r, 'queue_bytes') is not None]
+         and num(r, 'time') >= release and num(r, 'queue_bytes') is not None
+         and (window_end is None or num(r, 'time') <= window_end)]
     out = {}
     if w:
         q = [num(r, 'queue_bytes') for r in w]
@@ -264,8 +280,9 @@ INCAST_KEYS = ['incast_n', 'incast_done', 'fct_mean_ms', 'fct_p95_ms',
                'incast_agg_gbps', 'incast_fairness_jain']
 BG_KEYS = ['bg_completed', 'bg_fct_ms', 'bg_before_gbps', 'bg_during_gbps',
            'bg_after_gbps', 'bg_min_gbps', 'bg_drop_pct', 'bg_retention_pct',
-           'bg_recovery90_ms', 'bg_recovery95_ms', 'bg_service_debt_bytes',
-           'bg_retx_bytes', 'bg_retx_events']
+           'bg_recovery90_ms', 'bg_recovery90_ms_never_dipped',
+           'bg_recovery95_ms', 'bg_recovery95_ms_never_dipped',
+           'bg_service_debt_bytes', 'bg_retx_bytes', 'bg_retx_events']
 SYS_KEYS = ['total_acked_bytes', 'util_mean', 'queue_mean_bytes',
             'queue_p95_bytes', 'queue_p99_bytes', 'queue_peak_bytes',
             'over_qmax_pct', 'ecn_marks', 'pfc_events', 'drops',
@@ -280,17 +297,34 @@ PARETO = [
 
 
 def collect(base, tag, algos, seeds, bg_srcs, release, sim_end, qmax, logdir):
+    """Gather one row per (algorithm, seed) from the matrix output directories.
+
+    Only m_<algo>_<tag>_seed<N>_out is read.  Earlier smoke and validation
+    runs left behind directories with other prefixes; picking those up would
+    silently inflate the seed count and the variance.
+    """
     runs = []
     for algo in algos:
         for seed in seeds:
-            d = os.path.join(base, 'm_%s_%s_seed%d_out' % (algo, tag, seed))
+            name = 'm_%s_%s_seed%d_out' % (algo, tag, seed)
+            d = os.path.join(base, name)
             if not os.path.exists(os.path.join(d, 'flow_summary.csv')):
+                continue
+            # A cell only counts if its own done-flag exists, so a partially
+            # written directory from an interrupted run is never aggregated.
+            flag = os.path.join(logdir, 'm_%s_%s_seed%d.done' % (algo, tag, seed))
+            if os.path.isdir(logdir) and not os.path.exists(flag):
                 continue
             log = os.path.join(logdir, 'm_%s_%s_seed%d.log' % (algo, tag, seed))
             row = {'algorithm': algo, 'seed': seed}
-            row.update(incast_metrics(d, bg_srcs, release))
+            inc = incast_metrics(d, bg_srcs, release)
+            row.update(inc)
             row.update(background_metrics(d, bg_srcs, release, sim_end))
-            row.update(system_metrics(d, release, qmax, log))
+            # Bound queue statistics to the collective's occupancy so the
+            # percentiles describe the congested period, not the idle tail.
+            cct = inc.get('cct_ms')
+            wend = release + (cct / 1000.0) if not isnan(cct) else None
+            row.update(system_metrics(d, release, qmax, log, wend))
             runs.append(row)
     return runs
 
@@ -403,6 +437,15 @@ def main():
     show('BACKGROUND', ['bg_before_gbps', 'bg_during_gbps', 'bg_after_gbps',
                         'bg_min_gbps', 'bg_retention_pct', 'bg_recovery90_ms',
                         'bg_recovery95_ms'])
+    never = []
+    for algo in algos:
+        for r in by.get(algo, []):
+            if r.get('bg_recovery90_ms_never_dipped') == 1:
+                never.append('%s/seed%s' % (algo, r['seed']))
+    if never:
+        print('  note: background never fell below 90%% of baseline in: %s' %
+              ', '.join(never))
+        print('        (recovery time reported as 0, not missing)')
     show('SYSTEM', ['util_mean', 'queue_mean_bytes', 'queue_p99_bytes',
                     'queue_peak_bytes', 'ecn_marks', 'pfc_events', 'drops',
                     'retx_bytes_total'])
