@@ -16,9 +16,14 @@
 namespace ns3 {
 
 bool SwitchNode::UsesHpccInt(uint32_t ccMode){
+	// Must agree with RdmaHw::UsesHpccTelemetryMode: a sender that
+	// expects INT while the switch pushes none waits forever for
+	// feedback.  Mode 31 (CBAP-SBA handing off to HPCC) is listed
+	// here for that reason.
 	return ccMode == 3 || ccMode == 11 || ccMode == 12 ||
 		ccMode == 13 || ccMode == 14 || ccMode == 15 ||
-		ccMode == 16 || ccMode == 18 || ccMode == 19;
+		ccMode == 16 || ccMode == 18 || ccMode == 19 ||
+		ccMode == 31;
 }
 
 bool SwitchNode::FixedPathKey::operator<(const FixedPathKey &other) const {

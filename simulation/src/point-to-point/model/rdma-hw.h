@@ -47,7 +47,12 @@ public:
 		CC_MODE_CBAP_FULL_GUARDED_DELEGATION = 27,
 		CC_MODE_CBAP_V20_STARTUP_HANDOFF_DCQCN = 28,
 		CC_MODE_CBAP_V20_STARTUP_HANDOFF_HPCC = 29,
-		CC_MODE_CBAP_SBA_DCQCN = 30
+		CC_MODE_CBAP_SBA_DCQCN = 30,
+		// Same SBA startup admission and capacity migration as mode 30, but
+		// control is handed to HPCC rather than DCQCN once the first
+		// actionable feedback arrives.  Added to separate the contribution of
+		// batch admission from the strength of the post-handoff controller.
+		CC_MODE_CBAP_SBA_HPCC = 31
 	};
 	enum {
 		BOP_Q0_ORIGIN_NONE = 0,
@@ -90,6 +95,8 @@ public:
 	static bool IsBopQbMode(uint32_t mode);
 	static bool UsesBopQbCredit(uint32_t mode);
 	static bool UsesHpccTelemetryMode(uint32_t mode);
+	// True for both SBA variants (DCQCN- and HPCC-based post-handoff).
+	static bool IsCbapSbaMode(uint32_t mode);
 	static bool IsCbapMode(uint32_t mode);
 	struct BopMultilinkLink {
 		uint32_t linkId;

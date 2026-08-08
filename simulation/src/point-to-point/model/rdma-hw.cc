@@ -168,13 +168,21 @@ bool RdmaHw::UsesHpccTelemetryMode(uint32_t mode)
 		(mode >= CC_MODE_HPCC_ROUND_RESET && mode <= CC_MODE_BOP_QB_MAX) ||
 		mode == CC_MODE_BOP_QB_ORACLE_Q0 ||
 		mode == CC_MODE_BOP_QB_PRT ||
-		mode == CC_MODE_CBAP_V20_STARTUP_HANDOFF_HPCC;
+		mode == CC_MODE_CBAP_V20_STARTUP_HANDOFF_HPCC ||
+		mode == CC_MODE_CBAP_SBA_HPCC;
+}
+
+// SBA startup admission and capacity migration are shared by both post-handoff
+// controllers; only the handoff target differs.
+bool RdmaHw::IsCbapSbaMode(uint32_t mode)
+{
+	return mode == CC_MODE_CBAP_SBA_DCQCN || mode == CC_MODE_CBAP_SBA_HPCC;
 }
 
 bool RdmaHw::IsCbapMode(uint32_t mode)
 {
 	return mode >= CC_MODE_CBAP_INDEPENDENT &&
-		mode <= CC_MODE_CBAP_SBA_DCQCN;
+		mode <= CC_MODE_CBAP_SBA_HPCC;
 }
 
 void RdmaHw::ConfigureBopMultilink(
@@ -1606,7 +1614,7 @@ void RdmaHw::PlanCbapSbaBatch(uint32_t groupId)
 	std::map<uint32_t, Ptr<RdmaQueuePair> > qps;
 	for (uint32_t i = 0; i < group.members.size(); ++i) {
 		RoundGroupMember &member = group.members[i];
-		NS_ASSERT_MSG(member.hw->m_cc_mode == CC_MODE_CBAP_SBA_DCQCN,
+		NS_ASSERT_MSG(IsCbapSbaMode(member.hw->m_cc_mode),
 			"mixed controller ownership in CBAP-SBA batch");
 		uint32_t flowId = member.qp->crfm.flowId;
 		NS_ASSERT_MSG(s_cbapFlowPaths.count(flowId) &&
@@ -2033,6 +2041,16 @@ void RdmaHw::EvaluateCbapSbaMigration(uint64_t nowNs)
 			Simulator::Cancel(qp->mlx.m_rpTimer);
 			Simulator::Cancel(qp->mlx.m_eventDecreaseRate);
 			qp->mlx.m_targetRate = DataRate(appliedRate);
+		} else if (UsesHpccTelemetryMode(flow->second.hw->m_cc_mode)) {
+			// HPCC has no self-scheduled timer to cancel -- it acts only on
+			// ACK arrival -- but it computes the next rate from hp.m_curRate.
+			// Leaving that stale would make the next feedback undo this
+			// epoch's migration step, so keep it aligned with what we applied.
+			qp->hp.m_curRate = DataRate(appliedRate);
+			if (flow->second.hw->m_multipleRate) {
+				for (uint32_t i = 0; i < IntHeader::maxHop; i++)
+					qp->hp.hopState[i].Rc = DataRate(appliedRate);
+			}
 		}
 		// Write the rate through the one entry point that also recomputes
 		// m_nextAvail -- the send gate in GetNextQindex only ever reads
@@ -2068,6 +2086,17 @@ void RdmaHw::EvaluateCbapSbaMigration(uint64_t nowNs)
 				qp->mlx.m_targetRate = DataRate(appliedRate);
 				qp->mlx.m_rpTimeStage = 0;
 				flow->second.hw->ScheduleUpdateAlphaMlx(qp);
+			} else if (UsesHpccTelemetryMode(
+					flow->second.hw->m_cc_mode)) {
+				// Resume HPCC from the converged rate with a fresh window, so
+				// its first post-migration update measures only new traffic.
+				qp->hp.m_curRate = DataRate(appliedRate);
+				if (flow->second.hw->m_multipleRate) {
+					for (uint32_t i = 0; i < IntHeader::maxHop; i++)
+						qp->hp.hopState[i].Rc = DataRate(appliedRate);
+				}
+				qp->hp.m_lastUpdateSeq = 0;
+				qp->hp.m_incStage = 0;
 			}
 			qp->cbap.migrationActive = false;
 			endReason = "converged";
@@ -2982,16 +3011,34 @@ bool RdmaHw::HandoffCbapSbaFlow(Ptr<RdmaQueuePair> qp,
 		return false;
 	}
 
-	Simulator::Cancel(qp->mlx.m_eventUpdateAlpha);
-	Simulator::Cancel(qp->mlx.m_eventDecreaseRate);
-	Simulator::Cancel(qp->mlx.m_rpTimer);
-	qp->mlx.m_targetRate = DataRate(handoffRate);
+	// Seed the post-handoff controller at exactly the granted rate so the
+	// transition introduces no rate step.  Which controller receives the flow
+	// is the only difference between the two SBA modes.
 	qp->m_rate = DataRate(handoffRate);
-	qp->mlx.m_alpha = 0.0;
-	qp->mlx.m_alpha_cnp_arrived = false;
-	qp->mlx.m_decrease_cnp_arrived = false;
-	qp->mlx.m_first_cnp = true;
-	qp->mlx.m_rpTimeStage = 0;
+	if (UsesHpccTelemetryMode(m_cc_mode)) {
+		// HPCC drives from hp.m_curRate and, with MULTI_RATE on, from a
+		// per-hop rate vector.  Both must start at the granted rate or
+		// UpdateRateHp's first window would compute against a stale value.
+		qp->hp.m_curRate = DataRate(handoffRate);
+		if (m_multipleRate) {
+			for (uint32_t i = 0; i < IntHeader::maxHop; i++)
+				qp->hp.hopState[i].Rc = DataRate(handoffRate);
+		}
+		// m_lastUpdateSeq = 0 makes the first feedback initialise the window
+		// rather than treat the admission phase as a measured interval.
+		qp->hp.m_lastUpdateSeq = 0;
+		qp->hp.m_incStage = 0;
+	} else {
+		Simulator::Cancel(qp->mlx.m_eventUpdateAlpha);
+		Simulator::Cancel(qp->mlx.m_eventDecreaseRate);
+		Simulator::Cancel(qp->mlx.m_rpTimer);
+		qp->mlx.m_targetRate = DataRate(handoffRate);
+		qp->mlx.m_alpha = 0.0;
+		qp->mlx.m_alpha_cnp_arrived = false;
+		qp->mlx.m_decrease_cnp_arrived = false;
+		qp->mlx.m_first_cnp = true;
+		qp->mlx.m_rpTimeStage = 0;
+	}
 	qp->cbap.sbaFirstFeedbackNs = feedbackTimeNs;
 	qp->cbap.firstFreshFeedbackNs = feedbackTimeNs;
 	qp->cbap.sbaLastAppliedRateBps = handoffRate;
@@ -4572,7 +4619,7 @@ void RdmaHw::ScheduleRoundGroup(uint32_t groupId,
 	if (cbap){
 		NS_ASSERT_MSG(s_cbapConfig.enabled,
 			"CBAP mode has no coordinator configuration");
-		if (owner->m_cc_mode == CC_MODE_CBAP_SBA_DCQCN)
+		if (IsCbapSbaMode(owner->m_cc_mode))
 			Simulator::Schedule(NanoSeconds(commonReleaseNs -
 				Simulator::Now().GetTimeStep()),
 				&RdmaHw::PlanCbapSbaBatch, groupId);
@@ -6089,7 +6136,7 @@ int RdmaHw::ReceiveAck(Ptr<Packet> p, CustomHeader &ch){
 		bool v20CbapHolding = IsCbapV20Mode(m_cc_mode) &&
 			qp->cbap.enabled && qp->cbap.v20Enabled &&
 			!qp->cbap.handedOff;
-		bool sbaStartupOwned = m_cc_mode == CC_MODE_CBAP_SBA_DCQCN &&
+		bool sbaStartupOwned = IsCbapSbaMode(m_cc_mode) &&
 			qp->cbap.enabled && qp->cbap.sbaEnabled &&
 			!qp->cbap.handedOff;
 		if (sbaStartupOwned &&

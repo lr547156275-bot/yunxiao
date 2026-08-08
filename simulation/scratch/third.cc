@@ -305,6 +305,9 @@ uint64_t pfc_event_rows = 0, pfc_total_events = 0, pfc_last_sample_events = 0;
 // generated it; the global counter above cannot do that.
 map<pair<uint32_t,uint32_t>, uint64_t> pfc_events_per_port;
 map<pair<uint32_t,uint32_t>, uint64_t> pfc_last_sample_per_port;
+// Last observed cumulative PFC pause duration per egress port, so the
+// link trace can report a per-sample delta.
+map<pair<uint32_t,uint32_t>, uint64_t> pfc_last_pause_ns_per_port;
 map<uint64_t,uint32_t> pfc_states;
 map<pair<uint32_t,uint32_t>,uint64_t> trace_last_tx, trace_last_ecn;
 set<uint32_t> selected_flow_set;
@@ -1510,17 +1513,26 @@ void LinkTraceTick(){
 		uint64_t pfcWas=pfc_last_sample_per_port.count(l)?
 			pfc_last_sample_per_port[l]:0;
 		uint64_t pfcDelta=pfcNow-pfcWas;
+		// Cumulative paused time per port, exported as a delta in the same
+		// pattern as the tx/ecn/pfc counters above.  SwitchNode already
+		// maintains this; previously it only reached the CBAP-only
+		// port_summary.csv, so non-CBAP runs had no pause-duration data.
+		uint64_t pauseNow=s->GetPfcPauseDurationNs(l.second);
+		uint64_t pauseWas=pfc_last_pause_ns_per_port.count(l)?
+			pfc_last_pause_ns_per_port[l]:0;
+		uint64_t pauseDelta=pauseNow>pauseWas?pauseNow-pauseWas:0;
 		if (record){
 			UpdateRoundPeakQueue(queue);
 			RdmaHw::ObserveRoundBottleneck(queue, ecnDelta, pfcDelta);
 			stringstream z;z<<Simulator::Now().GetSeconds()<<","<<l.first<<":"<<l.second
 				<<","<<queue<<","<<util<<","<<dt<<","<<ecnDelta
 				<<","<<(d->IsPaused(3)?1:0)<<","
-				<<pfcDelta<<"\n";
+				<<pfcDelta<<","<<pauseDelta<<"\n";
 			DetailedCsvWrite(link_csv,lim,z.str());
 		}
 		trace_last_tx[l]=tx;trace_last_ecn[l]=ecn;
 		pfc_last_sample_per_port[l]=pfcNow;
+		pfc_last_pause_ns_per_port[l]=pauseNow;
 	}
 	pfc_last_sample_events=pfc_total_events;
 	Simulator::Schedule(MicroSeconds(crfm_trace_sample_us),&LinkTraceTick);
@@ -1774,7 +1786,7 @@ void qp_finish(FILE* fout, Ptr<RdmaQueuePair> q){//一条流/QP发完之后的�
 						RdmaHw::CC_MODE_CBAP_V20_STARTUP_HANDOFF_DCQCN ||
 					cc_mode ==
 						RdmaHw::CC_MODE_CBAP_V20_STARTUP_HANDOFF_HPCC ||
-					cc_mode == RdmaHw::CC_MODE_CBAP_SBA_DCQCN) &&
+					RdmaHw::IsCbapSbaMode(cc_mode)) &&
 					q->crfm.enabled){
 				uint64_t applicationReadyNs = 0;
 				if (RdmaHw::GetCbapScopeApplicationReadyNs(
@@ -1892,7 +1904,7 @@ void WriteCrfmSummaries(){
 						RdmaHw::CC_MODE_CBAP_V20_STARTUP_HANDOFF_DCQCN ||
 					cc_mode ==
 						RdmaHw::CC_MODE_CBAP_V20_STARTUP_HANDOFF_HPCC ||
-					cc_mode == RdmaHw::CC_MODE_CBAP_SBA_DCQCN){
+					RdmaHw::IsCbapSbaMode(cc_mode)){
 				uint64_t applicationReadyNs = 0;
 				if (RdmaHw::GetCbapScopeApplicationReadyNs(
 						round.roundGroupId, applicationReadyNs))
@@ -3296,7 +3308,7 @@ int main(int argc, char *argv[])
 					if (!(cc_mode == 0 || cc_mode == 1 ||
 							cc_mode == 3 || cc_mode == 7 ||
 							cc_mode == 8 ||
-							(cc_mode >= 11 && cc_mode <= 30)))
+							(cc_mode >= 11 && cc_mode <= 31)))
 					ConfigError("ROUND_MODE CC_MODE is not registered");
 		if (crfm_trace_sample_us < 10)
 			ConfigError("CRFM_TRACE_SAMPLE_US must be at least 10");
@@ -3330,7 +3342,7 @@ int main(int argc, char *argv[])
 				if (cc_mode == RdmaHw::CC_MODE_BOP_QB_MAX &&
 						bop_packet_bytes < packet_payload_size)
 					ConfigError("invalid BOP-QB-Max parameter");
-				}else if (cc_mode >= 11 && cc_mode <= 30){
+				}else if (cc_mode >= 11 && cc_mode <= 31){
 				ConfigError("CRFM CC_MODE requires ROUND_MODE=1");
 			}
 	if (cbap_enable){
@@ -3414,7 +3426,7 @@ int main(int argc, char *argv[])
 				 (cbap_v20_batch_file.empty() || cbap_v20_flow_file.empty() ||
 					  cbap_rate_floor_policy !=
 						RdmaHw::CBAP_RATE_FLOOR_EXACT_GRANT_PACING)) ||
-				(cc_mode == RdmaHw::CC_MODE_CBAP_SBA_DCQCN &&
+				(RdmaHw::IsCbapSbaMode(cc_mode) &&
 				 (cbap_sba_event_file.empty() ||
 				  cbap_rate_floor_policy !=
 					RdmaHw::CBAP_RATE_FLOOR_EXACT_GRANT_PACING ||
@@ -3822,12 +3834,18 @@ int main(int argc, char *argv[])
 	SetupCbapPacketTrace();
 	if(selected_flow_set.size()>4)
 		ConfigError("ROUND_TRACE_SELECTED_FLOWS permits at most four flows");
-		// CBAP may monitor several bottleneck ports (each keeps its own
-		// control state and budget; nothing is merged across links).
+		// Several bottleneck ports may be monitored: each link keeps its own
+		// control state and budget, and nothing is merged across links.
+		// Every algorithm must observe the same set of links or a
+		// multi-bottleneck scenario is not comparable across algorithms:
+		// CBAP auto-inserts every telemetry-eligible CBAP link, so capping
+		// the others at one would give them a smaller view of the same
+		// topology.  This bound is on tracing only -- LinkTraceTick already
+		// emits one row per link and PFC deltas are already per port.
 		// BOP keeps the original single-link requirement.
 		if(round_mode && !bop_multilink_enable && !cbap_enable &&
-				selected_link_set.size()!=1)
-			ConfigError("ROUND_TRACE_SELECTED_LINKS must select exactly one bottleneck");
+				selected_link_set.empty())
+			ConfigError("ROUND_TRACE_SELECTED_LINKS requires at least one bottleneck");
 		if(round_mode && cbap_enable && selected_link_set.empty())
 			ConfigError("CBAP round mode requires at least one telemetry link");
 		if(round_mode && bop_multilink_enable &&
@@ -3946,7 +3964,7 @@ int main(int argc, char *argv[])
 	if(!link_timeseries_file.empty()){
 		link_csv=fopen(link_timeseries_file.c_str(),"w");
 		if(!link_csv)ConfigError("cannot open LINK_TIMESERIES_FILE");
-		fprintf(link_csv,"time,link_id,queue_bytes,utilization,tx_bytes_delta,ecn_marks_delta,pfc_paused,pfc_event_delta\n");
+		fprintf(link_csv,"time,link_id,queue_bytes,utilization,tx_bytes_delta,ecn_marks_delta,pfc_paused,pfc_event_delta,pfc_pause_ns_delta\n");
 	}
 	if(!selected_flow_timeseries_file.empty()){
 		selected_csv=fopen(selected_flow_timeseries_file.c_str(),"w");
