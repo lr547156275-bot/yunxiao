@@ -1,0 +1,11 @@
+scenario,algorithm,metric,value,unit
+s4,DCQCN,bg_slowdown,1.047376,slowdown (x ideal)
+s4,DCTCP,bg_slowdown,1.047376,slowdown (x ideal)
+s4,TIMELY,bg_slowdown,1.055689,slowdown (x ideal)
+s4,HPCC,bg_slowdown,1.106550,slowdown (x ideal)
+s4,CBAP-SBA,bg_slowdown,1.069936,slowdown (x ideal)
+s5,DCQCN,bg_slowdown,1.047001,slowdown (x ideal)
+s5,DCTCP,bg_slowdown,1.047001,slowdown (x ideal)
+s5,TIMELY,bg_slowdown,1.055001,slowdown (x ideal)
+s5,HPCC,bg_slowdown,1.148092,slowdown (x ideal)
+s5,CBAP-SBA,bg_slowdown,1.100955,slowdown (x ideal)

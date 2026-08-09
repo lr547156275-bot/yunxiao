@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="460" viewBox="0 0 900 460" font-family="Helvetica,Arial,sans-serif">
+<rect width="900" height="460" fill="#ffffff"/>
+<text x="40" y="24" font-size="17" font-weight="bold" fill="#222">Background flow slowdown (only where it completes)</text>
+<text x="40" y="40" font-size="11.5" fill="#666">5 algorithms x 6 scenarios, one deterministic run each (no random source; seed inert)</text>
+<line x1="88" y1="398.0" x2="710" y2="398.0" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="401.5" font-size="10.5" fill="#666" text-anchor="end">0.0</text>
+<line x1="88" y1="327.6" x2="710" y2="327.6" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="331.1" font-size="10.5" fill="#666" text-anchor="end">0.2</text>
+<line x1="88" y1="257.2" x2="710" y2="257.2" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="260.7" font-size="10.5" fill="#666" text-anchor="end">0.5</text>
+<line x1="88" y1="186.8" x2="710" y2="186.8" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="190.3" font-size="10.5" fill="#666" text-anchor="end">0.8</text>
+<line x1="88" y1="116.4" x2="710" y2="116.4" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="119.9" font-size="10.5" fill="#666" text-anchor="end">1.0</text>
+<line x1="88" y1="46.0" x2="710" y2="46.0" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="49.5" font-size="10.5" fill="#666" text-anchor="end">1.2</text>
+<line x1="88" y1="398" x2="710" y2="398" stroke="#333" stroke-width="1.3"/>
+<line x1="88" y1="398" x2="88" y2="46" stroke="#333" stroke-width="1.3"/>
+<text x="18" y="222" font-size="11.5" fill="#444" text-anchor="middle" transform="rotate(-90 18 222)">slowdown (x ideal)</text>
+<text x="139.8" y="415" font-size="11.5" fill="#444" text-anchor="middle">S1</text>
+<text x="139.8" y="428" font-size="9.5" fill="#444" text-anchor="middle">16x256K</text>
+<text x="243.5" y="415" font-size="11.5" fill="#444" text-anchor="middle">S2</text>
+<text x="243.5" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x256K</text>
+<text x="347.2" y="415" font-size="11.5" fill="#444" text-anchor="middle">S3</text>
+<text x="347.2" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x1M</text>
+<text x="450.8" y="415" font-size="11.5" fill="#444" text-anchor="middle">S6</text>
+<text x="450.8" y="428" font-size="9.5" fill="#444" text-anchor="middle">dual-bn</text>
+<rect x="517.2" y="103.1" width="13.4" height="294.9" fill="#4C72B0" rx="1.5"><title>S4 DCQCN: 1.047</title></rect>
+<rect x="532.1" y="103.1" width="13.4" height="294.9" fill="#8172B2" rx="1.5"><title>S4 DCTCP: 1.047</title></rect>
+<rect x="547.0" y="100.7" width="13.4" height="297.3" fill="#937860" rx="1.5"><title>S4 TIMELY: 1.056</title></rect>
+<rect x="562.0" y="86.4" width="13.4" height="311.6" fill="#55A868" rx="1.5"><title>S4 HPCC: 1.107</title></rect>
+<rect x="576.9" y="96.7" width="13.4" height="301.3" fill="#C44E52" rx="1.5"><title>S4 CBAP-SBA: 1.07</title></rect>
+<text x="554.5" y="415" font-size="11.5" fill="#444" text-anchor="middle">S4</text>
+<text x="554.5" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x1M/95%</text>
+<rect x="620.8" y="103.2" width="13.4" height="294.8" fill="#4C72B0" rx="1.5"><title>S5 DCQCN: 1.047</title></rect>
+<rect x="635.8" y="103.2" width="13.4" height="294.8" fill="#8172B2" rx="1.5"><title>S5 DCTCP: 1.047</title></rect>
+<rect x="650.7" y="100.9" width="13.4" height="297.1" fill="#937860" rx="1.5"><title>S5 TIMELY: 1.055</title></rect>
+<rect x="665.6" y="74.7" width="13.4" height="323.3" fill="#55A868" rx="1.5"><title>S5 HPCC: 1.148</title></rect>
+<rect x="680.6" y="88.0" width="13.4" height="310.0" fill="#C44E52" rx="1.5"><title>S5 CBAP-SBA: 1.101</title></rect>
+<text x="658.2" y="415" font-size="11.5" fill="#444" text-anchor="middle">S5</text>
+<text x="658.2" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x4M</text>
+<rect x="728" y="56" width="13" height="13" fill="#4C72B0" rx="2"/>
+<text x="747" y="67" font-size="11.5" fill="#333">DCQCN</text>
+<rect x="728" y="78" width="13" height="13" fill="#8172B2" rx="2"/>
+<text x="747" y="89" font-size="11.5" fill="#333">DCTCP</text>
+<rect x="728" y="100" width="13" height="13" fill="#937860" rx="2"/>
+<text x="747" y="111" font-size="11.5" fill="#333">TIMELY</text>
+<rect x="728" y="122" width="13" height="13" fill="#55A868" rx="2"/>
+<text x="747" y="133" font-size="11.5" fill="#333">HPCC</text>
+<rect x="728" y="144" width="13" height="13" fill="#C44E52" rx="2"/>
+<text x="747" y="155" font-size="11.5" fill="#333">CBAP-SBA</text>
+<text x="88" y="452" font-size="10" fill="#888">actual FCT divided by the FCT it would have had at its configured rate; 1.0 means untouched by the collective</text>
+</svg>

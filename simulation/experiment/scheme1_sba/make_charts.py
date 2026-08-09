@@ -44,10 +44,18 @@ def esc(s):
 
 
 def nice_ticks(vmax, n=5):
-    """Round axis maximum up to a readable step."""
-    if vmax <= 0:
+    """Round axis maximum up to a readable step.
+
+    Guards against NaN/inf: '%e' % nan is 'nan', which has no exponent to
+    split, so an unguarded version raised IndexError on metrics that are
+    legitimately undefined in some scenarios (bg_slowdown, for instance, only
+    exists where the background flow completed).
+    """
+    if vmax != vmax or vmax in (float('inf'), float('-inf')) or vmax <= 0:
         return [0, 1], 1.0
     raw = vmax / float(n)
+    if raw <= 0 or raw != raw:
+        return [0, 1], 1.0
     mag = 10 ** int(('%e' % raw).split('e')[1])
     for m in (1, 2, 2.5, 5, 10):
         if raw <= m * mag:
@@ -300,15 +308,24 @@ def load(report_dir):
 
 
 def pick(rows, key, scale=1.0):
+    """Numeric values for one metric, skipping blanks and NaN.
+
+    A metric can be legitimately undefined for some cells -- bg_slowdown only
+    exists where the background flow completed -- so NaN must be dropped rather
+    than plotted as a zero-height bar, which would read as "measured 0".
+    """
     out = {}
     for k, r in rows.items():
         v = r.get(key)
         if v in (None, ''):
             continue
         try:
-            out[k] = float(v) * scale
+            f = float(v)
         except ValueError:
-            pass
+            continue
+        if f != f or f in (float('inf'), float('-inf')):
+            continue
+        out[k] = f * scale
     return out
 
 
@@ -338,9 +355,11 @@ CHARTS = [
      'utilisation', 1.0, ''),
     ('11_jain_bar', 'bar', 'Intra-collective fairness (Jain)',
      'incast_fairness_jain', 'Jain index', 1.0, '1.0 = perfectly equal'),
-    ('12_bg_debt_bar', 'bar', 'Background service debt',
+    ('12_bg_debt_bar', 'bar', 'Background service debt (bytes still untransferred)',
      'bg_service_debt_bytes', 'debt (bytes)', 1.0,
-     'bytes still owed at a scenario-fixed window; 0 means the flow completed'),
+     'of the 4GB background flow, how much was still unsent at a '
+     'scenario-fixed observation time -- larger means the collective displaced '
+     'more background work; 0 in S4/S5 because the flow finished there'),
     ('13_fct_mean_line', 'line', 'Incast mean FCT across scenarios',
      'fct_mean_ms', 'mean FCT (ms)', 1.0, 'lower is better'),
     ('14_fct_p99_line', 'line', 'Incast p99 FCT across scenarios',
@@ -354,6 +373,18 @@ CHARTS = [
     ('18_bg_recovery_bar', 'bar', 'Background 90% recovery time',
      'bg_recovery90_ms', 'recovery (ms)', 1.0,
      '0 means the background flow never dipped below 90% of baseline'),
+    # The background flow is 4GB and needs ~4s of transfer, so it only finishes
+    # in S4 (5.5s) and S5 (6.0s).  These two charts are therefore empty for the
+    # other four scenarios by construction -- which is exactly why service debt
+    # exists as the metric that is defined everywhere.
+    ('22_bg_fct_bar', 'bar', 'Background flow FCT (only where it completes)',
+     'bg_fct_ms', 'background FCT (ms)', 1.0,
+     'the 4GB background flow only finishes within the S4 and S5 stop times; '
+     'elsewhere it is still in flight, which is what service debt measures'),
+    ('23_bg_slowdown_bar', 'bar', 'Background flow slowdown (only where it completes)',
+     'bg_slowdown', 'slowdown (x ideal)', 1.0,
+     'actual FCT divided by the FCT it would have had at its configured rate; '
+     '1.0 means untouched by the collective'),
 ]
 
 PARETOS = [

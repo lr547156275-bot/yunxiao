@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="460" viewBox="0 0 900 460" font-family="Helvetica,Arial,sans-serif">
 <rect width="900" height="460" fill="#ffffff"/>
-<text x="40" y="24" font-size="17" font-weight="bold" fill="#222">Background service debt</text>
+<text x="40" y="24" font-size="17" font-weight="bold" fill="#222">Background service debt (bytes still untransferred)</text>
 <text x="40" y="40" font-size="11.5" fill="#666">5 algorithms x 6 scenarios, one deterministic run each (no random source; seed inert)</text>
 <line x1="88" y1="398.0" x2="710" y2="398.0" stroke="#e4e4e4" stroke-width="1"/>
 <text x="80" y="401.5" font-size="10.5" fill="#666" text-anchor="end">0</text>
@@ -66,5 +66,5 @@
 <text x="747" y="133" font-size="11.5" fill="#333">HPCC</text>
 <rect x="728" y="144" width="13" height="13" fill="#C44E52" rx="2"/>
 <text x="747" y="155" font-size="11.5" fill="#333">CBAP-SBA</text>
-<text x="88" y="452" font-size="10" fill="#888">bytes still owed at a scenario-fixed window; 0 means the flow completed</text>
+<text x="88" y="452" font-size="10" fill="#888">of the 4GB background flow, how much was still unsent at a scenario-fixed observation time -- larger means the collective displaced more background work; 0 in S4/S5 because the flow finished there</text>
 </svg>

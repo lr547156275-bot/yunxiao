@@ -1,0 +1,11 @@
+scenario,algorithm,metric,value,unit
+s4,DCQCN,bg_fct_ms,3528.004888,background FCT (ms)
+s4,DCTCP,bg_fct_ms,3528.004888,background FCT (ms)
+s4,TIMELY,bg_fct_ms,3556.004893,background FCT (ms)
+s4,HPCC,bg_fct_ms,3727.326584,background FCT (ms)
+s4,CBAP-SBA,bg_fct_ms,3603.994556,background FCT (ms)
+s5,DCQCN,bg_fct_ms,4188.004723,background FCT (ms)
+s5,DCTCP,bg_fct_ms,4188.004723,background FCT (ms)
+s5,TIMELY,bg_fct_ms,4220.004727,background FCT (ms)
+s5,HPCC,bg_fct_ms,4592.366458,background FCT (ms)
+s5,CBAP-SBA,bg_fct_ms,4403.820581,background FCT (ms)
