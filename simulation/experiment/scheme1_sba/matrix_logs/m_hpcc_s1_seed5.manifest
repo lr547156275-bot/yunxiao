@@ -1,0 +1,14 @@
+algorithm=hpcc
+cc_mode=3
+cbap_enable=0
+migration=0
+scenario=s1
+seed=5
+stop_time=3.0
+expected_incast=16
+completed_incast=16
+exit_code=0
+config=experiment/scheme1_sba/m_hpcc_s1_seed5.txt
+config_sha256=a3da4b0bcc3cc58ebf814be005bb6185124a41d9877fa1b3f2cf9483afc27021
+output_dir=experiment/scheme1_sba/m_hpcc_s1_seed5_out
+log=/work/matrix_logs/m_hpcc_s1_seed5.log

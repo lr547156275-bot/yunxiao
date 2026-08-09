@@ -1,0 +1,55 @@
+================================================================================================
+ CONTROL MECHANISM TRIGGER EVIDENCE   S2 seed=2
+================================================================================================
+
+--- dcqcn ---
+  link      : ECN marks=2271  PFC=0  peak_queue=1272272  final_queue=0
+  rounds    : 64 incast rounds recorded
+  rate moved: 64 reduced below start, 0 ended above start
+  DCQCN     : CNP count=2271  alpha changed in 64 rounds  recovery stage changed in 63 rounds
+  VERDICT   : CNP received and rate decreased -> ENGAGED
+
+--- dctcp ---
+  link      : ECN marks=2271  PFC=0  peak_queue=1272272  final_queue=0
+  rounds    : 64 incast rounds recorded
+  rate moved: 64 reduced below start, 0 ended above start
+  DCTCP     : ECN marks present=yes, rate reduced in 64 rounds
+              (m_alpha itself is only in a compiled-out PRINT_LOG; inferred from rate movement)
+  VERDICT   : ECN marked and rate reduced -> ENGAGED
+
+--- timely ---
+  link      : ECN marks=2296  PFC=0  peak_queue=1280928  final_queue=0
+  rounds    : 64 incast rounds recorded
+  rate moved: 64 reduced below start, 0 ended above start
+  TIMELY    : rate moved in 64 rounds (down) / 0 (up)
+              (rttDiff / m_incStage are not exported; mode 7 moves m_rate only via UpdateRateTimely)
+  VERDICT   : RTT-driven rate control active -> ENGAGED
+
+--- hpcc ---
+  link      : ECN marks=274  PFC=0  peak_queue=1291650  final_queue=0
+  rounds    : 64 incast rounds recorded
+  rate moved: 64 reduced below start, 0 ended above start
+  HPCC      : total INT feedback=16832  actionable=16758  int_hop_count=192  feedback changed rate=13695
+              control-loop delay nonzero in 64/64 rounds
+  VERDICT   : INT feedback arrived and rate updated -> ENGAGED
+
+--- cbapsba ---
+  link      : ECN marks=1095  PFC=0  peak_queue=1263888  final_queue=0
+  rounds    : 64 incast rounds recorded
+  rate moved: 0 reduced below start, 64 ended above start
+  CBAP-SBA  : admission rows=65  sba_events=194
+              migration replans=0  epoch updates=0  convergences=0
+  queue     : borrowing above Qmin(200000)=yes  exceeded Qmax(400000)=yes  drained back=yes
+  VERDICT   : batch admission ran -> ENGAGED
+  OVERSUB   : exceeded Qmax but no PFC and queue drained -> BOUNDED
+
+wrote /work/matrix_logs/trig_s2.csv (5 rows)
+
+--- ENGAGEMENT SUMMARY (s2) ---
+  dcqcn     ENGAGED
+  dctcp     ENGAGED
+  timely    ENGAGED
+  hpcc      ENGAGED
+  cbapsba   ENGAGED
+
+OK: every algorithm either engaged or is expected not to in s2

@@ -1,0 +1,31 @@
+scenario,scenario_desc,algorithm,metric,value,unit
+s1,"16-way x 256KiB, background 80%",DCQCN,bg_retention_pct,99.99994459457429,percent
+s1,"16-way x 256KiB, background 80%",DCTCP,bg_retention_pct,99.99994459457429,percent
+s1,"16-way x 256KiB, background 80%",TIMELY,bg_retention_pct,99.99917073163455,percent
+s1,"16-way x 256KiB, background 80%",HPCC,bg_retention_pct,96.33683558725755,percent
+s1,"16-way x 256KiB, background 80%",CBAP-SBA,bg_retention_pct,97.24285540649431,percent
+s2,"64-way x 256KiB, background 80%",DCQCN,bg_retention_pct,99.99939600376504,percent
+s2,"64-way x 256KiB, background 80%",DCTCP,bg_retention_pct,99.99939600376504,percent
+s2,"64-way x 256KiB, background 80%",TIMELY,bg_retention_pct,99.99950764729262,percent
+s2,"64-way x 256KiB, background 80%",HPCC,bg_retention_pct,87.10570749558698,percent
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,bg_retention_pct,90.31949366392318,percent
+s3,"64-way x 1MiB, background 80%",DCQCN,bg_retention_pct,99.99978896795868,percent
+s3,"64-way x 1MiB, background 80%",DCTCP,bg_retention_pct,99.99978896795868,percent
+s3,"64-way x 1MiB, background 80%",TIMELY,bg_retention_pct,99.9997288389123,percent
+s3,"64-way x 1MiB, background 80%",HPCC,bg_retention_pct,63.11390928345976,percent
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,bg_retention_pct,75.74894931140531,percent
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,bg_retention_pct,99.99940228430457,percent
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCTCP,bg_retention_pct,99.99940228430457,percent
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",TIMELY,bg_retention_pct,99.99920301593602,percent
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",HPCC,bg_retention_pct,93.46325361597464,percent
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",CBAP-SBA,bg_retention_pct,95.0697879425871,percent
+s4,"64-way x 1MiB, background 95%",DCQCN,bg_retention_pct,100.00011228766942,percent
+s4,"64-way x 1MiB, background 95%",DCTCP,bg_retention_pct,100.00011228766942,percent
+s4,"64-way x 1MiB, background 95%",TIMELY,bg_retention_pct,100.00002793616812,percent
+s4,"64-way x 1MiB, background 95%",HPCC,bg_retention_pct,62.99789596711097,percent
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,bg_retention_pct,74.24740459248063,percent
+s5,"64-way x 4MiB, background 80%",DCQCN,bg_retention_pct,99.99993942879122,percent
+s5,"64-way x 4MiB, background 80%",DCTCP,bg_retention_pct,99.99993942879122,percent
+s5,"64-way x 4MiB, background 80%",TIMELY,bg_retention_pct,99.99986970003646,percent
+s5,"64-way x 4MiB, background 80%",HPCC,bg_retention_pct,30.597231274486408,percent
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,bg_retention_pct,60.72663586157103,percent

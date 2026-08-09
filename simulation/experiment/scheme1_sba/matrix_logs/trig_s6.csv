@@ -1,0 +1,6 @@
+scenario,algorithm,seed,verdict,recovery_stage_moved_rounds,cc_mode,feedback_rounds,engagement_required,ecn_marks,queue_peak_bytes,rounds,rate_reduced_rounds,rate_increased_rounds,pfc_events,alpha_moved_rounds,cnp_count,queue_final_bytes,qmax_bytes,migration_replans,convergences,queue_drained,sba_events,migration_epochs,exceeded_qmax,oversub_verdict,admission_events,queue_borrowed_above_qmin
+s6,dcqcn,2,ENGAGED,60,1,0,0,451.0,595264.0,61,60,0,0,60,451,0.0,400000,,,,,,,,,
+s6,dctcp,2,ENGAGED,0,8,0,0,451.0,595264.0,61,60,0,0,0,0,0.0,400000,,,,,,,,,
+s6,timely,2,ENGAGED,0,7,0,1,454.0,598752.0,61,60,0,0,0,0,0.0,400000,,,,,,,,,
+s6,hpcc,2,ENGAGED,0,3,61,1,24.0,591870.0,61,61,0,0,0,0,0.0,400000,,,,,,,,,
+s6,cbapsba,2,ENGAGED,0,30,0,1,0,30392.0,61,1,60,0,60,0,0.0,400000,0,0,1,184,0,0,NEVER_EXCEEDED,62,0

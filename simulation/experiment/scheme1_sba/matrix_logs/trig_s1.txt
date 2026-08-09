@@ -1,0 +1,60 @@
+================================================================================================
+ CONTROL MECHANISM TRIGGER EVIDENCE   S1 seed=2
+================================================================================================
+
+--- dcqcn ---
+  link      : ECN marks=0  PFC=0  peak_queue=316496  final_queue=0
+  rounds    : 16 incast rounds recorded
+  rate moved: 0 reduced below start, 0 ended above start
+  DCQCN     : CNP count=0  alpha changed in 0 rounds  recovery stage changed in 0 rounds
+  VERDICT   : no CNP or no rate decrease -> NOT ENGAGED
+  NOTE      : dcqcn is ECN-driven and s1 is an ECN-inactive scenario
+              (queue stays below KMIN by construction, so no CNP/alpha movement is expected)
+              -> EXPECTED_NOT_ENGAGED, not a failure
+
+--- dctcp ---
+  link      : ECN marks=0  PFC=0  peak_queue=316496  final_queue=0
+  rounds    : 16 incast rounds recorded
+  rate moved: 0 reduced below start, 0 ended above start
+  DCTCP     : ECN marks present=no, rate reduced in 0 rounds
+              (m_alpha itself is only in a compiled-out PRINT_LOG; inferred from rate movement)
+  VERDICT   : no ECN or no reduction -> NOT ENGAGED
+  NOTE      : dctcp is ECN-driven and s1 is an ECN-inactive scenario
+              (queue stays below KMIN by construction, so no CNP/alpha movement is expected)
+              -> EXPECTED_NOT_ENGAGED, not a failure
+
+--- timely ---
+  link      : ECN marks=0  PFC=0  peak_queue=317856  final_queue=0
+  rounds    : 16 incast rounds recorded
+  rate moved: 16 reduced below start, 0 ended above start
+  TIMELY    : rate moved in 16 rounds (down) / 0 (up)
+              (rttDiff / m_incStage are not exported; mode 7 moves m_rate only via UpdateRateTimely)
+  VERDICT   : RTT-driven rate control active -> ENGAGED
+
+--- hpcc ---
+  link      : ECN marks=0  PFC=0  peak_queue=282310  final_queue=0
+  rounds    : 16 incast rounds recorded
+  rate moved: 16 reduced below start, 0 ended above start
+  HPCC      : total INT feedback=4208  actionable=4168  int_hop_count=48  feedback changed rate=3965
+              control-loop delay nonzero in 16/16 rounds
+  VERDICT   : INT feedback arrived and rate updated -> ENGAGED
+
+--- cbapsba ---
+  link      : ECN marks=0  PFC=0  peak_queue=14672  final_queue=0
+  rounds    : 16 incast rounds recorded
+  rate moved: 0 reduced below start, 16 ended above start
+  CBAP-SBA  : admission rows=17  sba_events=50
+              migration replans=0  epoch updates=0  convergences=0
+  queue     : borrowing above Qmin(200000)=no  exceeded Qmax(400000)=no  drained back=yes
+  VERDICT   : batch admission ran -> ENGAGED
+
+wrote /work/matrix_logs/trig_s1.csv (5 rows)
+
+--- ENGAGEMENT SUMMARY (s1) ---
+  dcqcn     EXPECTED_NOT_ENGAGED
+  dctcp     EXPECTED_NOT_ENGAGED
+  timely    ENGAGED
+  hpcc      ENGAGED
+  cbapsba   ENGAGED
+
+OK: every algorithm either engaged or is expected not to in s1

@@ -1,0 +1,14 @@
+algorithm=dcqcn
+cc_mode=1
+cbap_enable=0
+migration=0
+scenario=s1
+seed=6
+stop_time=3.0
+expected_incast=16
+completed_incast=16
+exit_code=0
+config=experiment/scheme1_sba/m_dcqcn_s1_seed6.txt
+config_sha256=14ee03457cd4e04ccba94c5b238226987154a4f7231971dfa1d8bbb255cce40a
+output_dir=experiment/scheme1_sba/m_dcqcn_s1_seed6_out
+log=/work/matrix_logs/m_dcqcn_s1_seed6.log

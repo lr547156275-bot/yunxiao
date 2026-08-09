@@ -1,0 +1,31 @@
+scenario,scenario_desc,algorithm,metric,value,unit
+s1,"16-way x 256KiB, background 80%",DCQCN,incast_agg_gbps,1.9038045814069482,Gbps
+s1,"16-way x 256KiB, background 80%",DCTCP,incast_agg_gbps,1.9038045814069482,Gbps
+s1,"16-way x 256KiB, background 80%",TIMELY,incast_agg_gbps,1.8883064831546594,Gbps
+s1,"16-way x 256KiB, background 80%",HPCC,incast_agg_gbps,8.197159247202059,Gbps
+s1,"16-way x 256KiB, background 80%",CBAP-SBA,incast_agg_gbps,5.658980408347288,Gbps
+s2,"64-way x 256KiB, background 80%",DCQCN,incast_agg_gbps,1.9049970599217976,Gbps
+s2,"64-way x 256KiB, background 80%",DCTCP,incast_agg_gbps,1.9049970599217976,Gbps
+s2,"64-way x 256KiB, background 80%",TIMELY,incast_agg_gbps,1.895044337050825,Gbps
+s2,"64-way x 256KiB, background 80%",HPCC,incast_agg_gbps,8.871321556479828,Gbps
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,incast_agg_gbps,5.893599193517844,Gbps
+s3,"64-way x 1MiB, background 80%",DCQCN,incast_agg_gbps,1.9055369979733376,Gbps
+s3,"64-way x 1MiB, background 80%",DCTCP,incast_agg_gbps,1.9055369979733376,Gbps
+s3,"64-way x 1MiB, background 80%",TIMELY,incast_agg_gbps,1.8956128417953235,Gbps
+s3,"64-way x 1MiB, background 80%",HPCC,incast_agg_gbps,8.927877169700624,Gbps
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,incast_agg_gbps,5.739813919027768,Gbps
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,incast_agg_gbps,3.8091129160890156,Gbps
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCTCP,incast_agg_gbps,3.8091129160890156,Gbps
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",TIMELY,incast_agg_gbps,3.7892884321246254,Gbps
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",HPCC,incast_agg_gbps,17.252312481421786,Gbps
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",CBAP-SBA,incast_agg_gbps,11.338742409959787,Gbps
+s4,"64-way x 1MiB, background 95%",DCQCN,incast_agg_gbps,0.47623338222241646,Gbps
+s4,"64-way x 1MiB, background 95%",DCTCP,incast_agg_gbps,0.47623338222241646,Gbps
+s4,"64-way x 1MiB, background 95%",TIMELY,incast_agg_gbps,0.4797855370246336,Gbps
+s4,"64-way x 1MiB, background 95%",HPCC,incast_agg_gbps,8.90134612092839,Gbps
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,incast_agg_gbps,4.978005112092031,Gbps
+s5,"64-way x 4MiB, background 80%",DCQCN,incast_agg_gbps,1.9056229257374988,Gbps
+s5,"64-way x 4MiB, background 80%",DCTCP,incast_agg_gbps,1.9056229257374988,Gbps
+s5,"64-way x 4MiB, background 80%",TIMELY,incast_agg_gbps,1.8956963757674492,Gbps
+s5,"64-way x 4MiB, background 80%",HPCC,incast_agg_gbps,8.926780921215137,Gbps
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,incast_agg_gbps,5.703506339486935,Gbps

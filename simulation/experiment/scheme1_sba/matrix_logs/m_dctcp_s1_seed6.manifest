@@ -1,0 +1,14 @@
+algorithm=dctcp
+cc_mode=8
+cbap_enable=0
+migration=0
+scenario=s1
+seed=6
+stop_time=3.0
+expected_incast=16
+completed_incast=16
+exit_code=0
+config=experiment/scheme1_sba/m_dctcp_s1_seed6.txt
+config_sha256=003a92fdc8ae882a50f6ea5b6b99c19515c109f19c217329bdddeb01d6e108c0
+output_dir=experiment/scheme1_sba/m_dctcp_s1_seed6_out
+log=/work/matrix_logs/m_dctcp_s1_seed6.log

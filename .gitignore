@@ -53,3 +53,12 @@ simulation/fct.txt
 
 # Per-port queue histograms from QLEN_MON_FILE (tens of MB per run)
 **/qlen.txt
+
+# Final paper deliverables: the extracted results are small (about 900KB) and
+# belong under version control so the numbers are reproducible and auditable.
+# The 6.9GB of raw per-cell traces they were extracted from stay excluded --
+# they are regenerable from the configs.
+!simulation/experiment/scheme1_sba/final_report/**
+!simulation/experiment/scheme1_sba/analysis_s*/**
+!simulation/experiment/scheme1_sba/matrix_logs/**
+!simulation/experiment/scheme1_sba/cell_configs/**

@@ -1,0 +1,54 @@
+================================================================================================
+ CONTROL MECHANISM TRIGGER EVIDENCE   S6 seed=2
+================================================================================================
+
+--- dcqcn ---
+  link      : ECN marks=451  PFC=0  peak_queue=595264  final_queue=0
+  rounds    : 61 incast rounds recorded
+  rate moved: 60 reduced below start, 0 ended above start
+  DCQCN     : CNP count=451  alpha changed in 60 rounds  recovery stage changed in 60 rounds
+  VERDICT   : CNP received and rate decreased -> ENGAGED
+
+--- dctcp ---
+  link      : ECN marks=451  PFC=0  peak_queue=595264  final_queue=0
+  rounds    : 61 incast rounds recorded
+  rate moved: 60 reduced below start, 0 ended above start
+  DCTCP     : ECN marks present=yes, rate reduced in 60 rounds
+              (m_alpha itself is only in a compiled-out PRINT_LOG; inferred from rate movement)
+  VERDICT   : ECN marked and rate reduced -> ENGAGED
+
+--- timely ---
+  link      : ECN marks=454  PFC=0  peak_queue=598752  final_queue=0
+  rounds    : 61 incast rounds recorded
+  rate moved: 60 reduced below start, 0 ended above start
+  TIMELY    : rate moved in 60 rounds (down) / 0 (up)
+              (rttDiff / m_incStage are not exported; mode 7 moves m_rate only via UpdateRateTimely)
+  VERDICT   : RTT-driven rate control active -> ENGAGED
+
+--- hpcc ---
+  link      : ECN marks=24  PFC=0  peak_queue=591870  final_queue=0
+  rounds    : 61 incast rounds recorded
+  rate moved: 61 reduced below start, 0 ended above start
+  HPCC      : total INT feedback=1386726  actionable=1386627  int_hop_count=181  feedback changed rate=14548
+              control-loop delay nonzero in 61/61 rounds
+  VERDICT   : INT feedback arrived and rate updated -> ENGAGED
+
+--- cbapsba ---
+  link      : ECN marks=0  PFC=0  peak_queue=30392  final_queue=0
+  rounds    : 61 incast rounds recorded
+  rate moved: 1 reduced below start, 60 ended above start
+  CBAP-SBA  : admission rows=62  sba_events=184
+              migration replans=0  epoch updates=0  convergences=0
+  queue     : borrowing above Qmin(200000)=no  exceeded Qmax(400000)=no  drained back=yes
+  VERDICT   : batch admission ran -> ENGAGED
+
+wrote /work/matrix_logs/trig_s6.csv (5 rows)
+
+--- ENGAGEMENT SUMMARY (s6) ---
+  dcqcn     ENGAGED
+  dctcp     ENGAGED
+  timely    ENGAGED
+  hpcc      ENGAGED
+  cbapsba   ENGAGED
+
+OK: every algorithm either engaged or is expected not to in s6

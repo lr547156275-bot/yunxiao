@@ -1,0 +1,75 @@
+============================================================================================================
+ S5  |  5 runs  |  5 algorithms x 1 seeds
+============================================================================================================
+
+--- INCAST ---
+algo        n    completion_rate_pct            fct_mean_ms             fct_p50_ms             fct_p95_ms             fct_p99_ms                 cct_ms        incast_agg_gbps   incast_fairness_jain
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+dcqcn       1                100.000               1126.291               1126.585               1126.915               1126.918               1226.920                  1.906                  1.000
+dctcp       1                100.000               1126.295               1126.585               1126.915               1126.918               1226.920                  1.906                  1.000
+timely      1                100.000               1132.192               1132.484               1132.816               1132.820               1232.820                  1.896                  1.000
+hpcc        1                100.000                239.450                239.700                240.472                240.543                340.566                  8.927                  1.000
+cbapsba     1                100.000                376.326                376.511                376.519                376.520                476.520                  5.704                  1.000
+
+--- BACKGROUND ---
+algo        n         bg_before_gbps         bg_during_gbps          bg_after_gbps            bg_min_gbps       bg_retention_pct       bg_recovery90_ms       bg_recovery95_ms
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+dcqcn       1                  7.641                  7.641                  5.481                  0.000                100.000                      -                      -
+dctcp       1                  7.641                  7.641                  5.481                  0.000                100.000                      -                      -
+timely      1                  7.583                  7.583                  5.520                  0.000                100.000                      -                      -
+hpcc        1                  7.346                  2.248                  6.550                  0.000                 30.597                342.000                342.000
+cbapsba     1                  7.641                  4.640                  6.323                  0.000                 60.727                478.000                478.000
+
+--- SYSTEM ---
+algo        n              util_mean       queue_mean_bytes        queue_p95_bytes        queue_p99_bytes       queue_peak_bytes
+--------------------------------------------------------------------------------------------------------------------------------
+dcqcn       1                  0.984            1164392.796            1271224.000            1272272.000            1272272.000
+dctcp       1                  0.984            1164378.366            1271224.000            1272272.000            1272272.000
+timely      1                  0.985            1173675.073            1280928.000            1280928.000            1280928.000
+hpcc        1                  0.932              17606.856              26160.000             195807.600            1291650.000
+cbapsba     1                  0.959             972634.130            1263888.000            1263888.000            1263888.000
+
+--- SAFETY ---
+algo        n          over_qmin_pct          over_qmax_pct      queue_recovery_ms          queue_drained              ecn_marks             pfc_events     pfc_paused_samples                  drops       retx_bytes_total      retx_events_total
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+dcqcn       1                 91.780                 91.710               1125.740                  1.000              38410.000                  0.000                  0.000                  0.000                  0.000                  0.000
+dctcp       1                 91.780                 91.710               1125.740                  1.000              38410.000                  0.000                  0.000                  0.000                  0.000                  0.000
+timely      1                 91.819                 91.750               1131.670                  1.000              38862.000                  0.000                  0.000                  0.000                  0.000                  0.000
+hpcc        1                  0.995                  0.849                  3.010                  1.000                274.000                  0.000                  0.000                  0.000                  0.000                  0.000
+cbapsba     1                 78.337                 77.529                359.220                  1.000              36891.000                  0.000                  0.000                  0.000                  0.000                  0.000
+
+--- OVERSUBSCRIPTION VERDICT ---
+  A run that exceeds Qmax is only a failure if the excess is
+  unbounded or unrecoverable.  Criteria: no PFC, no drop, no
+  retransmission, queue drains below Qmin, and aggregate goodput
+  does not regress.
+  dcqcn     over_Qmax=91.71% peak=  1272272 B drained=yes -> BOUNDED oversubscription (safe)
+  dctcp     over_Qmax=91.71% peak=  1272272 B drained=yes -> BOUNDED oversubscription (safe)
+  timely    over_Qmax=91.75% peak=  1280928 B drained=yes -> BOUNDED oversubscription (safe)
+  hpcc      over_Qmax= 0.85% peak=  1291650 B drained=yes -> BOUNDED oversubscription (safe)
+  cbapsba   over_Qmax=77.53% peak=  1263888 B drained=yes -> BOUNDED oversubscription (safe)
+
+--- PARETO PAIRINGS ---
+
+  p99 FCT (ms)  vs  bg retention (%)
+    dcqcn     x=    1126.918+/-nan        y=         100.0+/-nan       
+    dctcp     x=    1126.918+/-nan        y=         100.0+/-nan       
+    timely    x=    1132.820+/-nan        y=         100.0+/-nan       
+    hpcc      x=     240.543+/-nan        y=          30.6+/-nan       
+    cbapsba   x=     376.520+/-nan        y=          60.7+/-nan       
+
+  CCT (ms)  vs  service debt (B)
+    dcqcn     x=    1226.920+/-nan        y=           0.0+/-nan       
+    dctcp     x=    1226.920+/-nan        y=           0.0+/-nan       
+    timely    x=    1232.820+/-nan        y=           0.0+/-nan       
+    hpcc      x=     340.566+/-nan        y=           0.0+/-nan       
+    cbapsba   x=     476.520+/-nan        y=           0.0+/-nan       
+
+  agg goodput (Gbps)  vs  p99 queue (B)
+    dcqcn     x=       1.906+/-nan        y=     1272272.0+/-nan       
+    dctcp     x=       1.906+/-nan        y=     1272272.0+/-nan       
+    timely    x=       1.896+/-nan        y=     1280928.0+/-nan       
+    hpcc      x=       8.927+/-nan        y=      195807.6+/-nan       
+    cbapsba   x=       5.704+/-nan        y=     1263888.0+/-nan       
+
+wrote /work/simulation/experiment/scheme1_sba/analysis_s5/{per_run,aggregate,pareto}.csv

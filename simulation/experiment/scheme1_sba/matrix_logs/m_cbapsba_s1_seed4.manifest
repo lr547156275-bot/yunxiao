@@ -1,0 +1,14 @@
+algorithm=cbapsba
+cc_mode=30
+cbap_enable=1
+migration=1
+scenario=s1
+seed=4
+stop_time=3.0
+expected_incast=16
+completed_incast=16
+exit_code=0
+config=experiment/scheme1_sba/m_cbapsba_s1_seed4.txt
+config_sha256=4791800d2b9870feac4401b20fbb7c385f5c37e4787c99a97371d71825516ba0
+output_dir=experiment/scheme1_sba/m_cbapsba_s1_seed4_out
+log=/work/matrix_logs/m_cbapsba_s1_seed4.log

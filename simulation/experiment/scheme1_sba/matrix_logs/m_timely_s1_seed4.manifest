@@ -1,0 +1,14 @@
+algorithm=timely
+cc_mode=7
+cbap_enable=0
+migration=0
+scenario=s1
+seed=4
+stop_time=3.0
+expected_incast=16
+completed_incast=16
+exit_code=0
+config=experiment/scheme1_sba/m_timely_s1_seed4.txt
+config_sha256=432a5e2a5dd230146b94b70ed6db49d778c716a539ec1ae0ad55a3cf3a5579d6
+output_dir=experiment/scheme1_sba/m_timely_s1_seed4_out
+log=/work/matrix_logs/m_timely_s1_seed4.log
