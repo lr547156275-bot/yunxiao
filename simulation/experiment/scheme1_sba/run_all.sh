@@ -17,7 +17,7 @@ set -u
 SIM=/work/simulation
 D=experiment/scheme1_sba
 LOGS=/work/matrix_logs
-SEED=${SEED:-1}
+SEED=${SEED:-2}
 cd "$SIM"
 mkdir -p "$LOGS"
 
@@ -50,7 +50,10 @@ for entry in $PLAN; do
   rest=${entry#*:}
   stop=${rest%%:*}
   tmo=${rest##*:}
-  ndone=$(ls "$LOGS"/m_*_${tag}_*.done 2>/dev/null | wc -l)
+  # Count only this seed.  A bare m_*_<tag>_*.done glob also matches flags from
+  # earlier multi-seed runs, which made the driver skip a scenario it had not
+  # actually produced for this matrix.
+  ndone=$(ls "$LOGS"/m_*_${tag}_seed${SEED}.done 2>/dev/null | wc -l)
   if [ "$ndone" -ge 5 ]; then
     echo ""
     echo ">>> $tag already complete (5/5), skipping"
@@ -73,12 +76,21 @@ for entry in $PLAN; do
   python2 $D/metrics.py "$tag" "$SEED" > "$LOGS/report_${tag}.txt" 2>&1 \
     && echo "    metrics ok -> $LOGS/report_${tag}.txt" \
     || echo "    METRICS FAILED for $tag (see $LOGS/report_${tag}.txt)"
-  python2 $D/verify_triggers.py "$tag" "$SEED" > "$LOGS/trig_${tag}.txt" 2>&1 \
-    && echo "    triggers ok -> $LOGS/trig_${tag}.txt" \
-    || echo "    TRIGGER CHECK FAILED for $tag"
+  # Non-zero here means a controller had its required input and still did
+  # nothing -- a real anomaly.  A scenario that is designed to keep an ECN
+  # controller idle reports EXPECTED_NOT_ENGAGED and exits 0.
+  if python2 $D/verify_triggers.py "$tag" "$SEED" "$LOGS/trig_${tag}.csv" \
+        > "$LOGS/trig_${tag}.txt" 2>&1; then
+    echo "    triggers ok -> $LOGS/trig_${tag}.txt"
+  else
+    echo "    !!! TRIGGER FAILURE in $tag -- a required mechanism did not engage"
+    grep -E "^FAIL:" "$LOGS/trig_${tag}.txt" | sed 's/^/    /'
+    echo "    stopping the matrix; inspect $LOGS/trig_${tag}.txt"
+    exit 1
+  fi
 done
 
-TOTAL=$(ls "$LOGS"/m_*_s?_*.done 2>/dev/null | wc -l)
+TOTAL=$(ls "$LOGS"/m_*_s?_seed${SEED}.done 2>/dev/null | wc -l)
 echo ""
 echo "=============================================================="
 echo " MATRIX COMPLETE: $TOTAL/30 cells"

@@ -219,10 +219,10 @@ for seed in $SEEDS; do
       exit 1
     fi
   done
-  echo "===== seed $seed complete ($(ls "$LOGS"/m_*_${TAG}_*.done 2>/dev/null | wc -l) cells done) ====="
+  echo "===== seed $seed complete ($(ls "$LOGS"/m_*_${TAG}_seed${seed}.done 2>/dev/null | wc -l) cells done) ====="
 done
 
-TOTAL=$(ls "$LOGS"/m_*_${TAG}_*.done 2>/dev/null | wc -l)
+TOTAL=$(ls "$LOGS"/m_*_${TAG}_seed${seed}.done 2>/dev/null | wc -l)
 echo ""
 echo "===== MATRIX $TAG COMPLETE: $TOTAL cells done ====="
 echo "extract with: python2 $D/metrics.py $TAG"

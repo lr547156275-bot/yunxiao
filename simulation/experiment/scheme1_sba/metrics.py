@@ -689,7 +689,7 @@ def main():
     # The simulation consumes no random variates on any reachable path, so one
     # seed per cell carries all the information five would.  Override on the
     # command line only if a genuine randomness source is ever introduced.
-    seeds = [int(x) for x in sys.argv[2:]] or [1]
+    seeds = [int(x) for x in sys.argv[2:]] or [2]
     release = 1.9
 
     runs = collect(base, tag, algos, seeds, release, logdir)
@@ -702,9 +702,20 @@ def main():
     if not os.path.isdir(outdir):
         os.makedirs(outdir)
 
+    # Per-link columns are discovered from the data, not declared in ALL_KEYS:
+    # their names depend on which links the scenario monitors (link_84_1_*,
+    # link_83_1_*).  Writing only ALL_KEYS silently dropped all of them, which
+    # would have lost the per-link detail a multi-bottleneck scenario exists to
+    # provide.
+    link_keys = []
+    for r in runs:
+        for k in r:
+            if k.startswith('link_') and k not in link_keys:
+                link_keys.append(k)
+    fieldnames = ALL_KEYS + sorted(link_keys)
     f = open(os.path.join(outdir, 'per_run.csv'), 'w')
     try:
-        w = csv.DictWriter(f, fieldnames=ALL_KEYS, extrasaction='ignore')
+        w = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore')
         w.writeheader()
         for r in runs:
             w.writerow(r)

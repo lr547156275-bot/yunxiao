@@ -8,7 +8,7 @@ set -u
 LOGS=/work/matrix_logs
 ALGOS="dcqcn dctcp timely hpcc cbapsba"
 TAGS="s1 s2 s3 s6 s4 s5"
-SEED=${SEED:-1}
+SEED=${SEED:-2}
 
 printf "%-8s" "scen"
 for a in $ALGOS; do printf " %-8s" "$a"; done
