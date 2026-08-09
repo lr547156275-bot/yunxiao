@@ -25,6 +25,8 @@ dcqcn,1,bg_retx_bytes,0.000000
 dcqcn,1,bg_retx_events,0.000000
 dcqcn,1,bg_n_flows,2.000000
 dcqcn,1,bg_service_debt_window_s,2.500000
+dcqcn,1,bg0_observation_end_s,2.499980
+dcqcn,1,bg0_bg_completed_before_end,0.000000
 dcqcn,1,total_acked_bytes,2881048640.000000
 dcqcn,1,util_mean,0.850333
 dcqcn,1,queue_mean_bytes,141544.184005
@@ -78,6 +80,8 @@ dctcp,1,bg_retx_bytes,0.000000
 dctcp,1,bg_retx_events,0.000000
 dctcp,1,bg_n_flows,2.000000
 dctcp,1,bg_service_debt_window_s,2.500000
+dctcp,1,bg0_observation_end_s,2.499980
+dctcp,1,bg0_bg_completed_before_end,0.000000
 dctcp,1,total_acked_bytes,2881048640.000000
 dctcp,1,util_mean,0.850333
 dctcp,1,queue_mean_bytes,141544.184005
@@ -131,6 +135,8 @@ timely,1,bg_retx_bytes,0.000000
 timely,1,bg_retx_events,0.000000
 timely,1,bg_n_flows,2.000000
 timely,1,bg_service_debt_window_s,2.500000
+timely,1,bg0_observation_end_s,2.499980
+timely,1,bg0_bg_completed_before_end,0.000000
 timely,1,total_acked_bytes,2859320640.000000
 timely,1,util_mean,0.850639
 timely,1,queue_mean_bytes,142846.831319
@@ -184,6 +190,8 @@ hpcc,1,bg_retx_bytes,0.000000
 hpcc,1,bg_retx_events,0.000000
 hpcc,1,bg_n_flows,2.000000
 hpcc,1,bg_service_debt_window_s,2.500000
+hpcc,1,bg0_observation_end_s,2.499980
+hpcc,1,bg0_bg_completed_before_end,0.000000
 hpcc,1,total_acked_bytes,2757627640.000000
 hpcc,1,util_mean,0.812280
 hpcc,1,queue_mean_bytes,4389.546692
@@ -237,6 +245,8 @@ cbapsba,1,bg_retx_bytes,0.000000
 cbapsba,1,bg_retx_events,0.000000
 cbapsba,1,bg_n_flows,2.000000
 cbapsba,1,bg_service_debt_window_s,2.500000
+cbapsba,1,bg0_observation_end_s,2.499980
+cbapsba,1,bg0_bg_completed_before_end,0.000000
 cbapsba,1,total_acked_bytes,2860832640.000000
 cbapsba,1,util_mean,0.820602
 cbapsba,1,queue_mean_bytes,1419.727093

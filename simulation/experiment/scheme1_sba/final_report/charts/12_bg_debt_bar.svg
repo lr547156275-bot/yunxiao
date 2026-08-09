@@ -43,17 +43,27 @@
 <text x="450.8" y="415" font-size="11.5" fill="#444" text-anchor="middle">S6</text>
 <text x="450.8" y="428" font-size="9.5" fill="#444" text-anchor="middle">dual-bn</text>
 <rect x="517.2" y="398.0" width="13.4" height="0.0" fill="#4C72B0" rx="1.5"><title>S4 DCQCN: 0</title></rect>
+<text x="523.9" y="395.0" font-size="8" fill="#888" text-anchor="middle"><title>S4 DCQCN: exactly 0</title>0</text>
 <rect x="532.1" y="398.0" width="13.4" height="0.0" fill="#8172B2" rx="1.5"><title>S4 DCTCP: 0</title></rect>
+<text x="538.8" y="395.0" font-size="8" fill="#888" text-anchor="middle"><title>S4 DCTCP: exactly 0</title>0</text>
 <rect x="547.0" y="398.0" width="13.4" height="0.0" fill="#937860" rx="1.5"><title>S4 TIMELY: 0</title></rect>
+<text x="553.8" y="395.0" font-size="8" fill="#888" text-anchor="middle"><title>S4 TIMELY: exactly 0</title>0</text>
 <rect x="562.0" y="398.0" width="13.4" height="0.0" fill="#55A868" rx="1.5"><title>S4 HPCC: 0</title></rect>
+<text x="568.7" y="395.0" font-size="8" fill="#888" text-anchor="middle"><title>S4 HPCC: exactly 0</title>0</text>
 <rect x="576.9" y="398.0" width="13.4" height="0.0" fill="#C44E52" rx="1.5"><title>S4 CBAP-SBA: 0</title></rect>
+<text x="583.6" y="395.0" font-size="8" fill="#888" text-anchor="middle"><title>S4 CBAP-SBA: exactly 0</title>0</text>
 <text x="554.5" y="415" font-size="11.5" fill="#444" text-anchor="middle">S4</text>
 <text x="554.5" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x1M/95%</text>
 <rect x="620.8" y="398.0" width="13.4" height="0.0" fill="#4C72B0" rx="1.5"><title>S5 DCQCN: 0</title></rect>
+<text x="627.6" y="395.0" font-size="8" fill="#888" text-anchor="middle"><title>S5 DCQCN: exactly 0</title>0</text>
 <rect x="635.8" y="398.0" width="13.4" height="0.0" fill="#8172B2" rx="1.5"><title>S5 DCTCP: 0</title></rect>
+<text x="642.5" y="395.0" font-size="8" fill="#888" text-anchor="middle"><title>S5 DCTCP: exactly 0</title>0</text>
 <rect x="650.7" y="398.0" width="13.4" height="0.0" fill="#937860" rx="1.5"><title>S5 TIMELY: 0</title></rect>
+<text x="657.4" y="395.0" font-size="8" fill="#888" text-anchor="middle"><title>S5 TIMELY: exactly 0</title>0</text>
 <rect x="665.6" y="398.0" width="13.4" height="0.0" fill="#55A868" rx="1.5"><title>S5 HPCC: 0</title></rect>
+<text x="672.3" y="395.0" font-size="8" fill="#888" text-anchor="middle"><title>S5 HPCC: exactly 0</title>0</text>
 <rect x="680.6" y="398.0" width="13.4" height="0.0" fill="#C44E52" rx="1.5"><title>S5 CBAP-SBA: 0</title></rect>
+<text x="687.3" y="395.0" font-size="8" fill="#888" text-anchor="middle"><title>S5 CBAP-SBA: exactly 0</title>0</text>
 <text x="658.2" y="415" font-size="11.5" fill="#444" text-anchor="middle">S5</text>
 <text x="658.2" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x4M</text>
 <rect x="728" y="56" width="13" height="13" fill="#4C72B0" rx="2"/>

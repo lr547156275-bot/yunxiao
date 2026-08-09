@@ -347,11 +347,26 @@ def _background_one(d, flow_id, release, sim_end, bg_cap, debt_window_s,
     if not isnan(before) and before > 0 and not isnan(during):
         out['retention_pct'] = 100.0 * during / before
 
+    # Stop observing once the flow has delivered everything it owed: after that
+    # its rate is legitimately zero and reading it as a "dip" would report a
+    # flow that was never disturbed as having been squeezed to nothing.  In S4
+    # and S5 the background flow completes before the run ends, and without this
+    # bound the ECN baselines showed min=0 with an undefined recovery time while
+    # their during-throughput was identical to their baseline.
+    obs_end = s[-1][0]
+    if size > 0:
+        for t, v in s:
+            if v >= size:
+                obs_end = min(obs_end, t)
+                break
+    out['observation_end_s'] = obs_end
+    out['bg_completed_before_end'] = 1 if obs_end < s[-1][0] else 0
+
     # Minimum over short windows, so a brief dip is not averaged away.
     step = 0.002
     lowest = None
     t = release
-    while t + step <= s[-1][0]:
+    while t + step <= obs_end:
         r = rate(t, t + step)
         if not isnan(r) and (lowest is None or r < lowest):
             lowest = r
@@ -370,7 +385,7 @@ def _background_one(d, flow_id, release, sim_end, bg_cap, debt_window_s,
             dipped = False
             val = NAN
             t = release
-            while t + step <= s[-1][0]:
+            while t + step <= obs_end:
                 r = rate(t, t + step)
                 if not isnan(r):
                     if r < frac * before:
@@ -536,7 +551,8 @@ BG_KEYS = ['bg_completed', 'bg_fct_ms', 'bg_before_gbps', 'bg_during_gbps',
            'bg_recovery95_ms', 'bg_recovery95_ms_never_dipped',
            'bg_service_debt_bytes', 'bg_slowdown', 'bg_retx_bytes',
            'bg_retx_events']
-BG_KEYS = BG_KEYS + ['bg_n_flows', 'bg_service_debt_window_s']
+BG_KEYS = BG_KEYS + ['bg_n_flows', 'bg_service_debt_window_s',
+                     'bg0_observation_end_s', 'bg0_bg_completed_before_end']
 SYS_KEYS = ['total_acked_bytes', 'util_mean', 'queue_mean_bytes',
             'queue_p95_bytes', 'queue_p99_bytes', 'queue_peak_bytes',
             'over_qmin_pct', 'over_qmax_pct', 'queue_recovery_ms',

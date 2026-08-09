@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="460" viewBox="0 0 900 460" font-family="Helvetica,Arial,sans-serif">
 <rect width="900" height="460" fill="#ffffff"/>
-<text x="40" y="24" font-size="17" font-weight="bold" fill="#222">Background 90% recovery time</text>
+<text x="40" y="24" font-size="17" font-weight="bold" fill="#222">Background 95% recovery time</text>
 <text x="40" y="40" font-size="11.5" fill="#666">5 algorithms x 6 scenarios, one deterministic run each (no random source; seed inert)</text>
 <line x1="88" y1="398.0" x2="710" y2="398.0" stroke="#e4e4e4" stroke-width="1"/>
 <text x="80" y="401.5" font-size="10.5" fill="#666" text-anchor="end">0</text>
@@ -44,7 +44,7 @@
 <text x="331.5" y="395.0" font-size="8" fill="#888" text-anchor="middle"><title>S3 DCTCP: exactly 0</title>0</text>
 <rect x="339.7" y="398.0" width="13.4" height="0.0" fill="#937860" rx="1.5"><title>S3 TIMELY: 0</title></rect>
 <text x="346.4" y="395.0" font-size="8" fill="#888" text-anchor="middle"><title>S3 TIMELY: exactly 0</title>0</text>
-<rect x="354.6" y="285.4" width="13.4" height="112.6" fill="#55A868" rx="1.5"><title>S3 HPCC: 160</title></rect>
+<rect x="354.6" y="284.0" width="13.4" height="114.0" fill="#55A868" rx="1.5"><title>S3 HPCC: 162</title></rect>
 <rect x="369.6" y="261.4" width="13.4" height="136.6" fill="#C44E52" rx="1.5"><title>S3 CBAP-SBA: 194</title></rect>
 <text x="347.2" y="415" font-size="11.5" fill="#444" text-anchor="middle">S3</text>
 <text x="347.2" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x1M</text>
@@ -88,5 +88,5 @@
 <text x="747" y="133" font-size="11.5" fill="#333">HPCC</text>
 <rect x="728" y="144" width="13" height="13" fill="#C44E52" rx="2"/>
 <text x="747" y="155" font-size="11.5" fill="#333">CBAP-SBA</text>
-<text x="88" y="452" font-size="10" fill="#888">a zero bar means the background flow NEVER fell below 90% of its baseline, so there was nothing to recover from -- not missing data. That is the case for DCQCN, DCTCP and TIMELY in every scenario, because their collectives never obtain enough capacity to disturb the background flow (it drops only 0.06%). Only HPCC and CBAP-SBA displace it enough to have a recovery time at all.</text>
+<text x="88" y="452" font-size="10" fill="#888">same reading as the 90% chart: zero means the flow never dipped that far</text>
 </svg>

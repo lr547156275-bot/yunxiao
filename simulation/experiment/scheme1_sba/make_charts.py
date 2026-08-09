@@ -159,6 +159,14 @@ def bar_chart(path, title, subtitle, unit, values, note=''):
                        'fill="%s" rx="1.5"><title>%s %s: %.4g</title></rect>'
                        % (x, py0 - hgt, bw * 0.9, hgt, COLOR[a],
                           tag.upper(), LABEL[a], v))
+            # A genuine zero is indistinguishable from a missing bar, so mark
+            # it.  The distinction matters: zero recovery time means the flow
+            # never dipped, which is a measurement, not an absence of one.
+            if v == 0:
+                out.append('<text x="%.1f" y="%.1f" font-size="8" fill="#888" '
+                           'text-anchor="middle"><title>%s %s: exactly 0'
+                           '</title>0</text>'
+                           % (x + bw * 0.45, py0 - 3, tag.upper(), LABEL[a]))
         for k, line in enumerate(TAG_LABEL[tag].split('\n')):
             out.append('<text x="%.1f" y="%d" font-size="%s" fill="#444" '
                        'text-anchor="middle">%s</text>'
@@ -372,7 +380,15 @@ CHARTS = [
      'queue_p99_bytes', 'queue p99 (bytes)', 1.0, ''),
     ('18_bg_recovery_bar', 'bar', 'Background 90% recovery time',
      'bg_recovery90_ms', 'recovery (ms)', 1.0,
-     '0 means the background flow never dipped below 90% of baseline'),
+     'a zero bar means the background flow NEVER fell below 90% of its '
+     'baseline, so there was nothing to recover from -- not missing data. '
+     'That is the case for DCQCN, DCTCP and TIMELY in every scenario, because '
+     'their collectives never obtain enough capacity to disturb the background '
+     'flow (it drops only 0.06%). Only HPCC and CBAP-SBA displace it enough to '
+     'have a recovery time at all.'),
+    ('24_bg_recovery95_bar', 'bar', 'Background 95% recovery time',
+     'bg_recovery95_ms', 'recovery (ms)', 1.0,
+     'same reading as the 90% chart: zero means the flow never dipped that far'),
     # The background flow is 4GB and needs ~4s of transfer, so it only finishes
     # in S4 (5.5s) and S5 (6.0s).  These two charts are therefore empty for the
     # other four scenarios by construction -- which is exactly why service debt
