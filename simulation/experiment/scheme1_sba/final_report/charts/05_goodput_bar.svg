@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="460" viewBox="0 0 900 460" font-family="Helvetica,Arial,sans-serif">
+<rect width="900" height="460" fill="#ffffff"/>
+<text x="40" y="24" font-size="17" font-weight="bold" fill="#222">Incast aggregate goodput</text>
+<text x="40" y="40" font-size="11.5" fill="#666">5 algorithms x 6 scenarios, one deterministic run each (no random source; seed inert)</text>
+<line x1="88" y1="398.0" x2="710" y2="398.0" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="401.5" font-size="10.5" fill="#666" text-anchor="end">0</text>
+<line x1="88" y1="310.0" x2="710" y2="310.0" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="313.5" font-size="10.5" fill="#666" text-anchor="end">5</text>
+<line x1="88" y1="222.0" x2="710" y2="222.0" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="225.5" font-size="10.5" fill="#666" text-anchor="end">10</text>
+<line x1="88" y1="134.0" x2="710" y2="134.0" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="137.5" font-size="10.5" fill="#666" text-anchor="end">15</text>
+<line x1="88" y1="46.0" x2="710" y2="46.0" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="49.5" font-size="10.5" fill="#666" text-anchor="end">20</text>
+<line x1="88" y1="398" x2="710" y2="398" stroke="#333" stroke-width="1.3"/>
+<line x1="88" y1="398" x2="88" y2="46" stroke="#333" stroke-width="1.3"/>
+<text x="18" y="222" font-size="11.5" fill="#444" text-anchor="middle" transform="rotate(-90 18 222)">goodput (Gbps)</text>
+<rect x="102.5" y="364.5" width="13.4" height="33.5" fill="#4C72B0" rx="1.5"><title>S1 DCQCN: 1.904</title></rect>
+<rect x="117.4" y="364.5" width="13.4" height="33.5" fill="#8172B2" rx="1.5"><title>S1 DCTCP: 1.904</title></rect>
+<rect x="132.4" y="364.8" width="13.4" height="33.2" fill="#937860" rx="1.5"><title>S1 TIMELY: 1.888</title></rect>
+<rect x="147.3" y="253.7" width="13.4" height="144.3" fill="#55A868" rx="1.5"><title>S1 HPCC: 8.197</title></rect>
+<rect x="162.2" y="298.4" width="13.4" height="99.6" fill="#C44E52" rx="1.5"><title>S1 CBAP-SBA: 5.659</title></rect>
+<text x="139.8" y="415" font-size="11.5" fill="#444" text-anchor="middle">S1</text>
+<text x="139.8" y="428" font-size="9.5" fill="#444" text-anchor="middle">16x256K</text>
+<rect x="206.2" y="364.5" width="13.4" height="33.5" fill="#4C72B0" rx="1.5"><title>S2 DCQCN: 1.905</title></rect>
+<rect x="221.1" y="364.5" width="13.4" height="33.5" fill="#8172B2" rx="1.5"><title>S2 DCTCP: 1.905</title></rect>
+<rect x="236.0" y="364.6" width="13.4" height="33.4" fill="#937860" rx="1.5"><title>S2 TIMELY: 1.895</title></rect>
+<rect x="251.0" y="241.9" width="13.4" height="156.1" fill="#55A868" rx="1.5"><title>S2 HPCC: 8.871</title></rect>
+<rect x="265.9" y="294.3" width="13.4" height="103.7" fill="#C44E52" rx="1.5"><title>S2 CBAP-SBA: 5.894</title></rect>
+<text x="243.5" y="415" font-size="11.5" fill="#444" text-anchor="middle">S2</text>
+<text x="243.5" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x256K</text>
+<rect x="309.8" y="364.5" width="13.4" height="33.5" fill="#4C72B0" rx="1.5"><title>S3 DCQCN: 1.906</title></rect>
+<rect x="324.8" y="364.5" width="13.4" height="33.5" fill="#8172B2" rx="1.5"><title>S3 DCTCP: 1.906</title></rect>
+<rect x="339.7" y="364.6" width="13.4" height="33.4" fill="#937860" rx="1.5"><title>S3 TIMELY: 1.896</title></rect>
+<rect x="354.6" y="240.9" width="13.4" height="157.1" fill="#55A868" rx="1.5"><title>S3 HPCC: 8.928</title></rect>
+<rect x="369.6" y="297.0" width="13.4" height="101.0" fill="#C44E52" rx="1.5"><title>S3 CBAP-SBA: 5.74</title></rect>
+<text x="347.2" y="415" font-size="11.5" fill="#444" text-anchor="middle">S3</text>
+<text x="347.2" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x1M</text>
+<rect x="413.5" y="331.0" width="13.4" height="67.0" fill="#4C72B0" rx="1.5"><title>S6 DCQCN: 3.809</title></rect>
+<rect x="428.4" y="331.0" width="13.4" height="67.0" fill="#8172B2" rx="1.5"><title>S6 DCTCP: 3.809</title></rect>
+<rect x="443.4" y="331.3" width="13.4" height="66.7" fill="#937860" rx="1.5"><title>S6 TIMELY: 3.789</title></rect>
+<rect x="458.3" y="94.4" width="13.4" height="303.6" fill="#55A868" rx="1.5"><title>S6 HPCC: 17.25</title></rect>
+<rect x="473.2" y="198.4" width="13.4" height="199.6" fill="#C44E52" rx="1.5"><title>S6 CBAP-SBA: 11.34</title></rect>
+<text x="450.8" y="415" font-size="11.5" fill="#444" text-anchor="middle">S6</text>
+<text x="450.8" y="428" font-size="9.5" fill="#444" text-anchor="middle">dual-bn</text>
+<rect x="517.2" y="389.6" width="13.4" height="8.4" fill="#4C72B0" rx="1.5"><title>S4 DCQCN: 0.4762</title></rect>
+<rect x="532.1" y="389.6" width="13.4" height="8.4" fill="#8172B2" rx="1.5"><title>S4 DCTCP: 0.4762</title></rect>
+<rect x="547.0" y="389.6" width="13.4" height="8.4" fill="#937860" rx="1.5"><title>S4 TIMELY: 0.4798</title></rect>
+<rect x="562.0" y="241.3" width="13.4" height="156.7" fill="#55A868" rx="1.5"><title>S4 HPCC: 8.901</title></rect>
+<rect x="576.9" y="310.4" width="13.4" height="87.6" fill="#C44E52" rx="1.5"><title>S4 CBAP-SBA: 4.978</title></rect>
+<text x="554.5" y="415" font-size="11.5" fill="#444" text-anchor="middle">S4</text>
+<text x="554.5" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x1M/95%</text>
+<rect x="620.8" y="364.5" width="13.4" height="33.5" fill="#4C72B0" rx="1.5"><title>S5 DCQCN: 1.906</title></rect>
+<rect x="635.8" y="364.5" width="13.4" height="33.5" fill="#8172B2" rx="1.5"><title>S5 DCTCP: 1.906</title></rect>
+<rect x="650.7" y="364.6" width="13.4" height="33.4" fill="#937860" rx="1.5"><title>S5 TIMELY: 1.896</title></rect>
+<rect x="665.6" y="240.9" width="13.4" height="157.1" fill="#55A868" rx="1.5"><title>S5 HPCC: 8.927</title></rect>
+<rect x="680.6" y="297.6" width="13.4" height="100.4" fill="#C44E52" rx="1.5"><title>S5 CBAP-SBA: 5.704</title></rect>
+<text x="658.2" y="415" font-size="11.5" fill="#444" text-anchor="middle">S5</text>
+<text x="658.2" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x4M</text>
+<rect x="728" y="56" width="13" height="13" fill="#4C72B0" rx="2"/>
+<text x="747" y="67" font-size="11.5" fill="#333">DCQCN</text>
+<rect x="728" y="78" width="13" height="13" fill="#8172B2" rx="2"/>
+<text x="747" y="89" font-size="11.5" fill="#333">DCTCP</text>
+<rect x="728" y="100" width="13" height="13" fill="#937860" rx="2"/>
+<text x="747" y="111" font-size="11.5" fill="#333">TIMELY</text>
+<rect x="728" y="122" width="13" height="13" fill="#55A868" rx="2"/>
+<text x="747" y="133" font-size="11.5" fill="#333">HPCC</text>
+<rect x="728" y="144" width="13" height="13" fill="#C44E52" rx="2"/>
+<text x="747" y="155" font-size="11.5" fill="#333">CBAP-SBA</text>
+<text x="88" y="452" font-size="10" fill="#888">total bytes over the completion span; higher is better</text>
+</svg>

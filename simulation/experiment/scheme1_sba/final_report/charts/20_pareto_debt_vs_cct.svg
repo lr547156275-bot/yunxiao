@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="460" viewBox="0 0 900 460" font-family="Helvetica,Arial,sans-serif">
+<rect width="900" height="460" fill="#ffffff"/>
+<text x="40" y="24" font-size="17" font-weight="bold" fill="#222">Pareto: background service debt vs CCT</text>
+<text x="40" y="40" font-size="11.5" fill="#666">one marker per scenario x algorithm; lower-left or lower-right is better depending on axis</text>
+<line x1="88" y1="398.0" x2="710" y2="398.0" stroke="#e4e4e4"/>
+<text x="80" y="401.5" font-size="10.5" fill="#666" text-anchor="end">0</text>
+<line x1="88" y1="327.6" x2="710" y2="327.6" stroke="#e4e4e4"/>
+<text x="80" y="331.1" font-size="10.5" fill="#666" text-anchor="end">0k</text>
+<line x1="88" y1="257.2" x2="710" y2="257.2" stroke="#e4e4e4"/>
+<text x="80" y="260.7" font-size="10.5" fill="#666" text-anchor="end">0k</text>
+<line x1="88" y1="186.8" x2="710" y2="186.8" stroke="#e4e4e4"/>
+<text x="80" y="190.3" font-size="10.5" fill="#666" text-anchor="end">1k</text>
+<line x1="88" y1="116.4" x2="710" y2="116.4" stroke="#e4e4e4"/>
+<text x="80" y="119.9" font-size="10.5" fill="#666" text-anchor="end">1k</text>
+<line x1="88" y1="46.0" x2="710" y2="46.0" stroke="#e4e4e4"/>
+<text x="80" y="49.5" font-size="10.5" fill="#666" text-anchor="end">1k</text>
+<line x1="88.0" y1="398" x2="88.0" y2="46" stroke="#eee"/>
+<text x="88.0" y="415" font-size="10.5" fill="#666" text-anchor="middle">0</text>
+<line x1="295.3" y1="398" x2="295.3" y2="46" stroke="#eee"/>
+<text x="295.3" y="415" font-size="10.5" fill="#666" text-anchor="middle">2000.0M</text>
+<line x1="502.7" y1="398" x2="502.7" y2="46" stroke="#eee"/>
+<text x="502.7" y="415" font-size="10.5" fill="#666" text-anchor="middle">4000.0M</text>
+<line x1="710.0" y1="398" x2="710.0" y2="46" stroke="#eee"/>
+<text x="710.0" y="415" font-size="10.5" fill="#666" text-anchor="middle">6000.0M</text>
+<line x1="88" y1="398" x2="710" y2="398" stroke="#333" stroke-width="1.3"/>
+<line x1="88" y1="398" x2="88" y2="46" stroke="#333" stroke-width="1.3"/>
+<circle cx="393.8" cy="364.9" r="6" fill="#4C72B0" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S1 DCQCN: (2.949e+09, 117.6)</title></circle>
+<text x="401.8" y="367.9" font-size="8.5" fill="#555">S1</text>
+<circle cx="393.8" cy="364.9" r="6" fill="#8172B2" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S1 DCTCP: (2.949e+09, 117.6)</title></circle>
+<text x="401.8" y="367.9" font-size="8.5" fill="#555">S1</text>
+<circle cx="394.6" cy="364.8" r="6" fill="#937860" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S1 TIMELY: (2.957e+09, 117.8)</title></circle>
+<text x="402.6" y="367.8" font-size="8.5" fill="#555">S1</text>
+<circle cx="398.3" cy="368.7" r="6" fill="#55A868" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S1 HPCC: (2.993e+09, 104.1)</title></circle>
+<text x="406.3" y="371.7" font-size="8.5" fill="#555">S1</text>
+<circle cx="394.1" cy="368.2" r="6" fill="#C44E52" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S1 CBAP-SBA: (2.953e+09, 105.9)</title></circle>
+<text x="402.1" y="371.2" font-size="8.5" fill="#555">S1</text>
+<circle cx="354.1" cy="350.0" r="6" fill="#4C72B0" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S2 DCQCN: (2.567e+09, 170.5)</title></circle>
+<text x="362.1" y="353.0" font-size="8.5" fill="#555">S2</text>
+<circle cx="354.1" cy="350.0" r="6" fill="#8172B2" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S2 DCTCP: (2.567e+09, 170.5)</title></circle>
+<text x="362.1" y="353.0" font-size="8.5" fill="#555">S2</text>
+<circle cx="355.3" cy="349.9" r="6" fill="#937860" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S2 TIMELY: (2.578e+09, 170.8)</title></circle>
+<text x="363.3" y="352.9" font-size="8.5" fill="#555">S2</text>
+<circle cx="361.3" cy="365.6" r="6" fill="#55A868" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S2 HPCC: (2.636e+09, 115.1)</title></circle>
+<text x="369.3" y="368.6" font-size="8.5" fill="#555">S2</text>
+<circle cx="355.8" cy="363.4" r="6" fill="#C44E52" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S2 CBAP-SBA: (2.583e+09, 122.8)</title></circle>
+<text x="363.8" y="366.4" font-size="8.5" fill="#555">S2</text>
+<circle cx="304.6" cy="290.5" r="6" fill="#4C72B0" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S3 DCQCN: (2.09e+09, 381.7)</title></circle>
+<text x="312.6" y="293.5" font-size="8.5" fill="#555">S3</text>
+<circle cx="304.6" cy="290.5" r="6" fill="#8172B2" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S3 DCTCP: (2.09e+09, 381.7)</title></circle>
+<text x="312.6" y="293.5" font-size="8.5" fill="#555">S3</text>
+<circle cx="306.1" cy="290.1" r="6" fill="#937860" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S3 TIMELY: (2.104e+09, 383.2)</title></circle>
+<text x="314.1" y="293.1" font-size="8.5" fill="#555">S3</text>
+<circle cx="317.9" cy="352.9" r="6" fill="#55A868" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S3 HPCC: (2.218e+09, 160.1)</title></circle>
+<text x="325.9" y="355.9" font-size="8.5" fill="#555">S3</text>
+<circle cx="310.1" cy="343.5" r="6" fill="#C44E52" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S3 CBAP-SBA: (2.143e+09, 193.5)</title></circle>
+<text x="318.1" y="346.5" font-size="8.5" fill="#555">S3</text>
+<circle cx="620.3" cy="360.5" r="6" fill="#4C72B0" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S6 DCQCN: (5.135e+09, 133)</title></circle>
+<text x="628.3" y="363.5" font-size="8.5" fill="#555">S6</text>
+<circle cx="620.3" cy="360.5" r="6" fill="#8172B2" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S6 DCTCP: (5.135e+09, 133)</title></circle>
+<text x="628.3" y="363.5" font-size="8.5" fill="#555">S6</text>
+<circle cx="622.6" cy="360.5" r="6" fill="#937860" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S6 TIMELY: (5.156e+09, 133.2)</title></circle>
+<text x="630.6" y="363.5" font-size="8.5" fill="#555">S6</text>
+<circle cx="633.1" cy="367.8" r="6" fill="#55A868" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S6 HPCC: (5.258e+09, 107.3)</title></circle>
+<text x="641.1" y="370.8" font-size="8.5" fill="#555">S6</text>
+<circle cx="622.4" cy="366.7" r="6" fill="#C44E52" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S6 CBAP-SBA: (5.155e+09, 111.1)</title></circle>
+<text x="630.4" y="369.7" font-size="8.5" fill="#555">S6</text>
+<circle cx="88.0" cy="52.4" r="6" fill="#4C72B0" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S4 DCQCN: (0, 1227)</title></circle>
+<text x="96.0" y="55.4" font-size="8.5" fill="#555">S4</text>
+<circle cx="88.0" cy="52.4" r="6" fill="#8172B2" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S4 DCTCP: (0, 1227)</title></circle>
+<text x="96.0" y="55.4" font-size="8.5" fill="#555">S4</text>
+<circle cx="88.0" cy="54.7" r="6" fill="#937860" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S4 TIMELY: (0, 1219)</title></circle>
+<text x="96.0" y="57.7" font-size="8.5" fill="#555">S4</text>
+<circle cx="88.0" cy="352.9" r="6" fill="#55A868" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S4 HPCC: (0, 160.3)</title></circle>
+<text x="96.0" y="355.9" font-size="8.5" fill="#555">S4</text>
+<circle cx="88.0" cy="339.5" r="6" fill="#C44E52" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S4 CBAP-SBA: (0, 207.8)</title></circle>
+<text x="96.0" y="342.5" font-size="8.5" fill="#555">S4</text>
+<circle cx="88.0" cy="52.5" r="6" fill="#4C72B0" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S5 DCQCN: (0, 1227)</title></circle>
+<text x="96.0" y="55.5" font-size="8.5" fill="#555">S5</text>
+<circle cx="88.0" cy="52.5" r="6" fill="#8172B2" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S5 DCTCP: (0, 1227)</title></circle>
+<text x="96.0" y="55.5" font-size="8.5" fill="#555">S5</text>
+<circle cx="88.0" cy="50.8" r="6" fill="#937860" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S5 TIMELY: (0, 1233)</title></circle>
+<text x="96.0" y="53.8" font-size="8.5" fill="#555">S5</text>
+<circle cx="88.0" cy="302.1" r="6" fill="#55A868" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S5 HPCC: (0, 340.6)</title></circle>
+<text x="96.0" y="305.1" font-size="8.5" fill="#555">S5</text>
+<circle cx="88.0" cy="263.8" r="6" fill="#C44E52" fill-opacity="0.85" stroke="#fff" stroke-width="1.3"><title>S5 CBAP-SBA: (0, 476.5)</title></circle>
+<text x="96.0" y="266.8" font-size="8.5" fill="#555">S5</text>
+<text x="399.0" y="436" font-size="11.5" fill="#444" text-anchor="middle">background service debt (bytes)</text>
+<text x="18" y="222" font-size="11.5" fill="#444" text-anchor="middle" transform="rotate(-90 18 222)">CCT (ms)</text>
+<rect x="728" y="56" width="13" height="13" fill="#4C72B0" rx="2"/>
+<text x="747" y="67" font-size="11.5" fill="#333">DCQCN</text>
+<rect x="728" y="78" width="13" height="13" fill="#8172B2" rx="2"/>
+<text x="747" y="89" font-size="11.5" fill="#333">DCTCP</text>
+<rect x="728" y="100" width="13" height="13" fill="#937860" rx="2"/>
+<text x="747" y="111" font-size="11.5" fill="#333">TIMELY</text>
+<rect x="728" y="122" width="13" height="13" fill="#55A868" rx="2"/>
+<text x="747" y="133" font-size="11.5" fill="#333">HPCC</text>
+<rect x="728" y="144" width="13" height="13" fill="#C44E52" rx="2"/>
+<text x="747" y="155" font-size="11.5" fill="#333">CBAP-SBA</text>
+<text x="88" y="452" font-size="10" fill="#888">better is left and down</text>
+</svg>

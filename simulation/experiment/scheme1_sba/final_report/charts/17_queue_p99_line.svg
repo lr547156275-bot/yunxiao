@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="460" viewBox="0 0 900 460" font-family="Helvetica,Arial,sans-serif">
+<rect width="900" height="460" fill="#ffffff"/>
+<text x="40" y="24" font-size="17" font-weight="bold" fill="#222">Queue p99 across scenarios</text>
+<text x="40" y="40" font-size="11.5" fill="#666">5 algorithms x 6 scenarios, one deterministic run each (no random source; seed inert)</text>
+<line x1="88" y1="398.0" x2="710" y2="398.0" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="401.5" font-size="10.5" fill="#666" text-anchor="end">0</text>
+<line x1="88" y1="280.7" x2="710" y2="280.7" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="284.2" font-size="10.5" fill="#666" text-anchor="end">0.5M</text>
+<line x1="88" y1="163.3" x2="710" y2="163.3" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="166.8" font-size="10.5" fill="#666" text-anchor="end">1.0M</text>
+<line x1="88" y1="46.0" x2="710" y2="46.0" stroke="#e4e4e4" stroke-width="1"/>
+<text x="80" y="49.5" font-size="10.5" fill="#666" text-anchor="end">1.5M</text>
+<line x1="88" y1="398" x2="710" y2="398" stroke="#333" stroke-width="1.3"/>
+<line x1="88" y1="398" x2="88" y2="46" stroke="#333" stroke-width="1.3"/>
+<text x="18" y="222" font-size="11.5" fill="#444" text-anchor="middle" transform="rotate(-90 18 222)">queue p99 (bytes)</text>
+<path d="M139.8,324.0 L243.5,99.7 L347.2,99.4 L450.8,258.6 L554.5,98.9 L658.2,99.4" fill="none" stroke="#4C72B0" stroke-width="2.4" stroke-linejoin="round"/>
+<circle cx="139.8" cy="324.0" r="4" fill="#4C72B0" stroke="#fff" stroke-width="1.4"><title>S1 DCQCN: 3.154e+05</title></circle>
+<circle cx="243.5" cy="99.7" r="4" fill="#4C72B0" stroke="#fff" stroke-width="1.4"><title>S2 DCQCN: 1.271e+06</title></circle>
+<circle cx="347.2" cy="99.4" r="4" fill="#4C72B0" stroke="#fff" stroke-width="1.4"><title>S3 DCQCN: 1.272e+06</title></circle>
+<circle cx="450.8" cy="258.6" r="4" fill="#4C72B0" stroke="#fff" stroke-width="1.4"><title>S6 DCQCN: 5.942e+05</title></circle>
+<circle cx="554.5" cy="98.9" r="4" fill="#4C72B0" stroke="#fff" stroke-width="1.4"><title>S4 DCQCN: 1.274e+06</title></circle>
+<circle cx="658.2" cy="99.4" r="4" fill="#4C72B0" stroke="#fff" stroke-width="1.4"><title>S5 DCQCN: 1.272e+06</title></circle>
+<path d="M139.8,324.0 L243.5,99.7 L347.2,99.4 L450.8,258.6 L554.5,98.9 L658.2,99.4" fill="none" stroke="#8172B2" stroke-width="2.4" stroke-linejoin="round"/>
+<circle cx="139.8" cy="324.0" r="4" fill="#8172B2" stroke="#fff" stroke-width="1.4"><title>S1 DCTCP: 3.154e+05</title></circle>
+<circle cx="243.5" cy="99.7" r="4" fill="#8172B2" stroke="#fff" stroke-width="1.4"><title>S2 DCTCP: 1.271e+06</title></circle>
+<circle cx="347.2" cy="99.4" r="4" fill="#8172B2" stroke="#fff" stroke-width="1.4"><title>S3 DCTCP: 1.272e+06</title></circle>
+<circle cx="450.8" cy="258.6" r="4" fill="#8172B2" stroke="#fff" stroke-width="1.4"><title>S6 DCTCP: 5.942e+05</title></circle>
+<circle cx="554.5" cy="98.9" r="4" fill="#8172B2" stroke="#fff" stroke-width="1.4"><title>S4 DCTCP: 1.274e+06</title></circle>
+<circle cx="658.2" cy="99.4" r="4" fill="#8172B2" stroke="#fff" stroke-width="1.4"><title>S5 DCTCP: 1.272e+06</title></circle>
+<path d="M139.8,323.4 L243.5,97.4 L347.2,97.4 L450.8,257.5 L554.5,96.7 L658.2,97.4" fill="none" stroke="#937860" stroke-width="2.4" stroke-linejoin="round"/>
+<circle cx="139.8" cy="323.4" r="4" fill="#937860" stroke="#fff" stroke-width="1.4"><title>S1 TIMELY: 3.179e+05</title></circle>
+<circle cx="243.5" cy="97.4" r="4" fill="#937860" stroke="#fff" stroke-width="1.4"><title>S2 TIMELY: 1.281e+06</title></circle>
+<circle cx="347.2" cy="97.4" r="4" fill="#937860" stroke="#fff" stroke-width="1.4"><title>S3 TIMELY: 1.281e+06</title></circle>
+<circle cx="450.8" cy="257.5" r="4" fill="#937860" stroke="#fff" stroke-width="1.4"><title>S6 TIMELY: 5.988e+05</title></circle>
+<circle cx="554.5" cy="96.7" r="4" fill="#937860" stroke="#fff" stroke-width="1.4"><title>S4 TIMELY: 1.284e+06</title></circle>
+<circle cx="658.2" cy="97.4" r="4" fill="#937860" stroke="#fff" stroke-width="1.4"><title>S5 TIMELY: 1.281e+06</title></circle>
+<path d="M139.8,397.0 L243.5,144.6 L347.2,186.6 L450.8,379.3 L554.5,186.9 L658.2,352.1" fill="none" stroke="#55A868" stroke-width="2.4" stroke-linejoin="round"/>
+<circle cx="139.8" cy="397.0" r="4" fill="#55A868" stroke="#fff" stroke-width="1.4"><title>S1 HPCC: 4360</title></circle>
+<circle cx="243.5" cy="144.6" r="4" fill="#55A868" stroke="#fff" stroke-width="1.4"><title>S2 HPCC: 1.08e+06</title></circle>
+<circle cx="347.2" cy="186.6" r="4" fill="#55A868" stroke="#fff" stroke-width="1.4"><title>S3 HPCC: 9.007e+05</title></circle>
+<circle cx="450.8" cy="379.3" r="4" fill="#55A868" stroke="#fff" stroke-width="1.4"><title>S6 HPCC: 7.954e+04</title></circle>
+<circle cx="554.5" cy="186.9" r="4" fill="#55A868" stroke="#fff" stroke-width="1.4"><title>S4 HPCC: 8.997e+05</title></circle>
+<circle cx="658.2" cy="352.1" r="4" fill="#55A868" stroke="#fff" stroke-width="1.4"><title>S5 HPCC: 1.958e+05</title></circle>
+<path d="M139.8,395.5 L243.5,101.9 L347.2,101.4 L450.8,392.1 L554.5,101.2 L658.2,101.4" fill="none" stroke="#C44E52" stroke-width="2.4" stroke-linejoin="round"/>
+<circle cx="139.8" cy="395.5" r="4" fill="#C44E52" stroke="#fff" stroke-width="1.4"><title>S1 CBAP-SBA: 1.048e+04</title></circle>
+<circle cx="243.5" cy="101.9" r="4" fill="#C44E52" stroke="#fff" stroke-width="1.4"><title>S2 CBAP-SBA: 1.262e+06</title></circle>
+<circle cx="347.2" cy="101.4" r="4" fill="#C44E52" stroke="#fff" stroke-width="1.4"><title>S3 CBAP-SBA: 1.264e+06</title></circle>
+<circle cx="450.8" cy="392.1" r="4" fill="#C44E52" stroke="#fff" stroke-width="1.4"><title>S6 CBAP-SBA: 2.515e+04</title></circle>
+<circle cx="554.5" cy="101.2" r="4" fill="#C44E52" stroke="#fff" stroke-width="1.4"><title>S4 CBAP-SBA: 1.265e+06</title></circle>
+<circle cx="658.2" cy="101.4" r="4" fill="#C44E52" stroke="#fff" stroke-width="1.4"><title>S5 CBAP-SBA: 1.264e+06</title></circle>
+<text x="139.8" y="415" font-size="11.5" fill="#444" text-anchor="middle">S1</text>
+<text x="139.8" y="428" font-size="9.5" fill="#444" text-anchor="middle">16x256K</text>
+<text x="243.5" y="415" font-size="11.5" fill="#444" text-anchor="middle">S2</text>
+<text x="243.5" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x256K</text>
+<text x="347.2" y="415" font-size="11.5" fill="#444" text-anchor="middle">S3</text>
+<text x="347.2" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x1M</text>
+<text x="450.8" y="415" font-size="11.5" fill="#444" text-anchor="middle">S6</text>
+<text x="450.8" y="428" font-size="9.5" fill="#444" text-anchor="middle">dual-bn</text>
+<text x="554.5" y="415" font-size="11.5" fill="#444" text-anchor="middle">S4</text>
+<text x="554.5" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x1M/95%</text>
+<text x="658.2" y="415" font-size="11.5" fill="#444" text-anchor="middle">S5</text>
+<text x="658.2" y="428" font-size="9.5" fill="#444" text-anchor="middle">64x4M</text>
+<rect x="728" y="56" width="13" height="13" fill="#4C72B0" rx="2"/>
+<text x="747" y="67" font-size="11.5" fill="#333">DCQCN</text>
+<rect x="728" y="78" width="13" height="13" fill="#8172B2" rx="2"/>
+<text x="747" y="89" font-size="11.5" fill="#333">DCTCP</text>
+<rect x="728" y="100" width="13" height="13" fill="#937860" rx="2"/>
+<text x="747" y="111" font-size="11.5" fill="#333">TIMELY</text>
+<rect x="728" y="122" width="13" height="13" fill="#55A868" rx="2"/>
+<text x="747" y="133" font-size="11.5" fill="#333">HPCC</text>
+<rect x="728" y="144" width="13" height="13" fill="#C44E52" rx="2"/>
+<text x="747" y="155" font-size="11.5" fill="#333">CBAP-SBA</text>
+</svg>

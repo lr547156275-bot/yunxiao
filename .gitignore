@@ -62,3 +62,4 @@ simulation/fct.txt
 !simulation/experiment/scheme1_sba/analysis_s*/**
 !simulation/experiment/scheme1_sba/matrix_logs/**
 !simulation/experiment/scheme1_sba/cell_configs/**
+!simulation/experiment/scheme1_sba/final_report/charts/**
