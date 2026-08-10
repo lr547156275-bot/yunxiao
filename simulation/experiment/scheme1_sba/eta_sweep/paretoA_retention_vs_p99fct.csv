@@ -1,0 +1,8 @@
+label,kind,eta,x_metric,x_value,x_label,y_metric,y_value,y_label
+eta=0.20,cbapsba_eta,0.20,bg_retention_pct,86.275382,background throughput retention (%),fct_p99_ms,239.578540,incast p99 FCT (ms)
+eta=0.35,cbapsba_eta,0.35,bg_retention_pct,79.352456,background throughput retention (%),fct_p99_ms,148.826492,incast p99 FCT (ms)
+eta=0.50,cbapsba_eta,0.50,bg_retention_pct,74.247405,background throughput retention (%),fct_p99_ms,107.848292,incast p99 FCT (ms)
+eta=0.65,cbapsba_eta,0.65,bg_retention_pct,70.269334,background throughput retention (%),fct_p99_ms,85.041186,incast p99 FCT (ms)
+eta=0.80,cbapsba_eta,0.80,bg_retention_pct,67.110790,background throughput retention (%),fct_p99_ms,70.130433,incast p99 FCT (ms)
+DCQCN,reference_dcqcn,,bg_retention_pct,100.000112,background throughput retention (%),fct_p99_ms,1127.320690,incast p99 FCT (ms)
+HPCC,reference_hpcc,,bg_retention_pct,62.997896,background throughput retention (%),fct_p99_ms,60.242022,incast p99 FCT (ms)

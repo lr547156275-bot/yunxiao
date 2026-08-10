@@ -1,0 +1,8 @@
+label,kind,eta,x_metric,x_value,x_label,y_metric,y_value,y_label
+eta=0.20,cbapsba_eta,0.20,queue_p99_bytes,1271224.000000,bottleneck queue p99 (bytes),fct_p99_ms,239.578540,incast p99 FCT (ms)
+eta=0.35,cbapsba_eta,0.35,queue_p99_bytes,1268080.000000,bottleneck queue p99 (bytes),fct_p99_ms,148.826492,incast p99 FCT (ms)
+eta=0.50,cbapsba_eta,0.50,queue_p99_bytes,1264936.000000,bottleneck queue p99 (bytes),fct_p99_ms,107.848292,incast p99 FCT (ms)
+eta=0.65,cbapsba_eta,0.65,queue_p99_bytes,52400.000000,bottleneck queue p99 (bytes),fct_p99_ms,85.041186,incast p99 FCT (ms)
+eta=0.80,cbapsba_eta,0.80,queue_p99_bytes,50304.000000,bottleneck queue p99 (bytes),fct_p99_ms,70.130433,incast p99 FCT (ms)
+DCQCN,reference_dcqcn,,queue_p99_bytes,1274368.000000,bottleneck queue p99 (bytes),fct_p99_ms,1127.320690,incast p99 FCT (ms)
+HPCC,reference_hpcc,,queue_p99_bytes,899740.500000,bottleneck queue p99 (bytes),fct_p99_ms,60.242022,incast p99 FCT (ms)

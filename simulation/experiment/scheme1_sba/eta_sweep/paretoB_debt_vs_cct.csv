@@ -1,0 +1,8 @@
+label,kind,eta,x_metric,x_value,x_label,y_metric,y_value,y_label
+eta=0.20,cbapsba_eta,0.20,bg_service_debt_bytes,0.000000,background service debt (bytes),cct_ms,339.578854,collective completion time (ms)
+eta=0.35,cbapsba_eta,0.35,bg_service_debt_bytes,0.000000,background service debt (bytes),cct_ms,248.826806,collective completion time (ms)
+eta=0.50,cbapsba_eta,0.50,bg_service_debt_bytes,0.000000,background service debt (bytes),cct_ms,207.848606,collective completion time (ms)
+eta=0.65,cbapsba_eta,0.65,bg_service_debt_bytes,0.000000,background service debt (bytes),cct_ms,185.041500,collective completion time (ms)
+eta=0.80,cbapsba_eta,0.80,bg_service_debt_bytes,0.000000,background service debt (bytes),cct_ms,170.130747,collective completion time (ms)
+DCQCN,reference_dcqcn,,bg_service_debt_bytes,0.000000,background service debt (bytes),cct_ms,1227.327340,collective completion time (ms)
+HPCC,reference_hpcc,,bg_service_debt_bytes,0.000000,background service debt (bytes),cct_ms,160.313452,collective completion time (ms)
