@@ -157,6 +157,9 @@ double cbap_new_batch_weight = 1.0;
 // Capacity migration (docs/cbap_sba_capacity_migration_design.md).
 bool cbap_migration_enable = false;
 double cbap_migration_release_ratio = 0.5;
+// Per-replan capacity-feasibility audit.  Off unless a scenario asks for it.
+uint32_t cbap_eta_feasibility_trace = 0;
+string cbap_eta_feasibility_file;
 double cbap_migration_decay_base = 0.30;
 double cbap_migration_rise_base = 0.30;
 double cbap_migration_rise_skew = 0.35;
@@ -644,6 +647,7 @@ void ReadCbapInputs(){
 	config.newBatchWeight = cbap_new_batch_weight;
 	config.migrationEnabled = cbap_migration_enable;
 	config.migrationReleaseRatio = cbap_migration_release_ratio;
+	config.etaFeasibilityTrace = (cbap_eta_feasibility_trace != 0);
 	config.migrationDecayBase = cbap_migration_decay_base;
 	config.migrationRiseBase = cbap_migration_rise_base;
 	config.migrationRiseSkew = cbap_migration_rise_skew;
@@ -866,6 +870,35 @@ void WriteCbapSummaries(){
 				<< r.appliedCapacityExcessBps << ','
 				<< r.appliedCapacityViolation << ','
 				<< r.actualArrivalExcessBps << '\n';
+		}
+	}
+	if (!cbap_eta_feasibility_file.empty()){
+		ofstream output(cbap_eta_feasibility_file.c_str());
+		output << "timestamp_ns,link_id,epoch,eta_base,eta_feasible,"
+			"eta_effective,r_old_bps,new_flow_count,min_rate_bps,"
+			"residual_capacity_bps,old_target_sum_bps,"
+			"new_target_sum_bps,final_sum_target_bps,"
+			"link_capacity_bps,floor_binding,feasible\n";
+		const vector<RdmaHw::CbapEtaFeasibilityRecord> &rows =
+			RdmaHw::GetCbapEtaFeasibilityRecords();
+		for (uint32_t i = 0; i < rows.size(); ++i){
+			const RdmaHw::CbapEtaFeasibilityRecord &r = rows[i];
+			// 'feasible' is derived here rather than stored, so the file
+			// states the verdict the numbers on the same row imply.
+			bool feasible = r.finalSumTargetBps <= r.linkCapacityBps;
+			// Fixed notation with explicit precision: eta values are small
+			// decimals and must not come out in scientific form, and the
+			// stream's flags are otherwise inherited from earlier writers.
+			output << r.timestampNs << ',' << r.linkId << ',' << r.epoch
+				<< ',' << std::fixed << std::setprecision(6) << r.etaBase
+				<< ',' << r.etaFeasible << ',' << r.etaEffective
+				<< std::resetiosflags(std::ios::fixed)
+				<< ',' << r.rOldBps << ',' << r.newFlowCount
+				<< ',' << r.minRateBps << ',' << r.residualCapacityBps
+				<< ',' << r.oldTargetSumBps << ',' << r.newTargetSumBps
+				<< ',' << r.finalSumTargetBps << ',' << r.linkCapacityBps
+				<< ',' << (r.floorBinding ? 1 : 0)
+				<< ',' << (feasible ? 1 : 0) << '\n';
 		}
 	}
 	if (!cbap_increase_audit_file.empty()){
@@ -2803,6 +2836,10 @@ int main(int argc, char *argv[])
 				conf>>cbap_migration_enable;
 			else if(key.compare("CBAP_MIGRATION_RELEASE_RATIO")==0)
 				conf>>cbap_migration_release_ratio;
+			else if(key.compare("CBAP_ETA_FEASIBILITY_TRACE")==0)
+				conf>>cbap_eta_feasibility_trace;
+			else if(key.compare("CBAP_ETA_FEASIBILITY_FILE")==0)
+				conf>>cbap_eta_feasibility_file;
 			else if(key.compare("CBAP_MIGRATION_DECAY_BASE")==0)
 				conf>>cbap_migration_decay_base;
 			else if(key.compare("CBAP_MIGRATION_RISE_BASE")==0)

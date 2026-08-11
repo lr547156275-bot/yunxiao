@@ -38,6 +38,10 @@ std::vector<RdmaHw::BopMultilinkGroupDecision>
 std::vector<RdmaHw::BopMultilinkLinkDecision>
 	RdmaHw::s_bopMultilinkLinkDecisions;
 RdmaHw::CbapConfig RdmaHw::s_cbapConfig;
+// Last effective release ratio actually used by a handover, after the capacity
+// feasibility floor.  Diagnostic only: nothing reads it to make a decision, it
+// exists so a run can report whether eta was raised and by how much.
+double RdmaHw::s_cbapLastEtaEffective = 0.0;
 bool RdmaHw::s_cbapStarted = false;
 uint32_t RdmaHw::s_cbapEpoch = 0;
 RdmaHw::CbapPortReadCallback RdmaHw::s_cbapPortRead;
@@ -61,6 +65,8 @@ std::vector<RdmaHw::CbapAdmissionRecord> RdmaHw::s_cbapAdmissionRecords;
 std::vector<RdmaHw::CbapRateRecord> RdmaHw::s_cbapRateRecords;
 std::vector<RdmaHw::CbapAppliedRateAuditRecord>
 	RdmaHw::s_cbapAppliedRateAuditRecords;
+std::vector<RdmaHw::CbapEtaFeasibilityRecord>
+	RdmaHw::s_cbapEtaFeasibilityRecords;
 std::vector<RdmaHw::CbapIncreaseRecord> RdmaHw::s_cbapIncreaseRecords;
 std::vector<RdmaHw::CbapFlowRecord> RdmaHw::s_cbapFlowRecords;
 std::vector<RdmaHw::CbapTxRecord> RdmaHw::s_cbapTxRecords;
@@ -385,6 +391,12 @@ const std::vector<RdmaHw::CbapAppliedRateAuditRecord> &
 RdmaHw::GetCbapAppliedRateAuditRecords()
 {
 	return s_cbapAppliedRateAuditRecords;
+}
+
+const std::vector<RdmaHw::CbapEtaFeasibilityRecord> &
+RdmaHw::GetCbapEtaFeasibilityRecords()
+{
+	return s_cbapEtaFeasibilityRecords;
 }
 
 const std::vector<RdmaHw::CbapIncreaseRecord> &
@@ -1867,11 +1879,82 @@ void RdmaHw::ReplanCbapSbaMigrationTargets(uint64_t nowNs,
 			// Handover in progress: old side releases eta of what it holds.
 			uint64_t oldAggregate = oldAggregateBps.count(link->first) ?
 				oldAggregateBps[link->first] : 0;
+			long double eta = s_cbapConfig.migrationReleaseRatio;
+			// Capacity feasibility.  The per-flow floor applied further down
+			// (max(target, MIN_RATE)) is hard, so when the new side's equal
+			// split falls below it the floor lifts every one of the N flows
+			// and the target sum becomes
+			//     (1-eta)*R_old + N*R_min  >  C,
+			// i.e. the allocation is already infeasible before a packet is
+			// sent, and the excess can only go into the queue.  Solving
+			// N*R_min <= C - (1-eta)*R_old for eta gives the smallest release
+			// ratio that keeps the sum within capacity:
+			//     eta_feasible = (N*R_min - (C - R_old)) / R_old.
+			// eta is raised to it only when it is larger, so this is a
+			// feasibility floor, never an FCT optimisation: wherever the
+			// configured eta already satisfies capacity it is used unchanged.
+			//
+			// N counts new-batch flows on THIS link rather than globally,
+			// because the shares are computed per link and a multi-bottleneck
+			// scenario must use its own fan-in.  R_old is the runtime
+			// aggregate the shares are actually derived from, not a
+			// configured cap.
+			uint64_t minRateBps = 0;
+			for (uint32_t i = 0; i < news.size(); ++i) {
+				RdmaHw *nhw = s_cbapFlows.count(news[i]) ?
+					s_cbapFlows[news[i]].hw : 0;
+				if (nhw) {
+					minRateBps = nhw->m_minRate.GetBitRate();
+					break;
+				}
+			}
+			// Kept in scope so the trace can report the raw feasibility
+			// bound alongside the value actually applied.
+			double etaFeasibleReported = 0.0;
+			if (minRateBps > 0 && oldAggregate > 0) {
+				long double need = (long double)news.size() *
+					(long double)minRateBps;
+				long double headroom = (long double)link->second -
+					(long double)oldAggregate;
+				long double etaFeasible =
+					(need - headroom) / (long double)oldAggregate;
+				etaFeasibleReported = (double)etaFeasible;
+				if (etaFeasible > eta)
+					eta = etaFeasible;
+				if (eta > 1.0L)
+					eta = 1.0L;
+			}
+			s_cbapLastEtaEffective = (double)eta;
 			oldShare = (uint64_t)std::floor(
-				(1.0L - s_cbapConfig.migrationReleaseRatio) *
-				(long double)oldAggregate);
+				(1.0L - eta) * (long double)oldAggregate);
 			newShare = link->second > oldShare ?
 				link->second - oldShare : 0;
+			// Low-overhead audit: one row per replan per link, never per
+			// packet.  Records both sides of eta_eff = max(base, feasible)
+			// and the resulting target sums, so capacity feasibility can be
+			// checked from data rather than argued from the code.
+			if (s_cbapConfig.etaFeasibilityTrace) {
+				uint64_t perNew = news.empty() ? 0 : newShare / news.size();
+				uint64_t perNewEff = perNew > minRateBps ? perNew : minRateBps;
+				CbapEtaFeasibilityRecord rec;
+				rec.timestampNs = nowNs;
+				rec.linkId = link->first;
+				rec.epoch = s_cbapEpoch;
+				rec.etaBase = s_cbapConfig.migrationReleaseRatio;
+				rec.etaFeasible = etaFeasibleReported;
+				rec.etaEffective = (double)eta;
+				rec.rOldBps = oldAggregate;
+				rec.newFlowCount = (uint32_t)news.size();
+				rec.minRateBps = minRateBps;
+				rec.residualCapacityBps = link->second > oldAggregate ?
+					link->second - oldAggregate : 0;
+				rec.oldTargetSumBps = oldShare;
+				rec.newTargetSumBps = perNewEff * news.size();
+				rec.finalSumTargetBps = oldShare + perNewEff * news.size();
+				rec.linkCapacityBps = link->second;
+				rec.floorBinding = (perNew < minRateBps);
+				s_cbapEtaFeasibilityRecords.push_back(rec);
+			}
 		} else if (news.empty()) {
 			// Recovery: the new batch is gone, the old side takes it all.
 			oldShare = link->second;

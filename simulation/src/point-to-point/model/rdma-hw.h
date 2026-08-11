@@ -230,6 +230,9 @@ public:
 		double migrationRiseSkew;
 		uint32_t migrationMaxRtt;
 		bool migrationTrace;
+		// Per-replan audit of the capacity-feasibility rule.  Off by default
+		// so no existing run changes behaviour or output.
+		bool etaFeasibilityTrace;
 		std::string scenario;
 		std::string algorithm;
 		std::string cbapVersion;
@@ -260,7 +263,7 @@ public:
 			  migrationEnabled(false), migrationReleaseRatio(0.5),
 			  migrationDecayBase(0.30), migrationRiseBase(0.30),
 			  migrationRiseSkew(0.35), migrationMaxRtt(5),
-			  migrationTrace(false),
+			  migrationTrace(false), etaFeasibilityTrace(false),
 			  scenario("unknown"), algorithm("unknown"),
 			  cbapVersion("v1") {}
 	};
@@ -569,6 +572,28 @@ public:
 		bool appliedCapacityViolation;
 		uint64_t actualArrivalExcessBps;
 	};
+	// One row per handover replan on one link, emitted only when the
+	// allocation is (re)computed -- not per packet.  Exists to make the
+	// capacity-feasibility rule auditable directly from data:
+	//   eta_effective == max(eta_base, eta_feasible)
+	//   finalSumTargetBps <= linkCapacityBps
+	struct CbapEtaFeasibilityRecord {
+		uint64_t timestampNs;
+		uint32_t linkId;
+		uint32_t epoch;
+		double etaBase;
+		double etaFeasible;
+		double etaEffective;
+		uint64_t rOldBps;            // runtime aggregate of the old side
+		uint32_t newFlowCount;       // N on THIS link
+		uint64_t minRateBps;
+		uint64_t residualCapacityBps; // C - R_old (may be 0)
+		uint64_t oldTargetSumBps;
+		uint64_t newTargetSumBps;
+		uint64_t finalSumTargetBps;
+		uint64_t linkCapacityBps;
+		bool floorBinding;           // did MIN_RATE clamp the new side?
+	};
 	struct CbapIncreaseRecord {
 		uint64_t timestampNs;
 		std::string scenario;
@@ -677,6 +702,8 @@ public:
 	static const std::vector<CbapRateRecord> &GetCbapRateRecords();
 	static const std::vector<CbapAppliedRateAuditRecord> &
 		GetCbapAppliedRateAuditRecords();
+	static const std::vector<CbapEtaFeasibilityRecord> &
+		GetCbapEtaFeasibilityRecords();
 	static const std::vector<CbapIncreaseRecord> &
 		GetCbapIncreaseRecords();
 	static const std::vector<CbapFlowRecord> &GetCbapFlowRecords();
@@ -1009,6 +1036,9 @@ public:
 			  handedOff(false) {}
 	};
 	static CbapConfig s_cbapConfig;
+	// Effective release ratio of the most recent handover, after the capacity
+	// feasibility floor.  Diagnostic only.
+	static double s_cbapLastEtaEffective;
 	static bool s_cbapStarted;
 	static uint32_t s_cbapEpoch;
 	static CbapPortReadCallback s_cbapPortRead;
@@ -1040,6 +1070,8 @@ public:
 	static std::vector<CbapRateRecord> s_cbapRateRecords;
 	static std::vector<CbapAppliedRateAuditRecord>
 		s_cbapAppliedRateAuditRecords;
+	static std::vector<CbapEtaFeasibilityRecord>
+		s_cbapEtaFeasibilityRecords;
 	static std::vector<CbapIncreaseRecord> s_cbapIncreaseRecords;
 	static std::vector<CbapFlowRecord> s_cbapFlowRecords;
 	static std::vector<CbapTxRecord> s_cbapTxRecords;

@@ -50,6 +50,11 @@ BASE_MF=$LOGS/matrix_baseline.manifest
 if [ -f "$BASE_MF" ]; then
   want_topo=$(awk -F= '$1=="topology_sha256"{print $2}' "$BASE_MF")
   want_bin=$(awk -F= '$1=="binary_sha256"{print $2}' "$BASE_MF")
+  # third is only a thin launcher: the CBAP-SBA logic lives in the dynamically
+  # linked point-to-point library, so hashing third alone does NOT detect an
+  # algorithm change.  Both must match.
+  want_lib=$(awk -F= '$1=="p2p_lib_sha256"{print $2}' "$BASE_MF")
+  have_lib=$(sha256sum build/libns3.18-point-to-point-debug.so 2>/dev/null | cut -d' ' -f1)
   have_topo=$(sha256sum "$D/topology.txt" | cut -d' ' -f1)
   have_bin=$(sha256sum build/scratch/third | cut -d' ' -f1)
   if [ -n "$want_topo" ] && [ "$want_topo" != "$have_topo" ]; then
@@ -59,6 +64,13 @@ if [ -f "$BASE_MF" ]; then
     echo "HASH MISMATCH: build/scratch/third changed since the baseline"
     echo "  baseline=$want_bin"
     echo "  current =$have_bin"
+    exit 1
+  fi
+  if [ -n "$want_lib" ] && [ "$want_lib" != "$have_lib" ]; then
+    echo "HASH MISMATCH: libns3.18-point-to-point-debug.so changed since the baseline"
+    echo "  baseline=$want_lib"
+    echo "  current =$have_lib"
+    echo "  This library carries the CBAP-SBA logic; all cells must share one build."
     exit 1
   fi
 fi
@@ -185,6 +197,8 @@ run_cell() {
     echo "cbap_link_sha256=$(sha256sum "$D/$(cfgval CBAP_LINK_FILE)" 2>/dev/null | cut -d' ' -f1)"
     echo "cbap_path_sha256=$(sha256sum "$D/$(cfgval CBAP_PATH_FILE)" 2>/dev/null | cut -d' ' -f1)"
     echo "binary_sha256=$(sha256sum build/scratch/third 2>/dev/null | cut -d' ' -f1)"
+    # The algorithm itself ships in this shared library, not in third.
+    echo "p2p_lib_sha256=$(sha256sum build/libns3.18-point-to-point-debug.so 2>/dev/null | cut -d' ' -f1)"
     echo "git_commit=$(git -C "$SIM" rev-parse HEAD 2>/dev/null || echo unknown)"
     echo "git_dirty=$(git -C "$SIM" status --porcelain 2>/dev/null | wc -l)"
     echo "output_dir=$D/$out"
