@@ -1,0 +1,31 @@
+scenario,scenario_desc,algorithm,metric,value,unit
+s1,"16-way x 256KiB, background 80%",DCQCN,bg_min_gbps,7.636363636363279,Gbps
+s1,"16-way x 256KiB, background 80%",DCTCP,bg_min_gbps,7.636363636363279,Gbps
+s1,"16-way x 256KiB, background 80%",TIMELY,bg_min_gbps,7.5797979797976245,Gbps
+s1,"16-way x 256KiB, background 80%",HPCC,bg_min_gbps,0.3999999999999812,Gbps
+s1,"16-way x 256KiB, background 80%",CBAP-SBA,bg_min_gbps,3.858585858585678,Gbps
+s2,"64-way x 256KiB, background 80%",DCQCN,bg_min_gbps,7.636363636363279,Gbps
+s2,"64-way x 256KiB, background 80%",DCTCP,bg_min_gbps,7.636363636363279,Gbps
+s2,"64-way x 256KiB, background 80%",TIMELY,bg_min_gbps,7.5797979797976245,Gbps
+s2,"64-way x 256KiB, background 80%",HPCC,bg_min_gbps,0.09292929292928859,Gbps
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,bg_min_gbps,2.929292929292792,Gbps
+s3,"64-way x 1MiB, background 80%",DCQCN,bg_min_gbps,7.636363636363279,Gbps
+s3,"64-way x 1MiB, background 80%",DCTCP,bg_min_gbps,7.636363636363279,Gbps
+s3,"64-way x 1MiB, background 80%",TIMELY,bg_min_gbps,7.5797979797976245,Gbps
+s3,"64-way x 1MiB, background 80%",HPCC,bg_min_gbps,0.09292929292928859,Gbps
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,bg_min_gbps,2.258585858585753,Gbps
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,bg_min_gbps,7.636363636363279,Gbps
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCTCP,bg_min_gbps,7.636363636363279,Gbps
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",TIMELY,bg_min_gbps,7.5797979797976245,Gbps
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",HPCC,bg_min_gbps,0.24242424242423105,Gbps
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",CBAP-SBA,bg_min_gbps,3.8545454545452738,Gbps
+s4,"64-way x 1MiB, background 95%",DCQCN,bg_min_gbps,9.066666666664208,Gbps
+s4,"64-way x 1MiB, background 95%",DCTCP,bg_min_gbps,9.066666666664208,Gbps
+s4,"64-way x 1MiB, background 95%",TIMELY,bg_min_gbps,8.993939393938973,Gbps
+s4,"64-way x 1MiB, background 95%",HPCC,bg_min_gbps,0.09292929292928859,Gbps
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,bg_min_gbps,4.282828282828082,Gbps
+s5,"64-way x 4MiB, background 80%",DCQCN,bg_min_gbps,7.636363636363279,Gbps
+s5,"64-way x 4MiB, background 80%",DCTCP,bg_min_gbps,7.636363636363279,Gbps
+s5,"64-way x 4MiB, background 80%",TIMELY,bg_min_gbps,7.5797979797959245,Gbps
+s5,"64-way x 4MiB, background 80%",HPCC,bg_min_gbps,0.09292929292928859,Gbps
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,bg_min_gbps,2.436363636363522,Gbps

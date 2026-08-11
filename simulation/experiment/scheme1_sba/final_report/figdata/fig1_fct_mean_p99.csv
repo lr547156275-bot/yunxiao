@@ -17,8 +17,8 @@ s2,"64-way x 256KiB, background 80%",TIMELY,fct_mean_ms,70.16699306249998,ms
 s2,"64-way x 256KiB, background 80%",TIMELY,fct_p99_ms,70.82500811,ms
 s2,"64-way x 256KiB, background 80%",HPCC,fct_mean_ms,14.802667562499996,ms
 s2,"64-way x 256KiB, background 80%",HPCC,fct_p99_ms,15.117964279999999,ms
-s2,"64-way x 256KiB, background 80%",CBAP-SBA,fct_mean_ms,22.582422093749997,ms
-s2,"64-way x 256KiB, background 80%",CBAP-SBA,fct_p99_ms,22.773377609999997,ms
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,fct_mean_ms,22.09103665625,ms
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,fct_p99_ms,22.09797261,ms
 s3,"64-way x 1MiB, background 80%",DCQCN,fct_mean_ms,281.56431668749997,ms
 s3,"64-way x 1MiB, background 80%",DCQCN,fct_p99_ms,281.74068281,ms
 s3,"64-way x 1MiB, background 80%",DCTCP,fct_mean_ms,281.5613705937499,ms
@@ -27,8 +27,8 @@ s3,"64-way x 1MiB, background 80%",TIMELY,fct_mean_ms,283.03127962499997,ms
 s3,"64-way x 1MiB, background 80%",TIMELY,fct_p99_ms,283.21621441,ms
 s3,"64-way x 1MiB, background 80%",HPCC,fct_mean_ms,59.5885604375,ms
 s3,"64-way x 1MiB, background 80%",HPCC,fct_p99_ms,60.13094515,ms
-s3,"64-way x 1MiB, background 80%",CBAP-SBA,fct_mean_ms,93.33508690625001,ms
-s3,"64-way x 1MiB, background 80%",CBAP-SBA,fct_p99_ms,93.53423563,ms
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,fct_mean_ms,88.27552778125,ms
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,fct_p99_ms,88.29508263,ms
 s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,fct_mean_ms,32.6858554,ms
 s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,fct_p99_ms,33.033707,ms
 s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCTCP,fct_mean_ms,32.6858554,ms
@@ -47,8 +47,8 @@ s4,"64-way x 1MiB, background 95%",TIMELY,fct_mean_ms,1118.2724176875,ms
 s4,"64-way x 1MiB, background 95%",TIMELY,fct_p99_ms,1118.9748579299999,ms
 s4,"64-way x 1MiB, background 95%",HPCC,fct_mean_ms,59.66659589062499,ms
 s4,"64-way x 1MiB, background 95%",HPCC,fct_p99_ms,60.24202197,ms
-s4,"64-way x 1MiB, background 95%",CBAP-SBA,fct_mean_ms,107.81862840625,ms
-s4,"64-way x 1MiB, background 95%",CBAP-SBA,fct_p99_ms,107.84829163,ms
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,fct_mean_ms,88.25602906249999,ms
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,fct_p99_ms,88.27512563,ms
 s5,"64-way x 4MiB, background 80%",DCQCN,fct_mean_ms,1126.2912163750002,ms
 s5,"64-way x 4MiB, background 80%",DCQCN,fct_p99_ms,1126.91827409,ms
 s5,"64-way x 4MiB, background 80%",DCTCP,fct_mean_ms,1126.2949611875001,ms
@@ -57,5 +57,5 @@ s5,"64-way x 4MiB, background 80%",TIMELY,fct_mean_ms,1132.1922835625,ms
 s5,"64-way x 4MiB, background 80%",TIMELY,fct_p99_ms,1132.81975147,ms
 s5,"64-way x 4MiB, background 80%",HPCC,fct_mean_ms,239.45027875000002,ms
 s5,"64-way x 4MiB, background 80%",HPCC,fct_p99_ms,240.5432648,ms
-s5,"64-way x 4MiB, background 80%",CBAP-SBA,fct_mean_ms,376.3261536562499,ms
-s5,"64-way x 4MiB, background 80%",CBAP-SBA,fct_p99_ms,376.51972497,ms
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,fct_mean_ms,350.54449125,ms
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,fct_p99_ms,350.96326197,ms

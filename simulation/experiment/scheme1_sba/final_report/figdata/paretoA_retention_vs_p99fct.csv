@@ -8,12 +8,12 @@ s2,DCQCN,bg_retention_pct,99.99939600376504,percent,fct_p99_ms,70.45498467,ms
 s2,DCTCP,bg_retention_pct,99.99939600376504,percent,fct_p99_ms,70.45498467,ms
 s2,TIMELY,bg_retention_pct,99.99950764729262,percent,fct_p99_ms,70.82500811,ms
 s2,HPCC,bg_retention_pct,87.10570749558698,percent,fct_p99_ms,15.117964279999999,ms
-s2,CBAP-SBA,bg_retention_pct,90.31949366392318,percent,fct_p99_ms,22.773377609999997,ms
+s2,CBAP-SBA,bg_retention_pct,90.1261850821658,percent,fct_p99_ms,22.09797261,ms
 s3,DCQCN,bg_retention_pct,99.99978896795868,percent,fct_p99_ms,281.74068281,ms
 s3,DCTCP,bg_retention_pct,99.99978896795868,percent,fct_p99_ms,281.74068281,ms
 s3,TIMELY,bg_retention_pct,99.9997288389123,percent,fct_p99_ms,283.21621441,ms
 s3,HPCC,bg_retention_pct,63.11390928345976,percent,fct_p99_ms,60.13094515,ms
-s3,CBAP-SBA,bg_retention_pct,75.74894931140531,percent,fct_p99_ms,93.53423563,ms
+s3,CBAP-SBA,bg_retention_pct,74.37934524216017,percent,fct_p99_ms,88.29508263,ms
 s6,DCQCN,bg_retention_pct,99.99940228430457,percent,fct_p99_ms,33.033707,ms
 s6,DCTCP,bg_retention_pct,99.99940228430457,percent,fct_p99_ms,33.033707,ms
 s6,TIMELY,bg_retention_pct,99.99920301593602,percent,fct_p99_ms,33.20653,ms
@@ -23,9 +23,9 @@ s4,DCQCN,bg_retention_pct,100.00011228766942,percent,fct_p99_ms,1127.32069035000
 s4,DCTCP,bg_retention_pct,100.00011228766942,percent,fct_p99_ms,1127.3206903500002,ms
 s4,TIMELY,bg_retention_pct,100.00002793616812,percent,fct_p99_ms,1118.9748579299999,ms
 s4,HPCC,bg_retention_pct,62.99789596711097,percent,fct_p99_ms,60.24202197,ms
-s4,CBAP-SBA,bg_retention_pct,74.24740459248063,percent,fct_p99_ms,107.84829163,ms
+s4,CBAP-SBA,bg_retention_pct,71.02578376097193,percent,fct_p99_ms,88.27512563,ms
 s5,DCQCN,bg_retention_pct,99.99993942879122,percent,fct_p99_ms,1126.91827409,ms
 s5,DCTCP,bg_retention_pct,99.99993942879122,percent,fct_p99_ms,1126.91827409,ms
 s5,TIMELY,bg_retention_pct,99.99986970003646,percent,fct_p99_ms,1132.81975147,ms
 s5,HPCC,bg_retention_pct,30.597231274486408,percent,fct_p99_ms,240.5432648,ms
-s5,CBAP-SBA,bg_retention_pct,60.72663586157103,percent,fct_p99_ms,376.51972497,ms
+s5,CBAP-SBA,bg_retention_pct,57.08534529495509,percent,fct_p99_ms,350.96326197,ms

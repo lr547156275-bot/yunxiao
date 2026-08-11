@@ -8,12 +8,12 @@ s2,DCQCN,bg_service_debt_bytes,2567359000.0,bytes,cct_ms,170.45560900000024,ms
 s2,DCTCP,bg_service_debt_bytes,2567359000.0,bytes,cct_ms,170.45560900000024,ms
 s2,TIMELY,bg_service_debt_bytes,2578223000.0,bytes,cct_ms,170.82563999999988,ms
 s2,HPCC,bg_service_debt_bytes,2636261000.0,bytes,cct_ms,115.1293950000003,ms
-s2,CBAP-SBA,bg_service_debt_bytes,2583053000.0,bytes,cct_ms,122.77347400000016,ms
+s2,CBAP-SBA,bg_service_debt_bytes,2582359000.0,bytes,cct_ms,122.0980690000002,ms
 s3,DCQCN,bg_service_debt_bytes,2089804000.0,bytes,cct_ms,381.74258100000014,ms
 s3,DCTCP,bg_service_debt_bytes,2089804000.0,bytes,cct_ms,381.74258100000014,ms
 s3,TIMELY,bg_service_debt_bytes,2104289000.0,bytes,cct_ms,383.2175960000002,ms
 s3,HPCC,bg_service_debt_bytes,2217741000.0,bytes,cct_ms,160.13421800000006,ms
-s3,CBAP-SBA,bg_service_debt_bytes,2142849000.0,bytes,cct_ms,193.5345500000003,ms
+s3,CBAP-SBA,bg_service_debt_bytes,2143331000.0,bytes,cct_ms,188.2953970000001,ms
 s6,DCQCN,bg_service_debt_bytes,5134718000.0,bytes,cct_ms,133.03370700000005,ms
 s6,DCTCP,bg_service_debt_bytes,5134718000.0,bytes,cct_ms,133.03370700000005,ms
 s6,TIMELY,bg_service_debt_bytes,5156446000.0,bytes,cct_ms,133.20653000000027,ms
@@ -23,9 +23,9 @@ s4,DCQCN,bg_service_debt_bytes,0.0,bytes,cct_ms,1227.32734,ms
 s4,DCTCP,bg_service_debt_bytes,0.0,bytes,cct_ms,1227.32734,ms
 s4,TIMELY,bg_service_debt_bytes,0.0,bytes,cct_ms,1218.9810250000003,ms
 s4,HPCC,bg_service_debt_bytes,0.0,bytes,cct_ms,160.313452,ms
-s4,CBAP-SBA,bg_service_debt_bytes,0.0,bytes,cct_ms,207.84860600000022,ms
+s4,CBAP-SBA,bg_service_debt_bytes,0.0,bytes,cct_ms,188.27543999999995,ms
 s5,DCQCN,bg_service_debt_bytes,0.0,bytes,cct_ms,1226.9195070000003,ms
 s5,DCTCP,bg_service_debt_bytes,0.0,bytes,cct_ms,1226.9195070000003,ms
 s5,TIMELY,bg_service_debt_bytes,0.0,bytes,cct_ms,1232.820464,ms
 s5,HPCC,bg_service_debt_bytes,0.0,bytes,cct_ms,340.5664110000002,ms
-s5,CBAP-SBA,bg_service_debt_bytes,0.0,bytes,cct_ms,476.5199020000002,ms
+s5,CBAP-SBA,bg_service_debt_bytes,0.0,bytes,cct_ms,450.9634390000001,ms

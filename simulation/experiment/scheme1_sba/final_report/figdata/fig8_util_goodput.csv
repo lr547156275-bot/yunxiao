@@ -17,8 +17,8 @@ s2,"64-way x 256KiB, background 80%",TIMELY,util_mean,0.8837396335537915,mixed
 s2,"64-way x 256KiB, background 80%",TIMELY,incast_agg_gbps,1.895044337050825,mixed
 s2,"64-way x 256KiB, background 80%",HPCC,util_mean,0.8245828680622327,mixed
 s2,"64-way x 256KiB, background 80%",HPCC,incast_agg_gbps,8.871321556479828,mixed
-s2,"64-way x 256KiB, background 80%",CBAP-SBA,util_mean,0.8377494184719199,mixed
-s2,"64-way x 256KiB, background 80%",CBAP-SBA,incast_agg_gbps,5.893599193517844,mixed
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,util_mean,0.8368743259621836,mixed
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,incast_agg_gbps,6.0737310576774535,mixed
 s3,"64-way x 1MiB, background 80%",DCQCN,util_mean,0.9481510223962991,mixed
 s3,"64-way x 1MiB, background 80%",DCQCN,incast_agg_gbps,1.9055369979733376,mixed
 s3,"64-way x 1MiB, background 80%",DCTCP,util_mean,0.9481510223962988,mixed
@@ -27,8 +27,8 @@ s3,"64-way x 1MiB, background 80%",TIMELY,util_mean,0.9486999133663676,mixed
 s3,"64-way x 1MiB, background 80%",TIMELY,incast_agg_gbps,1.8956128417953235,mixed
 s3,"64-way x 1MiB, background 80%",HPCC,util_mean,0.870797172473921,mixed
 s3,"64-way x 1MiB, background 80%",HPCC,incast_agg_gbps,8.927877169700624,mixed
-s3,"64-way x 1MiB, background 80%",CBAP-SBA,util_mean,0.897249610416085,mixed
-s3,"64-way x 1MiB, background 80%",CBAP-SBA,incast_agg_gbps,5.739813919027768,mixed
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,util_mean,0.894381374402192,mixed
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,incast_agg_gbps,6.080395244159783,mixed
 s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,util_mean,0.8503325556221776,mixed
 s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,incast_agg_gbps,3.8091129160890156,mixed
 s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCTCP,util_mean,0.8503325556221776,mixed
@@ -47,8 +47,8 @@ s4,"64-way x 1MiB, background 95%",TIMELY,util_mean,0.9967906099320066,mixed
 s4,"64-way x 1MiB, background 95%",TIMELY,incast_agg_gbps,0.4797855370246336,mixed
 s4,"64-way x 1MiB, background 95%",HPCC,util_mean,0.9641175349298609,mixed
 s4,"64-way x 1MiB, background 95%",HPCC,incast_agg_gbps,8.90134612092839,mixed
-s4,"64-way x 1MiB, background 95%",CBAP-SBA,util_mean,0.9764603627611838,mixed
-s4,"64-way x 1MiB, background 95%",CBAP-SBA,incast_agg_gbps,4.978005112092031,mixed
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,util_mean,0.9739524962817436,mixed
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,incast_agg_gbps,6.08176987846224,mixed
 s5,"64-way x 4MiB, background 80%",DCQCN,util_mean,0.9841966915551906,mixed
 s5,"64-way x 4MiB, background 80%",DCQCN,incast_agg_gbps,1.9056229257374988,mixed
 s5,"64-way x 4MiB, background 80%",DCTCP,util_mean,0.9841966915551907,mixed
@@ -57,5 +57,5 @@ s5,"64-way x 4MiB, background 80%",TIMELY,util_mean,0.9847058491446579,mixed
 s5,"64-way x 4MiB, background 80%",TIMELY,incast_agg_gbps,1.8956963757674492,mixed
 s5,"64-way x 4MiB, background 80%",HPCC,util_mean,0.9323313644771911,mixed
 s5,"64-way x 4MiB, background 80%",HPCC,incast_agg_gbps,8.926780921215137,mixed
-s5,"64-way x 4MiB, background 80%",CBAP-SBA,util_mean,0.9585570721055067,mixed
-s5,"64-way x 4MiB, background 80%",CBAP-SBA,incast_agg_gbps,5.703506339486935,mixed
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,util_mean,0.956173283366378,mixed
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,incast_agg_gbps,6.118824382730076,mixed

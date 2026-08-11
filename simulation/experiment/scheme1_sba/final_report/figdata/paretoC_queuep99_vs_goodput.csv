@@ -8,12 +8,12 @@ s2,DCQCN,queue_p99_bytes,1271224.0,bytes,incast_agg_gbps,1.9049970599217976,Gbps
 s2,DCTCP,queue_p99_bytes,1271224.0,bytes,incast_agg_gbps,1.9049970599217976,Gbps
 s2,TIMELY,queue_p99_bytes,1280928.0,bytes,incast_agg_gbps,1.895044337050825,Gbps
 s2,HPCC,queue_p99_bytes,1079928.3999999983,bytes,incast_agg_gbps,8.871321556479828,Gbps
-s2,CBAP-SBA,queue_p99_bytes,1261792.0,bytes,incast_agg_gbps,5.893599193517844,Gbps
+s2,CBAP-SBA,queue_p99_bytes,113089.67999999985,bytes,incast_agg_gbps,6.0737310576774535,Gbps
 s3,DCQCN,queue_p99_bytes,1272272.0,bytes,incast_agg_gbps,1.9055369979733376,Gbps
 s3,DCTCP,queue_p99_bytes,1272272.0,bytes,incast_agg_gbps,1.9055369979733376,Gbps
 s3,TIMELY,queue_p99_bytes,1280928.0,bytes,incast_agg_gbps,1.8956128417953235,Gbps
 s3,HPCC,queue_p99_bytes,900721.5000000043,bytes,incast_agg_gbps,8.927877169700624,Gbps
-s3,CBAP-SBA,queue_p99_bytes,1263888.0,bytes,incast_agg_gbps,5.739813919027768,Gbps
+s3,CBAP-SBA,queue_p99_bytes,323832.0,bytes,incast_agg_gbps,6.080395244159783,Gbps
 s6,DCQCN,queue_p99_bytes,594216.0,bytes,incast_agg_gbps,3.8091129160890156,Gbps
 s6,DCTCP,queue_p99_bytes,594216.0,bytes,incast_agg_gbps,3.8091129160890156,Gbps
 s6,TIMELY,queue_p99_bytes,598752.0,bytes,incast_agg_gbps,3.7892884321246254,Gbps
@@ -23,9 +23,9 @@ s4,DCQCN,queue_p99_bytes,1274368.0,bytes,incast_agg_gbps,0.47623338222241646,Gbp
 s4,DCTCP,queue_p99_bytes,1274368.0,bytes,incast_agg_gbps,0.47623338222241646,Gbps
 s4,TIMELY,queue_p99_bytes,1284096.0,bytes,incast_agg_gbps,0.4797855370246336,Gbps
 s4,HPCC,queue_p99_bytes,899740.5000000028,bytes,incast_agg_gbps,8.90134612092839,Gbps
-s4,CBAP-SBA,queue_p99_bytes,1264936.0,bytes,incast_agg_gbps,4.978005112092031,Gbps
+s4,CBAP-SBA,queue_p99_bytes,310208.0,bytes,incast_agg_gbps,6.08176987846224,Gbps
 s5,DCQCN,queue_p99_bytes,1272272.0,bytes,incast_agg_gbps,1.9056229257374988,Gbps
 s5,DCTCP,queue_p99_bytes,1272272.0,bytes,incast_agg_gbps,1.9056229257374988,Gbps
 s5,TIMELY,queue_p99_bytes,1280928.0,bytes,incast_agg_gbps,1.8956963757674492,Gbps
 s5,HPCC,queue_p99_bytes,195807.60000001523,bytes,incast_agg_gbps,8.926780921215137,Gbps
-s5,CBAP-SBA,queue_p99_bytes,1263888.0,bytes,incast_agg_gbps,5.703506339486935,Gbps
+s5,CBAP-SBA,queue_p99_bytes,1262840.0,bytes,incast_agg_gbps,6.118824382730076,Gbps

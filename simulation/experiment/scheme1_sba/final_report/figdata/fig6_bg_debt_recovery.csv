@@ -26,9 +26,9 @@ s2,"64-way x 256KiB, background 80%",TIMELY,bg_recovery95_ms,0.0,mixed
 s2,"64-way x 256KiB, background 80%",HPCC,bg_service_debt_bytes,2636261000.0,mixed
 s2,"64-way x 256KiB, background 80%",HPCC,bg_recovery90_ms,115.99999999999832,mixed
 s2,"64-way x 256KiB, background 80%",HPCC,bg_recovery95_ms,115.99999999999832,mixed
-s2,"64-way x 256KiB, background 80%",CBAP-SBA,bg_service_debt_bytes,2583053000.0,mixed
-s2,"64-way x 256KiB, background 80%",CBAP-SBA,bg_recovery90_ms,123.99999999999744,mixed
-s2,"64-way x 256KiB, background 80%",CBAP-SBA,bg_recovery95_ms,123.99999999999744,mixed
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,bg_service_debt_bytes,2582359000.0,mixed
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,bg_recovery90_ms,121.99999999999767,mixed
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,bg_recovery95_ms,121.99999999999767,mixed
 s3,"64-way x 1MiB, background 80%",DCQCN,bg_service_debt_bytes,2089804000.0,mixed
 s3,"64-way x 1MiB, background 80%",DCQCN,bg_recovery90_ms,0.0,mixed
 s3,"64-way x 1MiB, background 80%",DCQCN,bg_recovery95_ms,0.0,mixed
@@ -41,9 +41,9 @@ s3,"64-way x 1MiB, background 80%",TIMELY,bg_recovery95_ms,0.0,mixed
 s3,"64-way x 1MiB, background 80%",HPCC,bg_service_debt_bytes,2217741000.0,mixed
 s3,"64-way x 1MiB, background 80%",HPCC,bg_recovery90_ms,159.9999999999935,mixed
 s3,"64-way x 1MiB, background 80%",HPCC,bg_recovery95_ms,161.99999999999326,mixed
-s3,"64-way x 1MiB, background 80%",CBAP-SBA,bg_service_debt_bytes,2142849000.0,mixed
-s3,"64-way x 1MiB, background 80%",CBAP-SBA,bg_recovery90_ms,193.99999999998974,mixed
-s3,"64-way x 1MiB, background 80%",CBAP-SBA,bg_recovery95_ms,193.99999999998974,mixed
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,bg_service_debt_bytes,2143331000.0,mixed
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,bg_recovery90_ms,189.99999999999017,mixed
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,bg_recovery95_ms,189.99999999999017,mixed
 s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,bg_service_debt_bytes,5134718000.0,mixed
 s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,bg_recovery90_ms,0.0,mixed
 s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,bg_recovery95_ms,0.0,mixed
@@ -72,8 +72,8 @@ s4,"64-way x 1MiB, background 95%",HPCC,bg_service_debt_bytes,0.0,mixed
 s4,"64-way x 1MiB, background 95%",HPCC,bg_recovery90_ms,161.99999999999326,mixed
 s4,"64-way x 1MiB, background 95%",HPCC,bg_recovery95_ms,161.99999999999326,mixed
 s4,"64-way x 1MiB, background 95%",CBAP-SBA,bg_service_debt_bytes,0.0,mixed
-s4,"64-way x 1MiB, background 95%",CBAP-SBA,bg_recovery90_ms,207.9999999999882,mixed
-s4,"64-way x 1MiB, background 95%",CBAP-SBA,bg_recovery95_ms,207.9999999999882,mixed
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,bg_recovery90_ms,189.99999999999017,mixed
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,bg_recovery95_ms,189.99999999999017,mixed
 s5,"64-way x 4MiB, background 80%",DCQCN,bg_service_debt_bytes,0.0,mixed
 s5,"64-way x 4MiB, background 80%",DCQCN,bg_recovery90_ms,0.0,mixed
 s5,"64-way x 4MiB, background 80%",DCQCN,bg_recovery95_ms,0.0,mixed
@@ -87,5 +87,5 @@ s5,"64-way x 4MiB, background 80%",HPCC,bg_service_debt_bytes,0.0,mixed
 s5,"64-way x 4MiB, background 80%",HPCC,bg_recovery90_ms,341.99999999997345,mixed
 s5,"64-way x 4MiB, background 80%",HPCC,bg_recovery95_ms,341.99999999997345,mixed
 s5,"64-way x 4MiB, background 80%",CBAP-SBA,bg_service_debt_bytes,0.0,mixed
-s5,"64-way x 4MiB, background 80%",CBAP-SBA,bg_recovery90_ms,477.99999999995845,mixed
-s5,"64-way x 4MiB, background 80%",CBAP-SBA,bg_recovery95_ms,477.99999999995845,mixed
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,bg_recovery90_ms,451.99999999996135,mixed
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,bg_recovery95_ms,451.99999999996135,mixed

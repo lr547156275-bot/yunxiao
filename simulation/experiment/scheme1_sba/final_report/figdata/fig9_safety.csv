@@ -44,7 +44,7 @@ s2,"64-way x 256KiB, background 80%",HPCC,pfc_events,0,count
 s2,"64-way x 256KiB, background 80%",HPCC,pfc_pause_total_ns,0,count
 s2,"64-way x 256KiB, background 80%",HPCC,drops,0,count
 s2,"64-way x 256KiB, background 80%",HPCC,retx_events_total,0,count
-s2,"64-way x 256KiB, background 80%",CBAP-SBA,ecn_marks,1095.0,count
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,ecn_marks,0,count
 s2,"64-way x 256KiB, background 80%",CBAP-SBA,pfc_events,0,count
 s2,"64-way x 256KiB, background 80%",CBAP-SBA,pfc_pause_total_ns,0,count
 s2,"64-way x 256KiB, background 80%",CBAP-SBA,drops,0,count
@@ -69,7 +69,7 @@ s3,"64-way x 1MiB, background 80%",HPCC,pfc_events,0,count
 s3,"64-way x 1MiB, background 80%",HPCC,pfc_pause_total_ns,0,count
 s3,"64-way x 1MiB, background 80%",HPCC,drops,0,count
 s3,"64-way x 1MiB, background 80%",HPCC,retx_events_total,0,count
-s3,"64-way x 1MiB, background 80%",CBAP-SBA,ecn_marks,8253.0,count
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,ecn_marks,0,count
 s3,"64-way x 1MiB, background 80%",CBAP-SBA,pfc_events,0,count
 s3,"64-way x 1MiB, background 80%",CBAP-SBA,pfc_pause_total_ns,0,count
 s3,"64-way x 1MiB, background 80%",CBAP-SBA,drops,0,count
@@ -119,7 +119,7 @@ s4,"64-way x 1MiB, background 95%",HPCC,pfc_events,0,count
 s4,"64-way x 1MiB, background 95%",HPCC,pfc_pause_total_ns,0,count
 s4,"64-way x 1MiB, background 95%",HPCC,drops,0,count
 s4,"64-way x 1MiB, background 95%",HPCC,retx_events_total,0,count
-s4,"64-way x 1MiB, background 95%",CBAP-SBA,ecn_marks,8983.0,count
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,ecn_marks,0,count
 s4,"64-way x 1MiB, background 95%",CBAP-SBA,pfc_events,0,count
 s4,"64-way x 1MiB, background 95%",CBAP-SBA,pfc_pause_total_ns,0,count
 s4,"64-way x 1MiB, background 95%",CBAP-SBA,drops,0,count
@@ -144,7 +144,7 @@ s5,"64-way x 4MiB, background 80%",HPCC,pfc_events,0,count
 s5,"64-way x 4MiB, background 80%",HPCC,pfc_pause_total_ns,0,count
 s5,"64-way x 4MiB, background 80%",HPCC,drops,0,count
 s5,"64-way x 4MiB, background 80%",HPCC,retx_events_total,0,count
-s5,"64-way x 4MiB, background 80%",CBAP-SBA,ecn_marks,36891.0,count
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,ecn_marks,25062.0,count
 s5,"64-way x 4MiB, background 80%",CBAP-SBA,pfc_events,0,count
 s5,"64-way x 4MiB, background 80%",CBAP-SBA,pfc_pause_total_ns,0,count
 s5,"64-way x 4MiB, background 80%",CBAP-SBA,drops,0,count

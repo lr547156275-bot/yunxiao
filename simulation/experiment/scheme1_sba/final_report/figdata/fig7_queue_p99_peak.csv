@@ -17,8 +17,8 @@ s2,"64-way x 256KiB, background 80%",TIMELY,queue_p99_bytes,1280928.0,bytes
 s2,"64-way x 256KiB, background 80%",TIMELY,queue_peak_bytes,1280928.0,bytes
 s2,"64-way x 256KiB, background 80%",HPCC,queue_p99_bytes,1079928.3999999983,bytes
 s2,"64-way x 256KiB, background 80%",HPCC,queue_peak_bytes,1291650.0,bytes
-s2,"64-way x 256KiB, background 80%",CBAP-SBA,queue_p99_bytes,1261792.0,bytes
-s2,"64-way x 256KiB, background 80%",CBAP-SBA,queue_peak_bytes,1263888.0,bytes
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,queue_p99_bytes,113089.67999999985,bytes
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,queue_peak_bytes,131000.0,bytes
 s3,"64-way x 1MiB, background 80%",DCQCN,queue_p99_bytes,1272272.0,bytes
 s3,"64-way x 1MiB, background 80%",DCQCN,queue_peak_bytes,1272272.0,bytes
 s3,"64-way x 1MiB, background 80%",DCTCP,queue_p99_bytes,1272272.0,bytes
@@ -27,8 +27,8 @@ s3,"64-way x 1MiB, background 80%",TIMELY,queue_p99_bytes,1280928.0,bytes
 s3,"64-way x 1MiB, background 80%",TIMELY,queue_peak_bytes,1280928.0,bytes
 s3,"64-way x 1MiB, background 80%",HPCC,queue_p99_bytes,900721.5000000043,bytes
 s3,"64-way x 1MiB, background 80%",HPCC,queue_peak_bytes,1291650.0,bytes
-s3,"64-way x 1MiB, background 80%",CBAP-SBA,queue_p99_bytes,1263888.0,bytes
-s3,"64-way x 1MiB, background 80%",CBAP-SBA,queue_peak_bytes,1263888.0,bytes
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,queue_p99_bytes,323832.0,bytes
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,queue_peak_bytes,346888.0,bytes
 s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,queue_p99_bytes,594216.0,bytes
 s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,queue_peak_bytes,595264.0,bytes
 s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCTCP,queue_p99_bytes,594216.0,bytes
@@ -47,8 +47,8 @@ s4,"64-way x 1MiB, background 95%",TIMELY,queue_p99_bytes,1284096.0,bytes
 s4,"64-way x 1MiB, background 95%",TIMELY,queue_peak_bytes,1285152.0,bytes
 s4,"64-way x 1MiB, background 95%",HPCC,queue_p99_bytes,899740.5000000028,bytes
 s4,"64-way x 1MiB, background 95%",HPCC,queue_peak_bytes,1291650.0,bytes
-s4,"64-way x 1MiB, background 95%",CBAP-SBA,queue_p99_bytes,1264936.0,bytes
-s4,"64-way x 1MiB, background 95%",CBAP-SBA,queue_peak_bytes,1265984.0,bytes
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,queue_p99_bytes,310208.0,bytes
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,queue_peak_bytes,331168.0,bytes
 s5,"64-way x 4MiB, background 80%",DCQCN,queue_p99_bytes,1272272.0,bytes
 s5,"64-way x 4MiB, background 80%",DCQCN,queue_peak_bytes,1272272.0,bytes
 s5,"64-way x 4MiB, background 80%",DCTCP,queue_p99_bytes,1272272.0,bytes
@@ -57,5 +57,5 @@ s5,"64-way x 4MiB, background 80%",TIMELY,queue_p99_bytes,1280928.0,bytes
 s5,"64-way x 4MiB, background 80%",TIMELY,queue_peak_bytes,1280928.0,bytes
 s5,"64-way x 4MiB, background 80%",HPCC,queue_p99_bytes,195807.60000001523,bytes
 s5,"64-way x 4MiB, background 80%",HPCC,queue_peak_bytes,1291650.0,bytes
-s5,"64-way x 4MiB, background 80%",CBAP-SBA,queue_p99_bytes,1263888.0,bytes
-s5,"64-way x 4MiB, background 80%",CBAP-SBA,queue_peak_bytes,1263888.0,bytes
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,queue_p99_bytes,1262840.0,bytes
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,queue_peak_bytes,1262840.0,bytes
