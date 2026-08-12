@@ -233,6 +233,23 @@ public:
 		// Per-replan audit of the capacity-feasibility rule.  Off by default
 		// so no existing run changes behaviour or output.
 		bool etaFeasibilityTrace;
+		// ---- Queueing-delay credit (transient oversubscription) ----------
+		// All off/zero by default: with delayCreditEnable false the planner
+		// keeps the strict sum(target) <= C behaviour bit-for-bit, so the
+		// legacy control arm needs no separate code path.
+		//
+		// The invariant enforced is a queueing-DELAY bound, not a rate bound:
+		//   queue_delay_s = queue_bytes * 8 / capacityBps
+		// and the planner may hand out short-lived credit while the measured
+		// queue sits below its target, bounded so the predicted queue after
+		// one horizon cannot cross the hard limit.
+		bool delayCreditEnable;
+		double queueDelayTargetS;     // q_target  = C * this / 8
+		double queueDelayHardLimitS;  // hard delay budget above q_sync_floor
+		double creditHorizonS;        // H, the control loop period
+		double maxOversubRatio;       // credit_bps <= this * C
+		double creditMaxDrainRatio;   // drain_bps  <= this * C
+		uint64_t queueSafetyMarginBytes;
 		std::string scenario;
 		std::string algorithm;
 		std::string cbapVersion;
@@ -264,6 +281,10 @@ public:
 			  migrationDecayBase(0.30), migrationRiseBase(0.30),
 			  migrationRiseSkew(0.35), migrationMaxRtt(5),
 			  migrationTrace(false), etaFeasibilityTrace(false),
+			  delayCreditEnable(false), queueDelayTargetS(0.0),
+			  queueDelayHardLimitS(0.0), creditHorizonS(0.0),
+			  maxOversubRatio(0.0), creditMaxDrainRatio(0.0),
+			  queueSafetyMarginBytes(0),
 			  scenario("unknown"), algorithm("unknown"),
 			  cbapVersion("v1") {}
 	};
@@ -572,6 +593,32 @@ public:
 		bool appliedCapacityViolation;
 		uint64_t actualArrivalExcessBps;
 	};
+	// One row per replan per link while the delay credit is enabled.  Carries
+	// the full control trajectory so the mechanism can be audited from data:
+	// which phase the link was in, the measured and derived queue thresholds,
+	// the credit or drain that resulted, and the predicted queue one horizon
+	// ahead that the credit was truncated against.
+	struct CbapDelayCreditRecord {
+		uint64_t timestampNs;
+		uint32_t linkId;
+		uint32_t epoch;
+		uint32_t phase;                  // CbapQueuePhase
+		uint64_t queueBytes;
+		uint64_t qTargetBytes;
+		uint64_t qHardBytes;             // the bound in force for this phase
+		uint64_t qSyncFloorBytes;
+		uint64_t qPredictedBytes;
+		uint64_t capacityBps;
+		uint64_t creditBps;
+		uint64_t drainBps;
+		uint64_t totalBudgetBps;
+		uint64_t oldShareBps;
+		uint64_t newShareBps;
+		uint64_t sumTargetBps;
+		uint32_t newFlowCount;
+		bool creditTruncated;            // prediction check clamped the credit
+		bool oversubscribed;             // sumTarget > capacity this epoch
+	};
 	// One row per handover replan on one link, emitted only when the
 	// allocation is (re)computed -- not per packet.  Exists to make the
 	// capacity-feasibility rule auditable directly from data:
@@ -704,6 +751,8 @@ public:
 		GetCbapAppliedRateAuditRecords();
 	static const std::vector<CbapEtaFeasibilityRecord> &
 		GetCbapEtaFeasibilityRecords();
+	static const std::vector<CbapDelayCreditRecord> &
+		GetCbapDelayCreditRecords();
 	static const std::vector<CbapIncreaseRecord> &
 		GetCbapIncreaseRecords();
 	static const std::vector<CbapFlowRecord> &GetCbapFlowRecords();
@@ -991,6 +1040,19 @@ public:
 			  roundIndex(0), planned(false), active(false),
 			  finished(false) {}
 	};
+	// Two-phase hard bound for the queueing-delay credit.  A synchronous
+	// N-way batch puts one MTU per sender into the bottleneck port before any
+	// controller can act: at N=64 and 1048 B on the wire that is 67 072 B,
+	// which already exceeds one BDP.  That burst is structural -- it is present
+	// under strict sum(target) <= C too -- so charging it as a credit violation
+	// would make even the legacy arm fail.  It must also not become a standing
+	// queue target, so the allowance is one-shot: the link starts in
+	// SYNC_BURST, and the first time the queue falls to the normal bound it
+	// latches into NORMAL for good.
+	enum CbapQueuePhase {
+		CBAP_QPHASE_SYNC_BURST = 0,
+		CBAP_QPHASE_NORMAL = 1
+	};
 	struct CbapLinkRuntime {
 		BopMultilinkLink config;
 		bool initialized;
@@ -1002,11 +1064,35 @@ public:
 		uint64_t previousEffectiveCapacityBps;
 		uint64_t plannerCapacityBps;
 		uint64_t rootDetectTimeNs;
+		// --- queueing-delay credit state (diagnostic + phase latch) --------
+		CbapQueuePhase queuePhase;
+		// True once the queue has actually risen above the normal bound, i.e.
+		// the synchronous startup burst has been observed.  Without this the
+		// latch fires at the first replan while the queue is still 0.
+		bool syncBurstObserved;
+		uint64_t qSyncFloorBytes;        // N_active * packet_on_wire_bytes
+		uint64_t qHardStartupBytes;      // q_sync_floor + C*hard_budget/8
+		uint64_t qHardNormalBytes;       // C * 1 RTT / 8
+		uint64_t structuralStartupPeak;  // peak seen while in SYNC_BURST
+		uint64_t normalPhasePeak;        // peak seen after latching NORMAL
+		uint64_t normalPhaseViolations;  // samples above q_hard_normal in NORMAL
+		uint64_t fellBelowNormalNs;      // when the latch happened (0 = never)
 		CbapLinkRuntime()
 			: initialized(false), overloadEpochs(0), growthEpochs(0),
 			  clearStableEpochs(0), previousEffectiveCapacityBps(0),
-			  plannerCapacityBps(0), rootDetectTimeNs(0) {}
+			  plannerCapacityBps(0), rootDetectTimeNs(0),
+			  queuePhase(CBAP_QPHASE_SYNC_BURST), syncBurstObserved(false),
+			  qSyncFloorBytes(0),
+			  qHardStartupBytes(0), qHardNormalBytes(0),
+			  structuralStartupPeak(0), normalPhasePeak(0),
+			  normalPhaseViolations(0), fellBelowNormalNs(0) {}
 	};
+	// Computes the queueing-delay credit for one link.  Declared after
+	// CbapLinkRuntime because it takes one by reference.  A pure function of
+	// its arguments plus s_cbapConfig, so it is directly testable.
+	static uint64_t ComputeDelayCreditBudget(CbapLinkRuntime &runtime,
+		uint64_t queueBytes, uint32_t newFlowCount, uint64_t nowNs,
+		uint32_t epoch, CbapDelayCreditRecord *out);
 	struct CbapScopeBaseFlowRuntime {
 		Ptr<RdmaQueuePair> qp;
 		uint32_t flowId;
@@ -1072,6 +1158,8 @@ public:
 		s_cbapAppliedRateAuditRecords;
 	static std::vector<CbapEtaFeasibilityRecord>
 		s_cbapEtaFeasibilityRecords;
+	static std::vector<CbapDelayCreditRecord>
+		s_cbapDelayCreditRecords;
 	static std::vector<CbapIncreaseRecord> s_cbapIncreaseRecords;
 	static std::vector<CbapFlowRecord> s_cbapFlowRecords;
 	static std::vector<CbapTxRecord> s_cbapTxRecords;

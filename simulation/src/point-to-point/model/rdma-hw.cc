@@ -67,6 +67,8 @@ std::vector<RdmaHw::CbapAppliedRateAuditRecord>
 	RdmaHw::s_cbapAppliedRateAuditRecords;
 std::vector<RdmaHw::CbapEtaFeasibilityRecord>
 	RdmaHw::s_cbapEtaFeasibilityRecords;
+std::vector<RdmaHw::CbapDelayCreditRecord>
+	RdmaHw::s_cbapDelayCreditRecords;
 std::vector<RdmaHw::CbapIncreaseRecord> RdmaHw::s_cbapIncreaseRecords;
 std::vector<RdmaHw::CbapFlowRecord> RdmaHw::s_cbapFlowRecords;
 std::vector<RdmaHw::CbapTxRecord> RdmaHw::s_cbapTxRecords;
@@ -397,6 +399,189 @@ const std::vector<RdmaHw::CbapEtaFeasibilityRecord> &
 RdmaHw::GetCbapEtaFeasibilityRecords()
 {
 	return s_cbapEtaFeasibilityRecords;
+}
+
+const std::vector<RdmaHw::CbapDelayCreditRecord> &
+RdmaHw::GetCbapDelayCreditRecords()
+{
+	return s_cbapDelayCreditRecords;
+}
+
+// Queueing-delay credit for one bottleneck link.
+//
+// The hard invariant is a delay bound, not a rate bound.  Units are kept
+// explicit throughout: capacity in bit/s, queue in bytes, delay in seconds,
+// so every conversion is queue_bytes = capacity * delay / 8.
+//
+//   q_target = C * queueDelayTargetS / 8
+//   q_sync_floor = N_active * packet_on_wire_bytes
+//        the one-MTU-per-sender burst a synchronous batch puts in the port
+//        before any controller can react.  Structural: present under strict
+//        sum(target) <= C as well, hence allowed once, never targeted.
+//   q_hard_startup = q_sync_floor + C * queueDelayHardLimitS / 8
+//   q_hard_normal  = C * queueDelayHardLimitS / 8
+//
+// Phase latch: the link begins in SYNC_BURST with the startup bound; the first
+// time the measured queue reaches q_hard_normal it moves to NORMAL and never
+// returns, so the structural allowance cannot be reused as headroom.
+//
+// Credit is only ever granted below q_target, is bounded by the remaining room
+// to the hard bound, by maxOversubRatio * C, and finally by a prediction check:
+// the queue implied by sending at the granted budget for one horizon must not
+// cross the hard bound.  The credit is truncated to satisfy that, rather than
+// warned about afterwards.
+uint64_t RdmaHw::ComputeDelayCreditBudget(CbapLinkRuntime &runtime,
+	uint64_t queueBytes, uint32_t newFlowCount, uint64_t nowNs,
+	uint32_t epoch, CbapDelayCreditRecord *out)
+{
+	const uint64_t C = runtime.config.capacityBps;
+	if (out) {
+		out->timestampNs = nowNs;
+		out->linkId = runtime.config.linkId;
+		out->epoch = epoch;
+		out->queueBytes = queueBytes;
+		out->capacityBps = C;
+		out->newFlowCount = newFlowCount;
+		out->creditBps = 0;
+		out->drainBps = 0;
+		out->creditTruncated = false;
+		out->oversubscribed = false;
+		out->oldShareBps = 0;
+		out->newShareBps = 0;
+		out->sumTargetBps = 0;
+	}
+	if (!s_cbapConfig.delayCreditEnable || C == 0) {
+		// Legacy control arm: the planner keeps strict conservation, so the
+		// budget is exactly the capacity and no state is touched.
+		if (out) {
+			out->phase = (uint32_t)runtime.queuePhase;
+			out->qTargetBytes = 0;
+			out->qHardBytes = 0;
+			out->qSyncFloorBytes = 0;
+			out->qPredictedBytes = queueBytes;
+			out->totalBudgetBps = C;
+		}
+		return C;
+	}
+
+	const long double H = s_cbapConfig.creditHorizonS;
+	const uint64_t qTarget = (uint64_t)std::floor(
+		(long double)C * s_cbapConfig.queueDelayTargetS / 8.0L);
+	const uint64_t hardDelayBytes = (uint64_t)std::floor(
+		(long double)C * s_cbapConfig.queueDelayHardLimitS / 8.0L);
+	// One MTU per synchronous sender.  packetOnWireBytes mirrors what the
+	// NIC actually puts on the wire for a full-size RDMA data packet.
+	const uint64_t packetOnWireBytes = 1048;
+	const uint64_t qSyncFloor =
+		(uint64_t)newFlowCount * packetOnWireBytes;
+	uint64_t qHardStartup = qSyncFloor + hardDelayBytes;
+	if (s_cbapConfig.queueSafetyMarginBytes > 0 &&
+			runtime.config.ecnThresholdBytes >
+				s_cbapConfig.queueSafetyMarginBytes) {
+		// When a PFC XOFF equivalent is known, never plan above it minus the
+		// margin.  ecnThresholdBytes is the per-link headroom figure the
+		// scenario supplies; using it keeps the bound configuration-driven.
+		uint64_t pfcBound = runtime.config.ecnThresholdBytes -
+			s_cbapConfig.queueSafetyMarginBytes;
+		qHardStartup = std::min(qHardStartup, pfcBound);
+	}
+	runtime.qSyncFloorBytes = qSyncFloor;
+	runtime.qHardStartupBytes = qHardStartup;
+	runtime.qHardNormalBytes = hardDelayBytes;
+
+	// Phase latch, and per-phase peak/violation accounting.
+	//
+	// The latch may only fire AFTER the synchronous burst has actually been
+	// observed.  At the first replan the queue is still 0 -- the batch's DATA
+	// has not reached the bottleneck yet -- and latching there would consume the
+	// startup allowance before it was ever needed, then charge the burst that
+	// follows as a NORMAL-phase violation.  So require evidence of the burst
+	// (the queue having risen above the normal bound at least once) before
+	// accepting a fall back below it as the transition.
+	if (runtime.queuePhase == CBAP_QPHASE_SYNC_BURST) {
+		if (queueBytes > runtime.structuralStartupPeak)
+			runtime.structuralStartupPeak = queueBytes;
+		if (queueBytes > hardDelayBytes)
+			runtime.syncBurstObserved = true;
+		if (runtime.syncBurstObserved && queueBytes <= hardDelayBytes) {
+			runtime.queuePhase = CBAP_QPHASE_NORMAL;
+			runtime.fellBelowNormalNs = nowNs;
+		}
+	}
+	if (runtime.queuePhase == CBAP_QPHASE_NORMAL) {
+		if (queueBytes > runtime.normalPhasePeak)
+			runtime.normalPhasePeak = queueBytes;
+		if (queueBytes > hardDelayBytes)
+			runtime.normalPhaseViolations++;
+	}
+	const uint64_t qHard = (runtime.queuePhase == CBAP_QPHASE_NORMAL) ?
+		hardDelayBytes : qHardStartup;
+
+	uint64_t creditBps = 0;
+	uint64_t drainBps = 0;
+	long double budget = (long double)C;
+	bool truncated = false;
+
+	if (queueBytes >= qHard) {
+		// At or above the bound in force: no credit, and drain.
+		drainBps = (uint64_t)std::min(
+			(long double)s_cbapConfig.creditMaxDrainRatio * (long double)C,
+			H > 0 ? (long double)(queueBytes - qTarget) * 8.0L / H
+			      : (long double)s_cbapConfig.creditMaxDrainRatio *
+			        (long double)C);
+		budget = (long double)C - (long double)drainBps;
+	} else if (queueBytes > qTarget) {
+		// Above target but below the bound: drain toward the target.
+		long double d = H > 0 ?
+			(long double)(queueBytes - qTarget) * 8.0L / H : 0.0L;
+		long double cap = s_cbapConfig.creditMaxDrainRatio * (long double)C;
+		drainBps = (uint64_t)std::min(d, cap);
+		budget = (long double)C - (long double)drainBps;
+	} else if (queueBytes < qTarget && H > 0) {
+		// Below target: credit, bounded three ways then prediction-checked.
+		long double fromTarget = (long double)(qTarget - queueBytes) * 8.0L / H;
+		long double fromHard = qHard > queueBytes ?
+			(long double)(qHard - queueBytes) * 8.0L / H : 0.0L;
+		long double cap = s_cbapConfig.maxOversubRatio * (long double)C;
+		long double c = std::min(fromTarget, std::min(fromHard, cap));
+		if (c < 0.0L) c = 0.0L;
+		// Prediction: only the part above the service rate accumulates.
+		//   q_predicted = q + (budget - C) * H / 8
+		// Require q_predicted <= q_hard, and truncate the credit if not.
+		long double allowed = (long double)(qHard - queueBytes) * 8.0L / H;
+		if (c > allowed) { c = std::max(0.0L, allowed); truncated = true; }
+		creditBps = (uint64_t)std::floor(c);
+		budget = (long double)C + (long double)creditBps;
+	}
+	if (budget < 0.0L) budget = 0.0L;
+	const uint64_t total = (uint64_t)std::floor(budget);
+
+	uint64_t qPredicted = queueBytes;
+	if (total > C && H > 0)
+		qPredicted = queueBytes + (uint64_t)std::floor(
+			(long double)(total - C) * H / 8.0L);
+	// Hard invariant, checked rather than assumed.  Stated as "credit must not
+	// push the predicted queue past the bound", not "the queue is always under
+	// the bound": when the measured queue already exceeds the bound (the
+	// structural sync burst, or a transient) no credit is granted, qPredicted
+	// equals queueBytes, and demanding qPredicted <= qHard there would assert
+	// on a condition the controller cannot retroactively fix.  What the credit
+	// path owes is that it never makes the prediction worse than what it found.
+	NS_ASSERT_MSG(qPredicted <= std::max(qHard, queueBytes) + 1,
+		"queue-delay credit predicted queue exceeds the hard bound");
+
+	if (out) {
+		out->phase = (uint32_t)runtime.queuePhase;
+		out->qTargetBytes = qTarget;
+		out->qHardBytes = qHard;
+		out->qSyncFloorBytes = qSyncFloor;
+		out->qPredictedBytes = qPredicted;
+		out->creditBps = creditBps;
+		out->drainBps = drainBps;
+		out->totalBudgetBps = total;
+		out->creditTruncated = truncated;
+	}
+	return total;
 }
 
 const std::vector<RdmaHw::CbapIncreaseRecord> &
@@ -982,10 +1167,6 @@ void RdmaHw::DeliverCbapPortSummary(uint32_t linkId,
 	if (record.portState == CBAP_PORT_MIXED_OR_UNCERTAIN)
 		effective = std::min(effective,
 			(long double)runtime.previousEffectiveCapacityBps);
-	record.effectiveCapacityBps =
-		(uint64_t)std::floor(effective);
-	runtime.previousEffectiveCapacityBps =
-		record.effectiveCapacityBps;
 	for (std::map<uint32_t, CbapFlowRuntime>::const_iterator flow =
 			s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow){
 		const std::vector<uint32_t> &path =
@@ -999,6 +1180,42 @@ void RdmaHw::DeliverCbapPortSummary(uint32_t linkId,
 				!flow->second.finished)
 			record.pendingControlledFlows++;
 	}
+	// Queueing-delay credit, evaluated on the per-epoch capacity path so drain
+	// actually takes effect.  Placing it here rather than in the handover branch
+	// of ReplanCbapSbaMigrationTargets is the point: that branch only runs while
+	// a migration is in progress, so a drain computed there was never applied
+	// and the queue had no way back down.
+	//
+	// Ordered after the flow census above because q_sync_floor scales with the
+	// number of synchronous senders on this link; reading the count before it is
+	// tallied would leave the floor at zero.
+	//
+	// When enabled this REPLACES the one-way decay above for this link -- both
+	// scale the same capacity, and applying them together would double-count the
+	// congestion response.  budgetQLow/HighFraction keep their original meaning
+	// and are simply not consulted in this mode.
+	if (s_cbapConfig.delayCreditEnable) {
+		uint32_t nActive = record.activeControlledFlows +
+			record.pendingControlledFlows;
+		CbapDelayCreditRecord crec;
+		uint64_t total = ComputeDelayCreditBudget(runtime,
+			record.queueBytes, nActive, record.deliveryTimeNs,
+			s_cbapEpoch, &crec);
+		// The credit is a budget for the whole link; the background reservation
+		// still comes off the top, exactly as the legacy expression did.
+		long double credited = (long double)total -
+			(long double)runtime.config.backgroundBps;
+		effective = std::max(0.0L, credited);
+		crec.oldShareBps = runtime.config.backgroundBps;
+		crec.newShareBps = (uint64_t)effective;
+		crec.sumTargetBps = runtime.config.backgroundBps + (uint64_t)effective;
+		crec.oversubscribed = crec.sumTargetBps > snapshot.capacityBps;
+		s_cbapDelayCreditRecords.push_back(crec);
+	}
+	record.effectiveCapacityBps =
+		(uint64_t)std::floor(effective);
+	runtime.previousEffectiveCapacityBps =
+		record.effectiveCapacityBps;
 	runtime.previousRaw = snapshot;
 	runtime.latest = record;
 	runtime.initialized = true;
@@ -1927,6 +2144,13 @@ void RdmaHw::ReplanCbapSbaMigrationTargets(uint64_t nowNs,
 			s_cbapLastEtaEffective = (double)eta;
 			oldShare = (uint64_t)std::floor(
 				(1.0L - eta) * (long double)oldAggregate);
+			// Single source of capacity.  `available` (link->second) is the
+			// per-epoch effectiveCapacityBps, which already carries the
+			// queueing-delay credit or drain when that mode is enabled -- the
+			// credit is applied once, on the per-epoch path, and every consumer
+			// reads it from here.  Computing it again in this branch would both
+			// double-count and reintroduce the bug where a drain computed here
+			// was never applied because other paths kept the raw capacity.
 			newShare = link->second > oldShare ?
 				link->second - oldShare : 0;
 			// Low-overhead audit: one row per replan per link, never per

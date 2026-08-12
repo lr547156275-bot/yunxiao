@@ -160,6 +160,16 @@ double cbap_migration_release_ratio = 0.5;
 // Per-replan capacity-feasibility audit.  Off unless a scenario asks for it.
 uint32_t cbap_eta_feasibility_trace = 0;
 string cbap_eta_feasibility_file;
+// Queueing-delay credit.  All zero/off by default, so a scenario that does not
+// mention these keys keeps the strict sum(target) <= C planner exactly.
+uint32_t cbap_delay_credit_enable = 0;
+double cbap_queue_delay_target_us = 0.0;
+double cbap_queue_delay_hard_limit_us = 0.0;
+double cbap_credit_horizon_us = 0.0;
+double cbap_max_oversub_ratio = 0.0;
+double cbap_credit_max_drain_ratio = 0.0;
+uint32_t cbap_queue_safety_margin_bytes = 0;
+string cbap_delay_credit_file;
 double cbap_migration_decay_base = 0.30;
 double cbap_migration_rise_base = 0.30;
 double cbap_migration_rise_skew = 0.35;
@@ -648,6 +658,15 @@ void ReadCbapInputs(){
 	config.migrationEnabled = cbap_migration_enable;
 	config.migrationReleaseRatio = cbap_migration_release_ratio;
 	config.etaFeasibilityTrace = (cbap_eta_feasibility_trace != 0);
+	// Microseconds in the config file, seconds in the model: convert once here
+	// so the control formulas never mix units.
+	config.delayCreditEnable = (cbap_delay_credit_enable != 0);
+	config.queueDelayTargetS = cbap_queue_delay_target_us * 1e-6;
+	config.queueDelayHardLimitS = cbap_queue_delay_hard_limit_us * 1e-6;
+	config.creditHorizonS = cbap_credit_horizon_us * 1e-6;
+	config.maxOversubRatio = cbap_max_oversub_ratio;
+	config.creditMaxDrainRatio = cbap_credit_max_drain_ratio;
+	config.queueSafetyMarginBytes = cbap_queue_safety_margin_bytes;
 	config.migrationDecayBase = cbap_migration_decay_base;
 	config.migrationRiseBase = cbap_migration_rise_base;
 	config.migrationRiseSkew = cbap_migration_rise_skew;
@@ -870,6 +889,38 @@ void WriteCbapSummaries(){
 				<< r.appliedCapacityExcessBps << ','
 				<< r.appliedCapacityViolation << ','
 				<< r.actualArrivalExcessBps << '\n';
+		}
+	}
+	if (!cbap_delay_credit_file.empty()){
+		ofstream output(cbap_delay_credit_file.c_str());
+		output << "timestamp_ns,link_id,epoch,phase,queue_bytes,"
+			"q_target_bytes,q_hard_bytes,q_sync_floor_bytes,"
+			"q_predicted_bytes,capacity_bps,credit_bps,drain_bps,"
+			"total_budget_bps,old_share_bps,new_share_bps,sum_target_bps,"
+			"new_flow_count,credit_truncated,oversubscribed,"
+			"queue_delay_us,budget_over_capacity\n";
+		const vector<RdmaHw::CbapDelayCreditRecord> &rows =
+			RdmaHw::GetCbapDelayCreditRecords();
+		for (uint32_t i = 0; i < rows.size(); ++i){
+			const RdmaHw::CbapDelayCreditRecord &r = rows[i];
+			// Derived on write so each row carries its own interpretation.
+			double qDelayUs = r.capacityBps ?
+				(double)r.queueBytes * 8.0 / r.capacityBps * 1e6 : 0.0;
+			double budgetRatio = r.capacityBps ?
+				(double)r.totalBudgetBps / r.capacityBps : 0.0;
+			output << r.timestampNs << ',' << r.linkId << ',' << r.epoch
+				<< ',' << r.phase << ',' << r.queueBytes
+				<< ',' << r.qTargetBytes << ',' << r.qHardBytes
+				<< ',' << r.qSyncFloorBytes << ',' << r.qPredictedBytes
+				<< ',' << r.capacityBps << ',' << r.creditBps
+				<< ',' << r.drainBps << ',' << r.totalBudgetBps
+				<< ',' << r.oldShareBps << ',' << r.newShareBps
+				<< ',' << r.sumTargetBps << ',' << r.newFlowCount
+				<< ',' << (r.creditTruncated ? 1 : 0)
+				<< ',' << (r.oversubscribed ? 1 : 0)
+				<< ',' << std::fixed << std::setprecision(4) << qDelayUs
+				<< ',' << budgetRatio
+				<< std::resetiosflags(std::ios::fixed) << '\n';
 		}
 	}
 	if (!cbap_eta_feasibility_file.empty()){
@@ -2840,6 +2891,27 @@ int main(int argc, char *argv[])
 				conf>>cbap_eta_feasibility_trace;
 			else if(key.compare("CBAP_ETA_FEASIBILITY_FILE")==0)
 				conf>>cbap_eta_feasibility_file;
+			else if(key.compare("CBAP_DELAY_CREDIT_ENABLE")==0)
+				conf>>cbap_delay_credit_enable;
+			else if(key.compare("CBAP_QUEUE_DELAY_TARGET_US")==0)
+				conf>>cbap_queue_delay_target_us;
+			else if(key.compare("CBAP_QUEUE_DELAY_HARD_LIMIT_US")==0)
+				conf>>cbap_queue_delay_hard_limit_us;
+			else if(key.compare("CBAP_CREDIT_HORIZON_US")==0)
+				conf>>cbap_credit_horizon_us;
+			else if(key.compare("CBAP_MAX_OVERSUB_RATIO")==0)
+				conf>>cbap_max_oversub_ratio;
+			// Distinct key: CBAP_MAX_DRAIN_RATIO is already consumed earlier by
+			// the pre-existing budget-decay parameter (cbap_max_drain_ratio),
+			// so a second else-if on the same name is unreachable and the
+			// credit drain would silently stay at 0.  Overloading the old key
+			// would also change its meaning, which the plan forbids.
+			else if(key.compare("CBAP_CREDIT_DRAIN_RATIO")==0)
+				conf>>cbap_credit_max_drain_ratio;
+			else if(key.compare("CBAP_QUEUE_SAFETY_MARGIN_BYTES")==0)
+				conf>>cbap_queue_safety_margin_bytes;
+			else if(key.compare("CBAP_DELAY_CREDIT_FILE")==0)
+				conf>>cbap_delay_credit_file;
 			else if(key.compare("CBAP_MIGRATION_DECAY_BASE")==0)
 				conf>>cbap_migration_decay_base;
 			else if(key.compare("CBAP_MIGRATION_RISE_BASE")==0)
