@@ -48,6 +48,14 @@ SAMPLE_US = 10.0
 # simulator actually computed from the topology -- never guessed here.
 BASE_RTT_US = 0.0
 
+# Fixed observation window for the cross-algorithm background statistics,
+# in seconds from the collective's release.  Constant for every algorithm and
+# every scenario, so retention is comparable: the CCT-scoped "during" window
+# varies with each run's own speed and cannot be compared across algorithms.
+# 150 ms is shorter than the shortest collective observed in any cell, so every
+# algorithm is measured over a window in which it was genuinely contending.
+FIXED_WINDOW_S = 0.150
+
 
 def isnan(x):
     return x is None or (isinstance(x, float) and math.isnan(x))
@@ -271,11 +279,27 @@ def background_metrics(d, bg_srcs, release, sim_end, bg_cap, bg_flow_ids,
     out['bg_completed'] = worst('completed', min)
     out['bg_fct_ms'] = worst('fct_ms', max)
     out['bg_slowdown'] = worst('slowdown', max)
-    if len(bg_flow_ids) == 1:
-        out['bg_recovery90_ms_never_dipped'] = out.get(
-            'bg0_recovery90_ms_never_dipped', NAN)
-        out['bg_recovery95_ms_never_dipped'] = out.get(
-            'bg0_recovery95_ms_never_dipped', NAN)
+    # Fixed-window roll-ups, same conventions as their CCT-scoped counterparts:
+    # rates sum across flows, retention/minimum take the worst case.
+    out['bg_fixed_window_s'] = FIXED_WINDOW_S
+    out['bg_fw_during_gbps'] = total('fw_during_gbps')
+    out['bg_fw_bytes_delivered'] = total('fw_bytes_delivered')
+    out['bg_fw_min_gbps'] = worst('fw_min_gbps', min)
+    out['bg_fw_retention_pct'] = worst('fw_retention_pct', min)
+    out['bg_fw_drop_pct'] = worst('fw_drop_pct', max)
+    # never_dipped is a per-flow boolean, so a worst-case roll-up is not
+    # meaningful; propagate it when there is exactly one background flow and
+    # emit the OR across flows otherwise, so the field is populated for S6 too
+    # (previously blank there, which made the S6 zeros ambiguous).
+    for w in ('90', '95'):
+        k = 'recovery%s_ms_never_dipped' % w
+        vals = [out['bg%d_%s' % (i, k)] for i in range(len(bg_flow_ids))
+                if ('bg%d_%s' % (i, k)) in out
+                and not isnan(out['bg%d_%s' % (i, k)])]
+        # 1 only if EVERY background flow stayed above the threshold; if any
+        # flow dipped, the roll-up recovery time is a real measurement.
+        out['bg_%s' % k] = (1 if vals and all(v >= 1 for v in vals)
+                            else (0 if vals else NAN))
     return out
 
 
@@ -346,6 +370,47 @@ def _background_one(d, flow_id, release, sim_end, bg_cap, debt_window_s,
     out['after_gbps'] = after / 1e9 if not isnan(after) else NAN
     if not isnan(before) and before > 0 and not isnan(during):
         out['retention_pct'] = 100.0 * during / before
+
+    # Fixed-window background statistics, added alongside the CCT-scoped ones
+    # above rather than replacing them.
+    #
+    # The metrics above measure "during" over each run's own collective duration.
+    # That is the right window for asking "what did the background flow lose
+    # while the collective was actually running", but it is NOT comparable across
+    # algorithms: a slow algorithm is averaged over a longer window than a fast
+    # one, so identical instantaneous behaviour yields different retention. With
+    # the pg fix DCQCN's collective went from 282 ms to 54 ms, which changes its
+    # window by 5x and makes the cross-algorithm retention column misleading.
+    #
+    # FIXED_WINDOW_S is one interval, identical for every algorithm and scenario,
+    # starting at release. 150 ms is chosen because it is shorter than the
+    # shortest collective observed in any cell, so every algorithm is measured
+    # over a window it was genuinely contending in.
+    fw_end = release + FIXED_WINDOW_S
+    fw = rate(release, fw_end)
+    out['fixed_window_s'] = FIXED_WINDOW_S
+    out['fw_during_gbps'] = fw / 1e9 if not isnan(fw) else NAN
+    if not isnan(before) and before > 0 and not isnan(fw):
+        out['fw_retention_pct'] = 100.0 * fw / before
+    # Minimum inside the same fixed window, on the same 2 ms sub-window grid as
+    # min_gbps, so the two are directly comparable.
+    fw_low = None
+    t = release
+    while t + 0.002 <= fw_end:
+        r = rate(t, t + 0.002)
+        if not isnan(r) and (fw_low is None or r < fw_low):
+            fw_low = r
+        t += 0.002
+    if fw_low is not None:
+        out['fw_min_gbps'] = fw_low / 1e9
+        if not isnan(before) and before > 0:
+            out['fw_drop_pct'] = 100.0 * (1 - fw_low / before)
+    # Bytes the background flow actually moved in the fixed window: an absolute
+    # quantity that needs no ratio and cannot be distorted by window length.
+    lo = [v for t, v in s if t <= release]
+    hi = [v for t, v in s if t <= fw_end]
+    if lo and hi:
+        out['fw_bytes_delivered'] = max(0.0, hi[-1] - lo[-1])
 
     # Stop observing once the flow has delivered everything it owed: after that
     # its rate is legitimately zero and reading it as a "dip" would report a
@@ -553,6 +618,12 @@ BG_KEYS = ['bg_completed', 'bg_fct_ms', 'bg_before_gbps', 'bg_during_gbps',
            'bg_retx_events']
 BG_KEYS = BG_KEYS + ['bg_n_flows', 'bg_service_debt_window_s',
                      'bg0_observation_end_s', 'bg0_bg_completed_before_end']
+# Fixed-window background statistics: comparable across algorithms because the
+# window is identical everywhere (FIXED_WINDOW_S from release), unlike the
+# CCT-scoped bg_during_gbps / bg_retention_pct above.
+BG_KEYS = BG_KEYS + ['bg_fixed_window_s', 'bg_fw_during_gbps',
+                     'bg_fw_retention_pct', 'bg_fw_min_gbps',
+                     'bg_fw_drop_pct', 'bg_fw_bytes_delivered']
 SYS_KEYS = ['total_acked_bytes', 'util_mean', 'queue_mean_bytes',
             'queue_p95_bytes', 'queue_p99_bytes', 'queue_peak_bytes',
             'over_qmin_pct', 'over_qmax_pct', 'queue_recovery_ms',
