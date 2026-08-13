@@ -230,6 +230,20 @@ public:
 		double migrationRiseSkew;
 		uint32_t migrationMaxRtt;
 		bool migrationTrace;
+		// Initial background release ratio, applied to the FIRST synchronised
+		// target after a batch is admitted.  Distinct from three things it is
+		// easy to confuse it with:
+		//   * it is NOT the 50:50 batch weight (which this mode removes),
+		//   * it is NOT the queueing-delay credit (sum(target) stays <= C),
+		//   * it is NOT the final eta (migration still converges to eta_final).
+		// rho_init = 0 reproduces the pre-existing behaviour where the batch only
+		// gets whatever headroom the old side was not already using.
+		double initialReleaseRatio;
+		// Selects the admission allocator.  false keeps the historical
+		// (C - old_reservation) * 0.5 batch weighting, retained only as the
+		// legacy_50_50 control arm; true uses the work-conserving initial
+		// release below.  Default false so nothing changes unless asked.
+		bool coreInitialRelease;
 		// Per-replan audit of the capacity-feasibility rule.  Off by default
 		// so no existing run changes behaviour or output.
 		bool etaFeasibilityTrace;
@@ -280,7 +294,8 @@ public:
 			  migrationEnabled(false), migrationReleaseRatio(0.5),
 			  migrationDecayBase(0.30), migrationRiseBase(0.30),
 			  migrationRiseSkew(0.35), migrationMaxRtt(5),
-			  migrationTrace(false), etaFeasibilityTrace(false),
+			  migrationTrace(false), initialReleaseRatio(0.0),
+			  coreInitialRelease(false), etaFeasibilityTrace(false),
 			  delayCreditEnable(false), queueDelayTargetS(0.0),
 			  queueDelayHardLimitS(0.0), creditHorizonS(0.0),
 			  maxOversubRatio(0.0), creditMaxDrainRatio(0.0),
@@ -738,6 +753,15 @@ public:
 	};
 	typedef Callback<CbapPortSnapshot, uint32_t>
 		CbapPortReadCallback;
+	// Read-only actuation audit hook.  Called immediately after a migration
+	// rate command is written, with (flowId, oldBps, newBps).  Null by default,
+	// so no behaviour changes unless a scenario installs it.  Not used by any
+	// control decision.
+	static void (*s_cbapActuationHook)(uint32_t, uint64_t, uint64_t);
+	// Read-only: the QP behind a CBAP flow id, for audit correlation only.
+	// Returns NULL if the flow is unknown.  Const-correct by contract: callers
+	// must not mutate through it, and no control path uses this accessor.
+	static Ptr<RdmaQueuePair> GetCbapQpForAudit(uint32_t flowId);
 	static void ConfigureCbap(const CbapConfig &config,
 			const std::vector<BopMultilinkLink> &links,
 			const std::map<uint32_t, std::vector<uint32_t> > &flowPaths);

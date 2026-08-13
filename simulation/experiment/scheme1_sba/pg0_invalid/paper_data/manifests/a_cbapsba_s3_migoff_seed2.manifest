@@ -1,0 +1,11 @@
+cell=a_cbapsba_s3_migoff_seed2
+ablation=migration_off
+scenario=s3
+seed=2
+stop_time=3.0
+cbap_migration_enable=0
+config_sha256=85e79437a8a58feca3658ac9aee4bef45cd44a6f6f9071e34a406365887e4b7a
+binary_sha256=0156d0bacf69034f78703fcff4a26cb37b976da8d17b8ca7c9c25e696c7f3d35
+p2p_lib_sha256=0bacef18ef8547302f2f9b239951cb131f4efaa09f31fedbdf17889f8cd0ef72
+git_commit=2ece98e378c69a6d38884dd1c1a74d007618ae9c
+note=config-only change from m_cbapsba_s3_seed2.txt; verified to differ in exactly one key

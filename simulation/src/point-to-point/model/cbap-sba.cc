@@ -165,6 +165,20 @@ std::map<uint32_t, uint64_t> CbapSbaController::ProgressiveFill(
 	return result;
 }
 
+void CbapSbaController::SetCoreInitialRelease(bool enable, double rhoInit)
+{
+	m_coreInitialRelease = enable;
+	// Clamp rather than trust the caller: a ratio outside [0,1] would either
+	// take capacity away from the batch or release more than the old side has.
+	m_initialReleaseRatio = rhoInit < 0.0 ? 0.0 : (rhoInit > 1.0 ? 1.0 : rhoInit);
+}
+
+const std::map<uint32_t, uint64_t> &
+CbapSbaController::GetLastAdmitOldApplied() const
+{
+	return m_lastAdmitOldApplied;
+}
+
 std::map<uint32_t, uint64_t> CbapSbaController::AdmitBatch(
 		uint32_t batchId, uint64_t releaseTimeNs,
 		const std::vector<FlowInput> &flows,
@@ -174,6 +188,10 @@ std::map<uint32_t, uint64_t> CbapSbaController::AdmitBatch(
 	if (flows.empty())
 		throw std::invalid_argument("SBA batch is empty");
 	std::map<uint32_t, uint64_t> residual = availableCapacity;
+	// Aggregate applied rate of the old side, per link, recorded before it is
+	// subtracted.  The initial-release allocator needs R_old_observed itself,
+	// not just the headroom that survives it.
+	std::map<uint32_t, uint64_t> oldAppliedByLink;
 	for (std::map<uint32_t, FlowState>::const_iterator existing =
 			m_flows.begin(); existing != m_flows.end(); ++existing) {
 		if (existing->second.state == FINISHED ||
@@ -181,10 +199,13 @@ std::map<uint32_t, uint64_t> CbapSbaController::AdmitBatch(
 			continue;
 		for (uint32_t hop = 0; hop < existing->second.path.size(); ++hop) {
 			uint64_t &capacity = residual[existing->second.path[hop]];
+			oldAppliedByLink[existing->second.path[hop]] +=
+				existing->second.appliedRateBps;
 			capacity = capacity > existing->second.appliedRateBps ?
 				capacity - existing->second.appliedRateBps : 0;
 		}
 	}
+	m_lastAdmitOldApplied = oldAppliedByLink;
 	std::vector<uint32_t> ids;
 	for (uint32_t i = 0; i < flows.size(); ++i) {
 		if (flows[i].path.empty() || m_flows.count(flows[i].flowId))
@@ -220,7 +241,34 @@ std::map<uint32_t, uint64_t> CbapSbaController::AdmitBatch(
 			hasOldFlows = true;
 	}
 	std::map<uint32_t, uint64_t> newBatchResidual = residual;
-	if (hasOldFlows && oldBatchWeight > 0.0 && newBatchWeight > 0.0) {
+	if (m_coreInitialRelease) {
+		// Core mode: work-conserving initial release.  The old side gives up
+		// rho_init of the rate it is actually using, and the batch receives the
+		// untouched headroom plus exactly that release, so
+		//     R_old_init + R_new_init = C
+		// leaving no capacity hole while a batch has demand.  No 0.5 weight is
+		// applied here or anywhere else on this path.
+		//
+		//     released_init = rho_init * R_old_observed
+		//     R_new_init    = (C - R_old_observed) + released_init
+		//
+		// residual already equals C - R_old_observed at this point, which is why
+		// the release is simply added to it rather than recomputed from C.
+		for (std::map<uint32_t, uint64_t>::iterator link =
+				newBatchResidual.begin(); link != newBatchResidual.end(); ++link) {
+			uint64_t oldApplied = oldAppliedByLink.count(link->first) ?
+				oldAppliedByLink[link->first] : 0;
+			uint64_t released = (uint64_t)std::floor(
+				(long double)m_initialReleaseRatio * (long double)oldApplied);
+			link->second += released;
+			// Never plan above the link itself.
+			if (availableCapacity.count(link->first) &&
+					link->second > availableCapacity.find(link->first)->second)
+				link->second = availableCapacity.find(link->first)->second;
+		}
+	} else if (hasOldFlows && oldBatchWeight > 0.0 && newBatchWeight > 0.0) {
+		// legacy_50_50 control arm only.  Retained for comparison; not part of
+		// the core algorithm.
 		double share = newBatchWeight / (oldBatchWeight + newBatchWeight);
 		for (std::map<uint32_t, uint64_t>::iterator link =
 				newBatchResidual.begin(); link != newBatchResidual.end(); ++link)
@@ -242,8 +290,43 @@ std::map<uint32_t, uint64_t> CbapSbaController::AdmitBatch(
 				"", "");
 		}
 	}
-	if (!CheckConservation(batchId, residual))
+	// The budget ProgressiveFill was actually handed is newBatchResidual, so
+	// that is what the batch's grants must respect.  On the legacy path
+	// newBatchResidual is derived from residual by a <=1 weight, so this is
+	// identical to the previous check there.
+	if (!CheckConservation(batchId, newBatchResidual))
 		throw std::logic_error("SBA atomic admission violates capacity");
+	// Core mode hands the batch capacity the old side is releasing, so
+	// sum(grants) <= C - R_old_observed no longer holds and must not be
+	// asserted.  The property that does hold is planned-state conservation:
+	//     sum(grants) + (1 - rho_init) * R_old_observed <= C
+	// i.e. the batch plus the rate the old side is being left with fits the
+	// link.  Checked per link, and only for links the old side actually uses.
+	if (m_coreInitialRelease) {
+		for (std::map<uint32_t, uint64_t>::const_iterator link =
+				availableCapacity.begin();
+				link != availableCapacity.end(); ++link) {
+			uint64_t oldApplied = oldAppliedByLink.count(link->first) ?
+				oldAppliedByLink.find(link->first)->second : 0;
+			uint64_t released = (uint64_t)std::floor(
+				(long double)m_initialReleaseRatio * (long double)oldApplied);
+			uint64_t oldRetained = oldApplied > released ?
+				oldApplied - released : 0;
+			uint64_t batchSum = 0;
+			for (uint32_t i = 0; i < ids.size(); ++i) {
+				const FlowState &flow = m_flows[ids[i]];
+				if (std::find(flow.path.begin(), flow.path.end(),
+						link->first) == flow.path.end())
+					continue;
+				batchSum += flow.grantRateBps;
+			}
+			// Tolerate the per-flow floor() rounding in ProgressiveFill, which
+			// can only ever round the batch down, never up.
+			if (batchSum + oldRetained > link->second + ids.size())
+				throw std::logic_error(
+					"SBA initial release violates planned capacity");
+		}
+	}
 	return grants;
 }
 

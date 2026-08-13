@@ -130,6 +130,32 @@ double cbap_rho = 0.95, cbap_epsilon_rate = 0.02;
 uint32_t cbap_priority = 3, cbap_max_wire_packet_bytes = 1064;
 uint32_t cbap_summary_bytes = 64, cbap_grant_bytes = 48;
 string cbap_port_summary_file, cbap_admission_file;
+// --- PFC / actuation audit trace (measurement only; no control effect) ------
+// Records the EXACT inputs of the real PFC pause predicate
+// (SwitchMmu::CheckShouldPause) alongside CBAP's egress queue_bytes, so the two
+// can be compared without assuming they are the same quantity.  They are not:
+// PFC is evaluated per INGRESS port on ingress_bytes[], while CBAP samples the
+// EGRESS BEgressQueue of the bottleneck port.
+string cbap_pfc_audit_file;
+static FILE *cbap_pfc_audit_csv = NULL;
+// Per-ingress-port PFC detail: every port that actually feeds the bottleneck
+// egress gets its own row, so "min slack" is a measured minimum over real
+// contributors rather than over all ports indiscriminately.
+string cbap_pfc_ports_file;
+static FILE *cbap_pfc_ports_csv = NULL;
+// Actuation closed loop: rate command -> sender effect -> first affected packet
+// observed at the bottleneck.  Read-only; no control decision uses these.
+string cbap_actuation_file;
+static FILE *cbap_actuation_csv = NULL;
+static uint64_t cbap_last_rate_cmd_ns = 0;
+static uint64_t cbap_last_rate_cmd_flow = 0;
+static uint64_t cbap_last_rate_cmd_bps = 0;
+static uint64_t cbap_last_sender_effect_ns = 0;
+static uint64_t cbap_pending_effect_flow = 0;
+static bool cbap_effect_armed = false;   // flow_id 0 is REAL (the bg flow), so
+                                         // 0 must not double as "disarmed"
+static uint64_t cbap_pending_effect_bytes = 0;
+
 string cbap_rate_transition_file, cbap_flow_state_file;
 string cbap_increase_audit_file;
 string cbap_applied_rate_audit_file;
@@ -157,6 +183,10 @@ double cbap_new_batch_weight = 1.0;
 // Capacity migration (docs/cbap_sba_capacity_migration_design.md).
 bool cbap_migration_enable = false;
 double cbap_migration_release_ratio = 0.5;
+// Core initial-release mode.  Off by default so an unmodified scenario keeps the
+// historical 50:50 admission weighting (retained only as the legacy_50_50 arm).
+uint32_t cbap_core_initial_release = 0;
+double cbap_initial_release_ratio = 0.0;
 // Per-replan capacity-feasibility audit.  Off unless a scenario asks for it.
 uint32_t cbap_eta_feasibility_trace = 0;
 string cbap_eta_feasibility_file;
@@ -658,6 +688,8 @@ void ReadCbapInputs(){
 	config.migrationEnabled = cbap_migration_enable;
 	config.migrationReleaseRatio = cbap_migration_release_ratio;
 	config.etaFeasibilityTrace = (cbap_eta_feasibility_trace != 0);
+	config.coreInitialRelease = (cbap_core_initial_release != 0);
+	config.initialReleaseRatio = cbap_initial_release_ratio;
 	// Microseconds in the config file, seconds in the model: convert once here
 	// so the control formulas never mix units.
 	config.delayCreditEnable = (cbap_delay_credit_enable != 0);
@@ -732,6 +764,287 @@ void ReadCbapInputs(){
 	RdmaHw::ConfigureCbap(config, cbap_links, cbap_flow_paths);
 }
 
+// --- Actuation closed loop (read-only, generation-keyed) --------------------
+// flowId alone cannot establish causality between the three stages, so every
+// rate command gets a monotonically increasing command_generation, and the
+// stages are correlated by (stable QP key, generation, packet sequence):
+//
+//   stage 1 rate_command   : generation G assigned; key = 5-tuple of the QP
+//   stage 2 sender_effect  : first DATA scheduled UNDER the new rate; records
+//                            the packet sequence (snd_nxt at dequeue)
+//   stage 3 at_bottleneck  : the SAME (key, seq) observed at the bottleneck
+//                            egress, matched back to G
+//
+// Nothing here reads back into a control decision: no rate, pacing, migration,
+// replan or DCQCN path consults these structures.
+struct CbapActuationKey {
+	uint32_t sip, dip;
+	uint16_t sport, dport;
+	uint16_t pg;
+	bool operator<(const CbapActuationKey &o) const {
+		if (sip != o.sip) return sip < o.sip;
+		if (dip != o.dip) return dip < o.dip;
+		if (sport != o.sport) return sport < o.sport;
+		if (dport != o.dport) return dport < o.dport;
+		return pg < o.pg;
+	}
+};
+struct CbapActuationPending {
+	uint64_t generation;
+	uint64_t commandNs;
+	uint64_t rateBps;
+	uint64_t flowId;
+	bool senderSeen;
+	uint64_t senderNs;
+	uint64_t seq;          // sequence of the first packet under the new rate
+	uint64_t arrivalNs;    // bottleneck ARRIVAL (before egress queueing)
+	CbapActuationPending()
+		: generation(0), commandNs(0), rateBps(0), flowId(0),
+		  senderSeen(false), senderNs(0), seq(0), arrivalNs(0) {}
+};
+static uint64_t cbap_actuation_generation = 0;
+static bool cbap_actuation_egress_valid = false;
+static uint32_t cbap_actuation_egress_if = 0;
+static map<CbapActuationKey, CbapActuationPending> cbap_actuation_pending;
+// (key, seq) -> generation, awaiting the bottleneck sighting.
+static map<pair<CbapActuationKey, uint64_t>, CbapActuationPending>
+	cbap_actuation_inflight;
+static uint64_t cbap_act_unmatched = 0, cbap_act_superseded = 0,
+	cbap_act_negative = 0;
+
+static CbapActuationKey CbapKeyOfQp(Ptr<RdmaQueuePair> qp){
+	CbapActuationKey k;
+	k.sip = qp->sip.Get(); k.dip = qp->dip.Get();
+	k.sport = qp->sport; k.dport = qp->dport;
+	k.pg = qp->m_pg;
+	return k;
+}
+
+static void CbapActuationOnRateCommand(uint32_t flowId, uint64_t oldBps,
+		uint64_t newBps){
+	if (!cbap_actuation_csv)
+		return;
+	Ptr<RdmaQueuePair> qp = RdmaHw::GetCbapQpForAudit(flowId);
+	if (!qp)
+		return;
+	CbapActuationKey k = CbapKeyOfQp(qp);
+	CbapActuationPending pend;
+	pend.generation = ++cbap_actuation_generation;
+	pend.commandNs = Simulator::Now().GetTimeStep();
+	pend.rateBps = newBps;
+	pend.flowId = flowId;
+	// A command that supersedes an unobserved earlier one for the same QP
+	// displaces a pending entry.  Count THAT -- counting duplicate generations
+	// would be vacuous, since generation is a monotonic ++counter.
+	if (cbap_actuation_pending.count(k))
+		cbap_act_superseded++;
+	cbap_actuation_pending[k] = pend;
+	fprintf(cbap_actuation_csv,
+		"%lu,%lu,%lu,%lu,%lu,rate_command,0,0,0\n",
+		(unsigned long)pend.commandNs, (unsigned long)pend.generation,
+		(unsigned long)flowId, (unsigned long)oldBps, (unsigned long)newBps);
+}
+
+// stage 2: the first packet this QP schedules after the command.
+static void CbapActuationOnQpDequeue(Ptr<QbbNetDevice> device,
+		Ptr<const Packet> packet, Ptr<RdmaQueuePair> qp){
+	if (!cbap_actuation_csv || !qp)
+		return;
+	CbapActuationKey k = CbapKeyOfQp(qp);
+	map<CbapActuationKey, CbapActuationPending>::iterator it =
+		cbap_actuation_pending.find(k);
+	if (it == cbap_actuation_pending.end())
+		return;
+	uint64_t now = Simulator::Now().GetTimeStep();
+	if (now < it->second.commandNs){
+		cbap_act_negative++;
+		return;
+	}
+	CbapActuationPending pend = it->second;
+	pend.senderSeen = true;
+	pend.senderNs = now;
+	// snd_nxt is the next byte to send; the packet just handed down starts here.
+	pend.seq = qp->snd_nxt;
+	cbap_actuation_pending.erase(it);
+	cbap_actuation_inflight[make_pair(k, pend.seq)] = pend;
+	fprintf(cbap_actuation_csv,
+		"%lu,%lu,%lu,%lu,%lu,sender_rate_effect,%lu,0,%lu\n",
+		(unsigned long)now, (unsigned long)pend.generation,
+		(unsigned long)pend.flowId, (unsigned long)0,
+		(unsigned long)pend.rateBps,
+		(unsigned long)(now - pend.commandNs), (unsigned long)pend.seq);
+}
+
+// stage 3a: the same (key, seq) ARRIVING at the bottleneck egress queue, i.e.
+// before it waits there.  This -- not the dequeue instant -- is the correct
+// endpoint for an actuation horizon, because the horizon is used to predict the
+// very queue the packet is about to join.  Recorded separately from stage 3 so
+// both are directly measured instead of one being inferred from the other.
+static void CbapActuationAtBottleneckArrival(Ptr<const Packet> original,
+		uint32_t qIndex){
+	if (!cbap_actuation_csv || cbap_actuation_inflight.empty())
+		return;
+	if (qIndex != cbap_priority)
+		return;
+	Ptr<Packet> packet = original->Copy();
+	CustomHeader ch(CustomHeader::L2_Header | CustomHeader::L3_Header |
+		CustomHeader::L4_Header);
+	ch.brief = 0;
+	ch.getInt = 1;
+	packet->PeekHeader(ch);
+	if (ch.l3Prot != 0x11)
+		return;
+	CbapActuationKey k;
+	k.sip = ch.sip; k.dip = ch.dip;
+	k.sport = ch.udp.sport; k.dport = ch.udp.dport;
+	k.pg = ch.udp.pg;
+	map<pair<CbapActuationKey, uint64_t>, CbapActuationPending>::iterator it =
+		cbap_actuation_inflight.find(make_pair(k, (uint64_t)ch.udp.seq));
+	if (it == cbap_actuation_inflight.end())
+		return;
+	if (it->second.arrivalNs != 0)
+		return;                       // only the first arrival
+	uint64_t now = Simulator::Now().GetTimeStep();
+	it->second.arrivalNs = now;
+	fprintf(cbap_actuation_csv,
+		"%lu,%lu,%lu,%lu,%lu,arrival_at_bottleneck,%lu,%lu,%lu\n",
+		(unsigned long)now, (unsigned long)it->second.generation,
+		(unsigned long)it->second.flowId, (unsigned long)0,
+		(unsigned long)it->second.rateBps,
+		(unsigned long)(now - it->second.senderNs),
+		(unsigned long)(now - it->second.commandNs),
+		(unsigned long)ch.udp.seq);
+}
+
+// stage 3: that same (key, seq) reaching the bottleneck egress.  Signature
+// matches SwitchNode's EgressDequeue trace source; the 5-tuple and sequence come
+// from the packet, using the same parse idiom as the existing packet trace.
+static void CbapActuationAtBottleneck(Ptr<const Packet> original,
+		uint32_t inputPort, uint32_t outputPort, uint32_t qIndex){
+	if (!cbap_actuation_csv || cbap_actuation_inflight.empty())
+		return;
+	if (qIndex != cbap_priority)
+		return;
+	if (!cbap_actuation_egress_valid ||
+			outputPort != cbap_actuation_egress_if)
+		return;
+	Ptr<Packet> packet = original->Copy();
+	CustomHeader ch(CustomHeader::L2_Header | CustomHeader::L3_Header |
+		CustomHeader::L4_Header);
+	ch.brief = 0;
+	ch.getInt = 1;
+	packet->PeekHeader(ch);
+	if (ch.l3Prot != 0x11)
+		return;                 // not UDP/RoCE data
+	CbapActuationKey k;
+	k.sip = ch.sip; k.dip = ch.dip;
+	k.sport = ch.udp.sport; k.dport = ch.udp.dport;
+	k.pg = ch.udp.pg;
+	map<pair<CbapActuationKey, uint64_t>, CbapActuationPending>::iterator it =
+		cbap_actuation_inflight.find(make_pair(k, (uint64_t)ch.udp.seq));
+	if (it == cbap_actuation_inflight.end())
+		return;                 // not a packet we are tracking
+	uint64_t now = Simulator::Now().GetTimeStep();
+	CbapActuationPending pend = it->second;
+	cbap_actuation_inflight.erase(it);
+	if (now < pend.senderNs){
+		cbap_act_negative++;
+		return;
+	}
+	fprintf(cbap_actuation_csv,
+		"%lu,%lu,%lu,%lu,%lu,first_affected_at_bottleneck,%lu,%lu,%lu\n",
+		(unsigned long)now, (unsigned long)pend.generation,
+		(unsigned long)pend.flowId, (unsigned long)0,
+		(unsigned long)pend.rateBps,
+		(unsigned long)(now - pend.senderNs),
+		(unsigned long)(now - pend.commandNs), (unsigned long)ch.udp.seq);
+}
+
+// Sample every input of the real PFC predicate on the bottleneck switch.
+// Read-only: uses the same accessors CheckShouldPause uses, changes nothing.
+static void SampleCbapPfcAudit(uint32_t linkId, uint64_t egressQueueBytes){
+	if (!cbap_pfc_audit_csv)
+		return;
+	map<uint32_t, RdmaHw::BopMultilinkLink>::const_iterator definition =
+		cbap_link_by_id.find(linkId);
+	if (definition == cbap_link_by_id.end())
+		return;
+	Ptr<SwitchNode> sw = DynamicCast<SwitchNode>(
+		n.Get(definition->second.nodeId));
+	if (!sw || !sw->m_mmu)
+		return;
+	Ptr<SwitchMmu> mmu = sw->m_mmu;
+	const uint32_t q = cbap_priority;
+	const uint32_t nDev = sw->GetNDevices();
+	// The PFC predicate is per INGRESS port.  Report the worst (closest to
+	// pausing) ingress port, the aggregate shared-pool state, and the egress
+	// port CBAP controls -- separately, never summed into one "queue".
+	uint32_t worstPort = 0, worstOcc = 0, worstThresh = 0, worstHdrm = 0;
+	long long worstSlack = 0;
+	bool first = true, anyPaused = false;
+	uint32_t sumIngress = 0;
+	for (uint32_t p = 1; p < nDev; ++p){
+		uint32_t occ = mmu->GetSharedUsed(p, q);
+		uint32_t th = mmu->GetPfcThreshold(p);
+		uint32_t hd = mmu->hdrm_bytes[p][q];
+		sumIngress += mmu->ingress_bytes[p][q];
+		if (mmu->IsPaused(p, q))
+			anyPaused = true;
+		long long slack = (long long)th - (long long)occ;
+		if (first || slack < worstSlack){
+			worstSlack = slack; worstPort = p; worstOcc = occ;
+			worstThresh = th; worstHdrm = hd;
+			first = false;
+		}
+	}
+	// pfc_guard_state mirrors CheckShouldPause exactly:
+	//   hdrm_bytes[port][q] > 0 || GetSharedUsed(port,q) >= GetPfcThreshold(port)
+	const char *state = "SAFE";
+	if (anyPaused)
+		state = "PAUSED";
+	else if (worstHdrm > 0 || worstOcc >= worstThresh)
+		state = "TRIGGER";
+	else if (worstThresh > 0 && worstSlack < (long long)(worstThresh / 8))
+		state = "NEAR";
+	// Per-port detail for every ingress port that actually carries traffic
+	// toward this egress.  "Contributing" is decided by observed rx bytes, not
+	// assumed from the topology, so a port that never carries data cannot
+	// depress the reported minimum slack.
+	if (cbap_pfc_ports_csv){
+		long double slackMinReal = 0;
+		bool haveReal = false;
+		for (uint32_t pt = 1; pt < nDev; ++pt){
+			if (pt == definition->second.ifIndex)
+				continue;
+			uint64_t rx = sw->GetRxBytes(pt);
+			if (rx == 0)
+				continue;                 // not a contributor
+			uint32_t occ = mmu->GetSharedUsed(pt, q);
+			uint32_t th = mmu->GetPfcThreshold(pt);
+			uint32_t hd = mmu->hdrm_bytes[pt][q];
+			long long slack = (long long)th - (long long)occ;
+			if (!haveReal || slack < slackMinReal){
+				slackMinReal = slack; haveReal = true;
+			}
+			fprintf(cbap_pfc_ports_csv,
+				"%lu,%u,%u,%u,%u,%u,%lld,%u,%u,%u,%lu\n",
+				(unsigned long)Simulator::Now().GetTimeStep(), linkId, pt,
+				mmu->ingress_bytes[pt][q], occ, th, slack, hd,
+				mmu->IsPaused(pt, q) ? 1u : 0u,
+				mmu->egress_bytes[pt][q], (unsigned long)rx);
+		}
+	}
+	uint32_t egressPortOcc = definition->second.ifIndex < nDev ?
+		mmu->egress_bytes[definition->second.ifIndex][q] : 0;
+	fprintf(cbap_pfc_audit_csv,
+		"%lu,%u,%lu,%u,%u,%u,%u,%lld,%u,%u,%u,%u,%u,%s\n",
+		(unsigned long)Simulator::Now().GetTimeStep(), linkId,
+		(unsigned long)egressQueueBytes, egressPortOcc,
+		worstPort, worstOcc, worstThresh, worstSlack, worstHdrm,
+		mmu->shared_used_bytes, mmu->total_hdrm, mmu->total_rsrv,
+		sumIngress, state);
+}
+
 RdmaHw::CbapPortSnapshot ReadCbapPort(uint32_t linkId){
 	RdmaHw::CbapPortSnapshot snapshot;
 	map<uint32_t, RdmaHw::BopMultilinkLink>::const_iterator definition =
@@ -764,6 +1077,7 @@ RdmaHw::CbapPortSnapshot ReadCbapPort(uint32_t linkId){
 		sw->GetEgressCapacityBps(definition->second.ifIndex);
 	snapshot.queueBytes =
 		sw->GetEgressQueueBytes(definition->second.ifIndex);
+	SampleCbapPfcAudit(linkId, snapshot.queueBytes);
 	snapshot.ingressBytes =
 		sw->GetRxBytes(definition->second.ifIndex);
 	snapshot.txBytes = sw->GetTxBytes(definition->second.ifIndex);
@@ -779,6 +1093,23 @@ RdmaHw::CbapPortSnapshot ReadCbapPort(uint32_t linkId){
 	snapshot.downstreamPaused = sw->IsDownstreamPaused(
 		definition->second.ifIndex, cbap_priority);
 	return snapshot;
+}
+
+void WriteCbapActuationCounters(){
+	if (!cbap_actuation_csv)
+		return;
+	// Counters as a final row, so the gate values live with the data.
+	fprintf(cbap_actuation_csv,
+		"0,0,0,0,0,counters_unmatched_%lu_superseded_%lu_negative_%lu,0,0,0\n",
+		(unsigned long)cbap_act_unmatched,
+		(unsigned long)cbap_act_superseded,
+		(unsigned long)cbap_act_negative);
+	// Anything still in flight at the end never reached the bottleneck.
+	fprintf(cbap_actuation_csv,
+		"0,0,0,0,0,counters_pending_%lu_inflight_%lu,0,0,0\n",
+		(unsigned long)cbap_actuation_pending.size(),
+		(unsigned long)cbap_actuation_inflight.size());
+	fflush(cbap_actuation_csv);
 }
 
 void WriteCbapSummaries(){
@@ -2821,6 +3152,12 @@ int main(int argc, char *argv[])
 				conf>>cbap_grant_bytes;
 			else if(key.compare("CBAP_PORT_SUMMARY_FILE")==0)
 				conf>>cbap_port_summary_file;
+			else if(key.compare("CBAP_PFC_AUDIT_FILE")==0)
+				conf>>cbap_pfc_audit_file;
+			else if(key.compare("CBAP_PFC_PORTS_FILE")==0)
+				conf>>cbap_pfc_ports_file;
+			else if(key.compare("CBAP_ACTUATION_FILE")==0)
+				conf>>cbap_actuation_file;
 			else if(key.compare("CBAP_ADMISSION_FILE")==0)
 				conf>>cbap_admission_file;
 			else if(key.compare("CBAP_RATE_TRANSITION_FILE")==0)
@@ -2887,6 +3224,10 @@ int main(int argc, char *argv[])
 				conf>>cbap_migration_enable;
 			else if(key.compare("CBAP_MIGRATION_RELEASE_RATIO")==0)
 				conf>>cbap_migration_release_ratio;
+			else if(key.compare("CBAP_CORE_INITIAL_RELEASE")==0)
+				conf>>cbap_core_initial_release;
+			else if(key.compare("CBAP_INITIAL_RELEASE_RATIO")==0)
+				conf>>cbap_initial_release_ratio;
 			else if(key.compare("CBAP_ETA_FEASIBILITY_TRACE")==0)
 				conf>>cbap_eta_feasibility_trace;
 			else if(key.compare("CBAP_ETA_FEASIBILITY_FILE")==0)
@@ -4213,12 +4554,79 @@ int main(int argc, char *argv[])
 	if (cbap_enable){
 		RdmaHw::SetCbapPortReadCallback(
 			MakeCallback(&ReadCbapPort));
+	// Read-only audit hook; installed only when the trace file is requested.
+	if (!cbap_actuation_file.empty())
+		RdmaHw::s_cbapActuationHook = &CbapActuationOnRateCommand;
+	// Gate on the filename, not the FILE* -- the handle is opened later, so
+	// testing it here would silently skip every TraceConnect (it did).
+	if (!cbap_actuation_file.empty() && !cbap_links.empty()){
+		// Bottleneck egress identity, so stage 3 only matches the controlled
+		// port.  Taken from the first configured CBAP link.
+		map<uint32_t, RdmaHw::BopMultilinkLink>::const_iterator bl =
+			cbap_link_by_id.begin();
+		if (bl != cbap_link_by_id.end() && bl->second.nodeId < n.GetN()){
+			Ptr<SwitchNode> bsw = DynamicCast<SwitchNode>(
+				n.Get(bl->second.nodeId));
+			if (bsw){
+				cbap_actuation_egress_valid = true;
+				cbap_actuation_egress_if = bl->second.ifIndex;
+				bsw->TraceConnectWithoutContext("EgressDequeue",
+					MakeCallback(&CbapActuationAtBottleneck));
+				// Arrival side: QbbEnqueue on the bottleneck egress device
+				// fires when the packet joins that queue.
+				Ptr<QbbNetDevice> bdev = DynamicCast<QbbNetDevice>(
+					bsw->GetDevice(bl->second.ifIndex));
+				if (bdev)
+					bdev->TraceConnectWithoutContext("QbbEnqueue",
+						MakeCallback(&CbapActuationAtBottleneckArrival));
+			}
+		}
+		// Every host QP dequeue, so the commanded flow's departure is seen
+		// wherever it lives.
+		for (uint32_t nodeId = 0; nodeId < n.GetN(); ++nodeId){
+			if (n.Get(nodeId)->GetNodeType() != 0)
+				continue;
+			for (uint32_t deviceId = 1;
+					deviceId < n.Get(nodeId)->GetNDevices(); ++deviceId){
+				Ptr<QbbNetDevice> hdev = DynamicCast<QbbNetDevice>(
+					n.Get(nodeId)->GetDevice(deviceId));
+				if (hdev)
+					hdev->TraceConnectWithoutContext("RdmaQpDequeue",
+						MakeBoundCallback(&CbapActuationOnQpDequeue, hdev));
+			}
+		}
+	}
 		RdmaHw::StartCbapCoordinator();
 	}
 
 	//
 	// Now, do the actual simulation.
 	//启动仿真
+	if (!cbap_pfc_ports_file.empty()){
+		cbap_pfc_ports_csv = fopen(cbap_pfc_ports_file.c_str(), "w");
+		if (cbap_pfc_ports_csv)
+			fprintf(cbap_pfc_ports_csv,
+				"time_ns,link_id,ingress_port,ingress_bytes,shared_used_bytes,"
+				"dynamic_pfc_threshold_bytes,pfc_slack_bytes,headroom_bytes,"
+				"paused,egress_bytes,rx_bytes_total\n");
+	}
+	if (!cbap_actuation_file.empty()){
+		cbap_actuation_csv = fopen(cbap_actuation_file.c_str(), "w");
+		if (cbap_actuation_csv)
+			fprintf(cbap_actuation_csv,
+				"time_ns,generation,flow_id,old_rate_bps,rate_bps,stage,"
+				"delta_prev_stage_ns,delta_from_command_ns,seq\n");
+	}
+	if (!cbap_pfc_audit_file.empty()){
+		cbap_pfc_audit_csv = fopen(cbap_pfc_audit_file.c_str(), "w");
+		if (cbap_pfc_audit_csv)
+			fprintf(cbap_pfc_audit_csv,
+				"time_ns,link_id,cbap_egress_queue_bytes,"
+				"egress_port_occupancy_bytes,worst_ingress_port,"
+				"pfc_counter_occupancy_bytes,dynamic_pfc_threshold_bytes,"
+				"pfc_slack_bytes,hdrm_bytes,shared_used_bytes,"
+				"total_hdrm,total_rsrv,sum_ingress_bytes,pfc_guard_state\n");
+	}
 	std::cout << "Running Simulation.\n";
 	fflush(stdout);
 	NS_LOG_INFO("Run Simulation.");
@@ -4227,6 +4635,7 @@ int main(int argc, char *argv[])
 	if (round_mode)
 		WriteCrfmSummaries();
 	WriteBopMultilinkSummaries();
+	WriteCbapActuationCounters();
 	WriteCbapSummaries();
 	if (final_validation_enable){
 		BopFinalValidation::WriteOutputs();

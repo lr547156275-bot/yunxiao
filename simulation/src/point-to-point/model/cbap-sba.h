@@ -76,13 +76,30 @@ public:
 
 	const FlowState *GetFlow(uint32_t flowId) const;
 	const std::vector<EventRecord> &GetEvents() const;
+	// Explicit constructor so the core-mode members have defined defaults;
+	// without it they would be indeterminate and the allocator choice would
+	// depend on whatever happened to be in memory.
+	CbapSbaController()
+		: m_coreInitialRelease(false), m_initialReleaseRatio(0.0) {}
 	bool CheckConservation(uint32_t batchId,
 		const std::map<uint32_t, uint64_t> &availableCapacity) const;
 	static const char *StateName(State state);
+	// Core initial-release mode.  When enabled, AdmitBatch replaces the 50:50
+	// batch weight with a work-conserving initial release of rho_init of the old
+	// side's observed rate.  Off by default, so the legacy allocator is used
+	// unless a scenario selects the core mode.
+	void SetCoreInitialRelease(bool enable, double rhoInit);
+	// R_old_observed per link at the last admission, before it was subtracted
+	// from the residual.  Exposed so the caller can report requested versus
+	// realized rho without recomputing it.
+	const std::map<uint32_t, uint64_t> &GetLastAdmitOldApplied() const;
 
 private:
 	std::map<uint32_t, FlowState> m_flows;
 	std::vector<EventRecord> m_events;
+	bool m_coreInitialRelease;
+	double m_initialReleaseRatio;
+	std::map<uint32_t, uint64_t> m_lastAdmitOldApplied;
 
 	std::map<uint32_t, uint64_t> ProgressiveFill(
 		const std::vector<uint32_t> &flowIds,

@@ -47,6 +47,16 @@ uint32_t RdmaHw::s_cbapEpoch = 0;
 RdmaHw::CbapPortReadCallback RdmaHw::s_cbapPortRead;
 std::map<uint32_t, RdmaHw::CbapLinkRuntime> RdmaHw::s_cbapLinks;
 std::map<uint32_t, std::vector<uint32_t> > RdmaHw::s_cbapFlowPaths;
+void (*RdmaHw::s_cbapActuationHook)(uint32_t, uint64_t, uint64_t) = NULL;
+
+Ptr<RdmaQueuePair> RdmaHw::GetCbapQpForAudit(uint32_t flowId)
+{
+	std::map<uint32_t, CbapFlowRuntime>::const_iterator it =
+		s_cbapFlows.find(flowId);
+	if (it == s_cbapFlows.end())
+		return NULL;
+	return it->second.qp;
+}
 std::set<uint32_t> RdmaHw::s_cbapSbaMigrationPlanned;
 std::set<uint32_t> RdmaHw::s_cbapSbaMigrationActiveSet;
 bool RdmaHw::s_cbapSbaMigrationReplanPending = false;
@@ -1867,6 +1877,11 @@ void RdmaHw::PlanCbapSbaBatch(uint32_t groupId)
 
 	const std::map<uint32_t, uint64_t> available =
 		GetCbapSbaAvailableCapacity();
+	// Push the allocator selection immediately before use, so it cannot depend
+	// on startup ordering.  In core mode AdmitBatch ignores the batch weights
+	// entirely and applies the initial release instead.
+	s_cbapSbaController.SetCoreInitialRelease(
+		s_cbapConfig.coreInitialRelease, s_cbapConfig.initialReleaseRatio);
 	std::map<uint32_t, uint64_t> grants = s_cbapSbaController.AdmitBatch(
 		groupId, group.commonReleaseNs, inputs, available,
 		s_cbapConfig.oldBatchWeight, s_cbapConfig.newBatchWeight);
@@ -2141,6 +2156,19 @@ void RdmaHw::ReplanCbapSbaMigrationTargets(uint64_t nowNs,
 				if (eta > 1.0L)
 					eta = 1.0L;
 			}
+			// eta_final = max(rho_init, eta_base, eta_feasible).
+			// rho_init participates so a caller asking for a large initial
+			// release does not then see the migration walk the old side back
+			// UP: the final target must be at least as generous to the batch as
+			// the initial one.  eta_base and eta_feasible are already folded
+			// into `eta` above.  This does NOT let eta_feasible silently raise
+			// rho_init -- the initial allocation is computed from rho_init
+			// alone, in AdmitBatch.
+			if (s_cbapConfig.coreInitialRelease &&
+					(long double)s_cbapConfig.initialReleaseRatio > eta)
+				eta = (long double)s_cbapConfig.initialReleaseRatio;
+			if (eta > 1.0L)
+				eta = 1.0L;
 			s_cbapLastEtaEffective = (double)eta;
 			oldShare = (uint64_t)std::floor(
 				(1.0L - eta) * (long double)oldAggregate);
@@ -2362,8 +2390,12 @@ void RdmaHw::EvaluateCbapSbaMigration(uint64_t nowNs)
 		// Write the rate through the one entry point that also recomputes
 		// m_nextAvail -- the send gate in GetNextQindex only ever reads
 		// m_nextAvail, never m_rate.
-		if (currentRate != appliedRate)
+		if (currentRate != appliedRate) {
 			flow->second.hw->ChangeRate(qp, DataRate(appliedRate));
+			// rate_command_time: the instant the new pacing rate is installed.
+			if (s_cbapActuationHook)
+				s_cbapActuationHook(flow->first, currentRate, appliedRate);
+		}
 		// ChangeRate's incremental branch can land in the past, and a QP
 		// parked in HOLD carries m_nextAvail = max-time; pull it back and
 		// force a rescan, exactly as PlanCbapSbaBatch does.  Without the
