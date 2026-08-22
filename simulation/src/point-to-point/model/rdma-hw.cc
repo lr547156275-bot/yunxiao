@@ -9,6 +9,22 @@
 #include "ns3/data-rate.h"
 #include "ns3/pointer.h"
 #include "rdma-hw.h"
+#include "../../../scratch/causal-telemetry.h"
+#include "../../../scratch/gap-snapshot-telemetry.h"
+// Owned here: rdma-hw.cc is inside libns3-point-to-point, which references
+// these symbols from ChangeRate.  Telemetry only.
+bool ns3::GapSnapshotTrace::s_open = false;
+std::string ns3::GapSnapshotTrace::s_path = "";
+std::vector<ns3::GapSnapshotTrace::Row> ns3::GapSnapshotTrace::s_rows;
+uint64_t ns3::GapSnapshotTrace::s_lo = 0;
+uint64_t ns3::GapSnapshotTrace::s_hi = 0;
+uint64_t ns3::GapSnapshotTrace::s_max = 0;
+uint64_t ns3::GapSnapshotTrace::s_gapId = 0;
+uint64_t ns3::GapSnapshotTrace::s_dropped = 0;
+FILE *ns3::CausalPacerTrace::s_file = 0;
+uint64_t ns3::CausalPacerTrace::s_lo = 0;
+uint64_t ns3::CausalPacerTrace::s_hi = 0;
+uint64_t ns3::CausalPacerTrace::s_rows = 0;
 #include "ppp-header.h"
 #include "qbb-header.h"
 #include "cn-header.h"
@@ -48,6 +64,65 @@ RdmaHw::CbapPortReadCallback RdmaHw::s_cbapPortRead;
 std::map<uint32_t, RdmaHw::CbapLinkRuntime> RdmaHw::s_cbapLinks;
 std::map<uint32_t, std::vector<uint32_t> > RdmaHw::s_cbapFlowPaths;
 void (*RdmaHw::s_cbapActuationHook)(uint32_t, uint64_t, uint64_t) = NULL;
+
+bool RdmaHw::GetCbapQcStateForAudit(uint32_t linkId, CbapQcSnapshot *out)
+{
+	std::map<uint32_t, CbapLinkRuntime>::const_iterator it =
+		s_cbapLinks.find(linkId);
+	if (it == s_cbapLinks.end() || !out)
+		return false;
+	out->boostEffectiveBps = it->second.qcBoostEffectiveBps;
+	out->boostCommandedBps = it->second.qcBoostCommandedBps;
+	out->pendingGeneration = it->second.qcPendingGeneration;
+	out->drainTargetBps = it->second.qcDrainTargetBps;
+	out->guardExceeded = it->second.qcGuardExceeded;
+	out->queueBytes = it->second.latest.queueBytes;
+	out->zone = it->second.qcZone;
+	out->activeSenders = it->second.qcActiveSenders;
+	out->qStopBytes = it->second.qcQStopBytes;
+	out->qSafeBytes = it->second.qcQSafeBytes;
+	out->floorBps = it->second.qcFloorBps;
+	out->drainMaxBps = it->second.qcDrainMaxBps;
+	out->pendingExcessBytes = it->second.qcPendingExcessBytes;
+	out->invariantViolations = it->second.qcInvariantViolations;
+	out->protectedCount =
+		(uint32_t)it->second.qcProtectedQps.size();
+	out->q0Bytes = it->second.qcQ0Bytes;
+	out->epochId = it->second.qcEpochId;
+	out->prefixMaxIndex = it->second.qcPrefixMaxIndex;
+	out->floorWireBps = it->second.qcFloorWireBps;
+	out->floorPayloadBps = it->second.qcFloorPayloadBps;
+	out->drainMaxWireBps = it->second.qcDrainMaxWireBps;
+	out->arrivalSafeWireBps = it->second.qcArrivalSafeWireBps;
+	out->senderEffectiveWireBps = it->second.qcSenderEffectiveWireBps;
+	out->duplicateQpCount = it->second.qcDuplicateQpCount;
+	out->ownsRates = it->second.qcOwnsRates;
+	out->activeGenerationId = it->second.qcActiveGenerationId;
+	out->ownedMemberCount = it->second.qcOwnedMemberCount;
+	out->ledgerCount = (uint32_t)it->second.qcLedger.size();
+	out->floorCount = (uint32_t)it->second.qcFloorProtectedQps.size();
+	out->newGenCount = (uint32_t)it->second.qcNewGenerationQps.size();
+	out->oldSideCount = (uint32_t)it->second.qcOldSideQps.size();
+	out->ownershipTransitions = it->second.qcOwnershipTransitions;
+	out->scopeViolations = it->second.qcScopeViolations;
+	out->pathMetadataMissing = it->second.qcPathMetadataMissing;
+	out->handoffPending = it->second.qcHandoffPending;
+	out->exitRecoveryPending = it->second.qcExitRecoveryPending;
+	out->inRed = it->second.qcInRed;
+	out->qb2LeaseExpireNs = it->second.qb2LeaseExpireNs;
+	out->qb2RequestedBps = it->second.qb2RequestedBps;
+	out->qb2AppliedBoostBps = it->second.qb2AppliedBoostBps;
+	out->qb2VetoReason = it->second.qb2VetoReason;
+	out->qb2QLowBytes = it->second.qb2QLowBytes;
+	out->qb2QHighBytes = it->second.qb2QHighBytes;
+	out->qb2QRedBytes = it->second.qb2QRedBytes;
+	out->qb2QAbsBytes = it->second.qb2QAbsBytes;
+	out->steadyIncastTargetWire = it->second.lastSteadyIncastTargetWire;
+	out->steadyBackgroundWire = it->second.lastMeasuredBackgroundWire;
+	out->steadyInputBudgetBps = it->second.lastInputBudgetBps;
+	out->steadyReturnedTargetSumBps = it->second.lastReturnedTargetSumBps;
+	return true;
+}
 
 Ptr<RdmaQueuePair> RdmaHw::GetCbapQpForAudit(uint32_t flowId)
 {
@@ -178,6 +253,135 @@ bool RdmaHw::IsBopQbMode(uint32_t mode)
 bool RdmaHw::UsesBopQbCredit(uint32_t mode)
 {
 	return IsBopQbMode(mode) || mode == CC_MODE_BOP_QB_PRT;
+}
+
+uint64_t RdmaHw::CbapPayloadBytesPerPacket(void)
+{
+	return s_cbapConfig.qcPayloadPacketBytes > 0 ?
+		s_cbapConfig.qcPayloadPacketBytes : 1000;
+}
+
+
+// Telemetry only.  Iterates the CBAP flow registry and records every QP's
+// pacing and rate state at this instant.  No field is modified.
+void RdmaHw::CbapGapSnapshot(uint64_t gapId, uint32_t boundary)
+{
+	if (!ns3::GapSnapshotTrace::IsOpen() || !ns3::GapSnapshotTrace::InWindow())
+		return;
+	const uint64_t now = Simulator::Now().GetTimeStep();
+	for (std::map<uint32_t, CbapFlowRuntime>::const_iterator it =
+			s_cbapFlows.begin(); it != s_cbapFlows.end(); ++it){
+		const CbapFlowRuntime &fr = it->second;
+		if (fr.qp == 0)
+			continue;
+		Ptr<RdmaQueuePair> qp = fr.qp;
+		ns3::GapSnapshotTrace::Row r;
+		r.gapId = gapId;
+		r.timeNs = now;
+		r.boundary = boundary;
+		// Identity: the node that owns this QP, plus its index in that node's
+		// egress group.  Both are structural, neither is late-assigned.
+		r.nodeId = (fr.hw && fr.hw->m_node != 0)
+			? fr.hw->m_node->GetId() : 0xffffffff;
+		r.qpIndex = it->first;
+		r.flowIdRef = qp->crfm.flowId;
+		r.active = fr.active ? 1u : 0u;
+		r.finished = (fr.finished || qp->IsFinished()) ? 1u : 0u;
+		r.bytesLeft = qp->GetBytesLeft();
+		r.packetPending = qp->GetBytesLeft() > 0 ? 1u : 0u;
+		r.commandedRateBps = qp->cbap.targetRateBps;
+		r.appliedRateBps = qp->m_rate.GetBitRate();
+		r.nextAvailNs = qp->m_nextAvail.GetTimeStep();
+		r.lastTxTimeNs = qp->cbap.lastTxTimeNs;
+		r.oldRateBps = qp->cbap.currentRateBps;
+		r.newRateBps = qp->cbap.targetRateBps;
+		// Ledger-side fields: generation and the last command instant.  The
+		// ledger lives on the link runtime, keyed by this QP's index.
+		r.ownsRate = 0; r.inFloor = 0;
+		r.lastCommandTimeNs = 0; r.generation = 0;
+		for (std::map<uint32_t, CbapLinkRuntime>::const_iterator lit =
+				s_cbapLinks.begin(); lit != s_cbapLinks.end(); ++lit){
+			std::map<uint32_t, CbapQpLedger>::const_iterator led =
+				lit->second.qcLedger.find(it->first);
+			if (led != lit->second.qcLedger.end()){
+				r.ownsRate = led->second.ownsRate ? 1u : 0u;
+				r.inFloor = led->second.inFloor ? 1u : 0u;
+				r.lastCommandTimeNs = led->second.commandTimeNs;
+				r.generation = led->second.generation;
+				break;
+			}
+		}
+		// old/new nextAvail are only meaningful at a rate change; at a gap
+		// boundary the current value is authoritative and is recorded in both
+		// columns so a reader cannot mistake one for a stale reading.
+		r.oldNextAvailNs = r.nextAvailNs;
+		r.newNextAvailNs = r.nextAvailNs;
+		ns3::GapSnapshotTrace::Append(r);
+	}
+}
+// --- 2x2 diagnostic switch state (both default OFF) --------------------
+bool RdmaHw::s_diagPhaseStagger = false;
+bool RdmaHw::s_diagRateNormalize = false;
+uint64_t RdmaHw::s_diagLinkCapacityBps = 10000000000ULL;
+std::map<uint64_t, uint32_t> RdmaHw::s_diagQpRank;
+uint32_t RdmaHw::s_diagQpRankCount = 0;
+
+// Stable rank: first call for a (node, qp) fixes its rank for the whole run, so
+// the phase offset is deterministic and never re-drawn.
+uint32_t RdmaHw::DiagQpRank(uint32_t nodeId, uint32_t qpIndex)
+{
+	const uint64_t key = ((uint64_t)nodeId << 32) | (uint64_t)qpIndex;
+	std::map<uint64_t, uint32_t>::const_iterator it = s_diagQpRank.find(key);
+	if (it != s_diagQpRank.end())
+		return it->second;
+	const uint32_t r = s_diagQpRankCount++;
+	s_diagQpRank[key] = r;
+	return r;
+}
+
+// Spread the ranks across exactly one packet interval.  rank*interval/N keeps
+// every offset strictly inside [0, interval), so no QP is delayed by more than
+// one packet time and no QP's long-run rate changes.
+uint64_t RdmaHw::DiagPhaseOffsetNs(uint32_t nodeId, uint32_t qpIndex,
+		uint64_t intervalNs, uint32_t nQp)
+{
+	if (!s_diagPhaseStagger || intervalNs == 0 || nQp == 0)
+		return 0;
+	const uint64_t rank = (uint64_t)DiagQpRank(nodeId, qpIndex);
+	return (intervalNs * (rank % nQp)) / nQp;
+}
+
+uint64_t RdmaHw::CbapLinkBytesPerPacket(void)
+{
+	// What the link serializes and what the queue counts: a full-payload DATA
+	// packet's packet->GetSize().  CustomHeader::GetStaticWholeHeaderSize() is
+	// eth(14) + ipv4(20) + udp(8 + pg + seq + IntHeader::GetStaticSize()), and
+	// IntHeader::mode is NONE for CC_MODE 30, giving 1048 B.  Deriving it here
+	// means it tracks the header layout automatically instead of being a second
+	// hand-maintained constant.
+	if (s_cbapConfig.qcLinkBytesPerPacket > 0)
+		return s_cbapConfig.qcLinkBytesPerPacket;
+	return CbapPayloadBytesPerPacket() +
+		CustomHeader::GetStaticWholeHeaderSize();
+}
+
+long double RdmaHw::CbapPayloadToLinkRatio(void)
+{
+	const uint64_t pay = CbapPayloadBytesPerPacket();
+	if (pay == 0)
+		return 1.0L;
+	return (long double)CbapLinkBytesPerPacket() / (long double)pay;
+}
+
+uint64_t RdmaHw::PayloadRateToLinkRate(uint64_t payloadBps)
+{
+	return (uint64_t)((long double)payloadBps * CbapPayloadToLinkRatio());
+}
+
+uint64_t RdmaHw::LinkRateToPayloadRate(uint64_t linkBps)
+{
+	const long double r = CbapPayloadToLinkRatio();
+	return r > 0.0L ? (uint64_t)((long double)linkBps / r) : linkBps;
 }
 
 bool RdmaHw::UsesHpccTelemetryMode(uint32_t mode)
@@ -351,6 +555,14 @@ void RdmaHw::ConfigureCbap(const CbapConfig &config,
 			(uint64_t)std::floor(config.rho *
 				links[i].capacityBps - links[i].backgroundBps);
 		runtime.plannerCapacityBps = runtime.previousEffectiveCapacityBps;
+		// The admission baseline is the rho allocation and stays frozen for a
+		// generation's lifetime; the control delta rides on top of it.
+		runtime.admissionBaseCapacityBps = runtime.previousEffectiveCapacityBps;
+		runtime.controlDeltaBps = 0;
+		runtime.effectivePlannerBudgetBps =
+			runtime.previousEffectiveCapacityBps;
+		runtime.lastUnallocatedDeltaBps = 0;
+		runtime.lastClampReason = 0;
 		NS_ASSERT_MSG(s_cbapLinks.insert(std::make_pair(
 				links[i].linkId, runtime)).second,
 				"duplicate CBAP link id");
@@ -440,6 +652,482 @@ RdmaHw::GetCbapDelayCreditRecords()
 // the queue implied by sending at the granted budget for one horizon must not
 // cross the hard bound.  The credit is truncated to satisfy that, rather than
 // warned about afterwards.
+// Queue-bounded boost/drain controller, one control epoch.  Method D:
+// boost is a PERSISTENT ABSOLUTE TARGET with a single pending transition.
+//
+// Mirrors controller_state_machine_test.py (31/31).  A disagreement between the
+// two is itself a finding.
+//
+//   sumR_target = C + boost_target - drain_target,   both >= 0, never both > 0
+//
+//   Q_stop = max(0, Q + max(excess_effective, excess_pending) * H_guard / 8)
+//            -> drives the SOFT/pressure decision
+//   Q_safe = Q_stop + packetization_margin   (applied once, never accumulated)
+//            -> hard-bound and PFC safety only
+//
+// boost_effective persists until a new absolute target replaces it: it does NOT
+// expire with H_guard and never reverts to C.  "One pending generation" forbids
+// overlapping UNCONFIRMED commands only, not the holding of an effective boost.
+//
+// This function shares NOTHING with the EXPERIMENTAL/NOT VALID delay-credit
+// path below: separate config fields, separate state, separate call site.
+void RdmaHw::QueueControllerEpoch(CbapLinkRuntime &runtime, uint64_t nowNs,
+		uint64_t queueBytes, uint64_t rEffectiveBps,
+		uint64_t pendingExcessBytes, uint32_t activeSenders, bool pfcSafe,
+		uint64_t inFlightArrivalBytes, uint64_t minRateBps)
+{
+	// Gate 1: provably inert when disabled -- returns before touching state.
+	if (!s_cbapConfig.queueControllerEnable)
+		return;
+	(void)rEffectiveBps;
+	(void)pendingExcessBytes;
+	(void)inFlightArrivalBytes;
+	(void)minRateBps;
+	// EVERYTHING below is in the WIRE domain: the queue, the link capacity and
+	// the arrival rate all count wire bytes.  MIN_RATE is configured in the
+	// PAYLOAD domain, so it is converted per QP before being summed.  Mixing
+	// the two is what made a "6.5 G floor" never reconcile with a 10 G link.
+	const long double cWire = (long double)runtime.config.capacityBps;
+	if (cWire <= 0.0L || s_cbapConfig.qcHGuardS <= 0.0)
+		return;
+
+	// --- one queue sample per epoch, used for control AND for the trace ----
+	runtime.qcQ0Bytes = queueBytes;
+	runtime.qcEpochId++;
+	const long double q0 = (long double)queueBytes;
+
+	const long double hGuard = (long double)s_cbapConfig.qcHGuardS;
+	const long double qAbs =
+		(long double)s_cbapConfig.qcAppHardDelayS * cWire / 8.0L;
+	const long double maxBoost =
+		(long double)s_cbapConfig.qcMaxBoostRatio * cWire;
+	const long double mAct = maxBoost * hGuard / 8.0L;
+	const long double mSafe = (long double)s_cbapConfig.qcSafetyMarginBytes;
+	const long double qRed = qAbs - mSafe;
+	const long double qHigh = qRed - mAct;
+	const long double qLow = (long double)s_cbapConfig.qcSoftFraction * qAbs;
+	if (!(qLow > 0.0L && qLow < qHigh && qHigh < qRed && qRed < qAbs)) {
+		runtime.qcBandInvalid = 1;
+		return;
+	}
+	// Derived band bounds exported for the v2 trace manifest.  Audit-only
+	// fields: nothing reads them for control.
+	runtime.qb2QLowBytes = (uint64_t)qLow;
+	runtime.qb2QHighBytes = (uint64_t)qHigh;
+	runtime.qb2QRedBytes = (uint64_t)qRed;
+	runtime.qb2QAbsBytes = (uint64_t)qAbs;
+
+	// --- ownership: no rates owned means no boost, no drain, DRAIN_MAX = 0 --
+	// Previously, once the protected set emptied after the batch, the floor
+	// collapsed and DRAIN_MAX approached C (~9.8 G of illegal drain权).
+	if (!runtime.qcOwnsRates) {
+		runtime.qcBoostEffectiveBps = 0;
+		runtime.qcDrainTargetBps = 0;
+		runtime.qcBoostCommandedBps = 0;
+		runtime.qcDrainCommandedBps = 0;
+		runtime.qcPendingGeneration = 0;
+		runtime.qcDrainMaxWireBps = 0;   // nothing steered => no drain right
+		// The floor SET still exists (the background flow is still live and
+		// still guaranteed MIN_RATE), so report it rather than zeroing it.
+		// DRAIN_MAX stays 0 regardless: no generation, no steering.
+		{
+			long double fp = 0.0L, fw = 0.0L;
+			for (std::map<uint32_t, CbapQpLedger>::const_iterator it =
+					runtime.qcLedger.begin();
+					it != runtime.qcLedger.end(); ++it) {
+				if (!it->second.inFloor)
+					continue;
+				const long double pay =
+					(long double)it->second.minRatePayloadBps;
+				const long double rr = it->second.payloadPacketBytes > 0 ?
+					(long double)it->second.wirePacketBytes /
+					(long double)it->second.payloadPacketBytes : 1.0L;
+				fp += pay;
+				fw += pay * rr;
+			}
+			runtime.qcFloorPayloadBps = (uint64_t)fp;
+			runtime.qcFloorWireBps = (uint64_t)fw;
+		}
+		runtime.qcZone = 0;
+		runtime.qcQStopBytes = queueBytes;
+		runtime.qcQSafeBytes = (uint64_t)(q0 + mSafe);
+		// D4v2: no owned rates means no active batch -> boost audit zeroed so
+		// the trace cannot show a stale boost between batches.
+		runtime.qb2RequestedBps = 0;
+		runtime.qb2AppliedBoostBps = 0;
+		runtime.qb2VetoReason = 0;
+		return;
+	}
+
+	// --- floor from the UNIQUE protected set, per QP, converted to wire -----
+	// floor_wire = sum over unique QPs of min_rate_payload * wire/payload.
+	// No separate background term: the background QP is a member like any
+	// other, and adding it twice is exactly what produced 6.600 G.
+	long double floorPayload = 0.0L;
+	long double floorWire = 0.0L;
+	uint64_t dup = 0;
+	std::set<uint32_t> seen;
+	for (std::map<uint32_t, CbapQpLedger>::const_iterator it =
+			runtime.qcLedger.begin(); it != runtime.qcLedger.end(); ++it) {
+		// DEFECT C: the floor covers the FLOOR set, not the steered set.
+		// Summing over ownsRate gave 64 shares (6.7072 G) during overlap and
+		// 0 shares (DRAIN_MAX = 1.0 C) once the batch drained.
+		if (!it->second.inFloor)
+			continue;
+		if (!seen.insert(it->first).second) {
+			dup++;
+			continue;
+		}
+		const long double pay = (long double)it->second.minRatePayloadBps;
+		const long double ratio = it->second.payloadPacketBytes > 0 ?
+			(long double)it->second.wirePacketBytes /
+			(long double)it->second.payloadPacketBytes : 1.0L;
+		floorPayload += pay;
+		floorWire += pay * ratio;
+	}
+	runtime.qcDuplicateQpCount = dup;
+	runtime.qcFloorPayloadBps = (uint64_t)floorPayload;
+	runtime.qcFloorWireBps = (uint64_t)floorWire;
+	long double drainMax = cWire > floorWire ? cWire - floorWire : 0.0L;
+	runtime.qcDrainMaxWireBps = (uint64_t)drainMax;
+
+	const long double deadband =
+		(long double)s_cbapConfig.qcOnWirePacketBytes * 8.0L / hGuard;
+
+	// --- confirmation: a command whose deadline has passed becomes effective
+	for (std::map<uint32_t, CbapQpLedger>::iterator it =
+			runtime.qcLedger.begin(); it != runtime.qcLedger.end(); ++it) {
+		if (it->second.commandedWireBps == 0 && !it->second.pendingUp &&
+				!it->second.pendingDown)
+			continue;
+		if (nowNs >= it->second.effectDeadlineNs) {
+			it->second.oldWireBps = it->second.commandedWireBps;
+			it->second.senderEffectiveWireBps = it->second.commandedWireBps;
+			it->second.predictedArrivalWireBps = it->second.commandedWireBps;
+			it->second.pendingUp = false;
+			it->second.pendingDown = false;
+			// LEDGER_GHOST_ARRIVAL fix, defect 2: a confirmed command is
+			// CLOSED.  Leaving commandedWireBps set made this branch re-assert
+			// the stale value into predictedArrivalWireBps every epoch,
+			// overwriting the refresh from the actual sender rate and keeping
+			// a boost-era arrival ghost alive indefinitely.  Cleared, the
+			// entry falls through the inactive guard above and tracks reality.
+			it->second.commandedWireBps = 0;
+		}
+	}
+	if (runtime.qcPendingGeneration != 0 && nowNs >= runtime.qcPendingEtaNs) {
+		runtime.qcBoostEffectiveBps = runtime.qcBoostCommandedBps;
+		runtime.qcDrainTargetBps = runtime.qcDrainCommandedBps;
+		// Refresh the planner's control delta in the same step the command
+		// becomes effective.  ADMISSION_HOLD must not freeze this term -- that
+		// coupling is exactly what pinned C_effective_l at rho*C.
+		// boost/drain are WIRE rates; the planner budget is a PAYLOAD rate, so
+		// convert once with the authoritative helper.
+		{
+			const long double dWire =
+				(long double)runtime.qcBoostEffectiveBps -
+				(long double)runtime.qcDrainTargetBps;
+			const long double dPay = dWire >= 0.0L
+				? (long double)LinkRateToPayloadRate((uint64_t)dWire)
+				: -(long double)LinkRateToPayloadRate((uint64_t)(-dWire));
+			runtime.controlDeltaBps = (int64_t)dPay;
+			const long double budget =
+				(long double)runtime.admissionBaseCapacityBps + dPay;
+			runtime.effectivePlannerBudgetBps =
+				budget > 0.0L ? (uint64_t)budget : 0;
+		}
+		// D4v2 lease: the boost that just became effective may persist for at
+		// most H_eff without a refresh.  The controller normally refreshes
+		// every epoch (5 us << H_eff); the lease only bites if it stalls.
+		if (s_cbapConfig.queueBandV2Enable)
+			runtime.qb2LeaseExpireNs = nowNs + (uint64_t)(hGuard * 1e9L);
+		runtime.qcActualEffectTimeNs = nowNs;
+		runtime.qcBoostCommandedBps = 0;
+		runtime.qcDrainCommandedBps = 0;
+		runtime.qcPendingGeneration = 0;
+		runtime.qcPendingEtaNs = 0;
+	}
+
+	// --- safe arrival envelope, per QP ------------------------------------
+	// A pending SLOWDOWN may not be believed before its deadline: the
+	// bottleneck is still receiving old-rate packets.  A pending SPEED-UP is
+	// counted immediately, because that is the conservative direction.
+	long double arrivalSafe = 0.0L;
+	long double senderEff = 0.0L;
+	long double arrivalAfterDeadline = 0.0L;
+	uint64_t earliestDeadline = 0;
+	for (std::map<uint32_t, CbapQpLedger>::const_iterator it =
+			runtime.qcLedger.begin(); it != runtime.qcLedger.end(); ++it) {
+		if (!it->second.ownsRate)
+			continue;
+		const long double oldR = (long double)it->second.oldWireBps;
+		const long double cmdR = (long double)it->second.commandedWireBps;
+		senderEff += (long double)it->second.senderEffectiveWireBps;
+		if (it->second.pendingDown && nowNs < it->second.effectDeadlineNs) {
+			// safe upper envelope: keep the OLD (higher) rate until deadline
+			arrivalSafe += oldR > cmdR ? oldR : cmdR;
+			arrivalAfterDeadline += cmdR;
+			if (earliestDeadline == 0 ||
+					it->second.effectDeadlineNs < earliestDeadline)
+				earliestDeadline = it->second.effectDeadlineNs;
+		} else if (it->second.pendingUp) {
+			arrivalSafe += cmdR > oldR ? cmdR : oldR;
+			arrivalAfterDeadline += cmdR > oldR ? cmdR : oldR;
+		} else {
+			arrivalSafe += it->second.predictedArrivalWireBps;
+			arrivalAfterDeadline += it->second.predictedArrivalWireBps;
+		}
+	}
+	runtime.qcArrivalSafeWireBps = (uint64_t)arrivalSafe;
+	runtime.qcSenderEffectiveWireBps = (uint64_t)senderEff;
+
+	// --- Q_stop as max prefix, starting AT tau = 0 (so Q_stop >= q0) -------
+	long double tau = hGuard;
+	if (earliestDeadline > nowNs) {
+		tau = (long double)(earliestDeadline - nowNs) / 1e9L;
+		if (tau > hGuard)
+			tau = hGuard;
+	}
+	const long double q1 = q0 + (arrivalSafe - cWire) * tau / 8.0L;
+	const long double q2 = q1 +
+		(arrivalAfterDeadline - cWire) * (hGuard - tau) / 8.0L;
+	long double qStop = q0;
+	runtime.qcPrefixMaxIndex = 0;
+	if (q1 > qStop) {
+		qStop = q1;
+		runtime.qcPrefixMaxIndex = 1;
+	}
+	if (q2 > qStop) {
+		qStop = q2;
+		runtime.qcPrefixMaxIndex = 2;
+	}
+	if (qStop < q0)
+		runtime.qcInvariantViolations++;   // impossible by construction
+
+	const long double qSafe = qStop + mSafe;
+	runtime.qcQStopBytes = (uint64_t)qStop;
+	runtime.qcQSafeBytes = (uint64_t)qSafe;
+	if (qSafe > qAbs)
+		runtime.qcQSafeOverAbs++;
+
+	// --- zones, with the corrected RED hysteresis -------------------------
+	bool pendingUpAny = false;
+	for (std::map<uint32_t, CbapQpLedger>::const_iterator it =
+			runtime.qcLedger.begin(); it != runtime.qcLedger.end(); ++it)
+		if (it->second.ownsRate && it->second.pendingUp)
+			pendingUpAny = true;
+	const bool redEnter = (qSafe >= qAbs) || (q0 >= qAbs) || !pfcSafe;
+	// Exit uses Q_stop and Q_current against Q_high directly.  Using
+	// Q_safe < Q_high would subtract M_safe a SECOND time and held RED for
+	// ~40 ms after the queue had already fallen below Q_high.
+	const bool redExit = (qStop <= qHigh) && (q0 <= qHigh) && pfcSafe &&
+		!pendingUpAny;
+	uint32_t zone;
+	if (redEnter || (runtime.qcInRed && !redExit))
+		zone = 3;
+	else if (qStop > qHigh)
+		zone = 2;
+	else if (qStop >= qLow)
+		zone = 1;
+	else
+		zone = 0;
+	runtime.qcInRed = (zone == 3);
+	runtime.qcZone = zone;
+	runtime.qcActiveSenders = activeSenders;
+
+	if (zone == 3) {
+		runtime.qcBoostCommandedBps = 0;
+		runtime.qcDrainCommandedBps = (uint64_t)drainMax;
+		runtime.qcBoostEffectiveBps = 0;
+		runtime.qcDrainTargetBps = (uint64_t)drainMax;
+		runtime.qcPendingGeneration = 0;
+		runtime.qcPendingEtaNs = 0;
+		if (s_cbapConfig.queueBandV2Enable){
+			runtime.qb2VetoReason = 5;      // RED: forced veto + full drain
+			runtime.qb2RequestedBps = 0;
+			runtime.qb2AppliedBoostBps = 0;
+		}
+		return;
+	}
+	// After leaving RED, never jump straight back to BOOST while the batch is
+	// still draining: zone 2/1 handle that, and exit recovery forbids upward.
+	if (runtime.qcExitRecoveryPending && zone == 0)
+		zone = 1;
+
+	// --- CBAP_BUDGET_LAW_V2: continuous queue-banded aggregate budget -----
+	// Replaces the previous three-zone rule whose zone 1 set desired = 0, which
+	// pinned the aggregate budget at exactly C across the entire tolerance band
+	// and produced the measured 0.424554 Gbps (4.2455 % of C) aggregate
+	// underfill.  The band now tapers the boost continuously instead of
+	// dropping it to zero, so sum(target) > C is permitted while the queue is
+	// low and the boost is reclaimed progressively as the queue rises.
+	//
+	// R_budget is expressed relative to cWire because the actuation path below
+	// commands (boost - drain) around cWire:  desired = R_budget - cWire.
+	// R_budget is deliberately NOT clamped to cWire.
+	//
+	// Continuity: at q = Q_low the middle region gives pressure = 0 ->
+	// R_budget = C*(1+MAX_BOOST), matching the low region exactly.  At
+	// q = Q_high it gives pressure = 1 -> R_budget = C, and the upper region at
+	// pressure = 0 also gives R_budget = C.  No step at either boundary.
+	long double desired;
+	{
+		// FLAG B isolates steady capacity from the queue-credit boost: with the
+		// steady cap owning the aggregate target, boost is forced to 0 so the
+		// two effects can be attributed separately this round.
+		// queueBandEnable re-admits the boost term for the D4 arm only.  With
+		// the flag off this is exactly the previous unconditional forcing.
+		if (s_cbapConfig.steadyCapEnable && !s_cbapConfig.queueBandEnable &&
+				!s_cbapConfig.queueBandV2Enable){
+			runtime.qcBoostCommandedBps = 0;
+			runtime.qcBoostEffectiveBps = 0;
+		}
+		const long double qCtrl = qStop;      // already max(q0, predicted)
+		if (zone == 3) {
+			// unreachable here (zone 3 returned above); kept for total coverage
+			desired = -drainMax;
+		} else if (qCtrl <= qLow) {
+			desired = maxBoost;                            // pressure = 0
+		} else if (qCtrl < qHigh) {
+			const long double span = qHigh - qLow;
+			long double pressure = span > 0.0L ?
+				(qCtrl - qLow) / span : 1.0L;
+			if (pressure < 0.0L)
+				pressure = 0.0L;
+			if (pressure > 1.0L)
+				pressure = 1.0L;
+			desired = maxBoost * (1.0L - pressure);
+		} else {
+			// Q_high <= q < Q_hard : drain proportional to pressure.
+			// Q_hard is qRed here, the same bound the previous zone-2 rule
+			// used, so no new threshold is introduced.
+			const long double span = qRed - qHigh;
+			long double pressure = span > 0.0L ?
+				(qCtrl - qHigh) / span : 1.0L;
+			if (pressure < 0.0L)
+				pressure = 0.0L;
+			if (pressure > 1.0L)
+				pressure = 1.0L;
+			desired = -drainMax * pressure;
+		}
+	}
+	// ---- D4v2: predictive headroom top-up --------------------------------
+	// Replaces only the LAW; zones, hysteresis, RED, exit-recovery, handoff
+	// and floor clamps below all still apply to the v2 value.
+	//   boost = min(BMAX, max(0, Q_target - Q_pred) * 8 / H_eff)
+	// with Q_pred = qStop (prediction incl. the pending arrival envelope).
+	if (s_cbapConfig.queueBandV2Enable) {
+		const long double bMax =
+			(long double)s_cbapConfig.qb2BmaxRatio * cWire;
+		const long double qTgt =
+			(long double)s_cbapConfig.qb2QTargetRatio * qAbs;
+		long double v2 = 0.0L;
+		uint32_t veto = 0;
+		long double cur = (long double)runtime.qcBoostEffectiveBps;
+		if (cur > 0.0L && nowNs > runtime.qb2LeaseExpireNs) {
+			// lease expired without refresh: the boost may not persist
+			runtime.qcBoostEffectiveBps = 0;
+			cur = 0.0L;
+			veto = 3;
+		}
+		if (zone == 0) {
+			// GREEN: top up only the predicted gap below Q_target.
+			const long double head = qTgt - qStop;
+			v2 = head > 0.0L ? head * 8.0L / hGuard : 0.0L;
+			runtime.qb2RequestedBps = (uint64_t)(v2 > 0.0L ? v2 : 0.0L);
+			if (v2 > bMax)
+				v2 = bMax;
+			// veto: never let the boosted prediction cross Q_red (M_safe and
+			// the PFC guard then keep Q_abs out of reach; !pfcSafe is already
+			// a RED condition).
+			const long double roomRed = (qRed - qStop) * 8.0L / hGuard;
+			if (roomRed <= 0.0L) {
+				v2 = 0.0L;
+				veto = 1;
+			} else if (v2 > roomRed) {
+				v2 = roomRed;
+				veto = 2;
+			}
+		} else if (zone == 1) {
+			// HOLD: keep the current boost, slow decay (~0.99 per 5 us epoch;
+			// sub-deadband steps are held by the command deadband, which is
+			// the specified hold-or-slowly-decay behaviour).
+			runtime.qb2RequestedBps = (uint64_t)cur;
+			v2 = cur * 0.99L;
+			if (v2 > bMax)
+				v2 = bMax;
+		} else {
+			// DRAIN: boost = 0, gentle drain proportional to pressure and
+			// scaled to the boost budget (excess of this magnitude is what a
+			// small top-up can have caused), never above drainMax.
+			runtime.qb2RequestedBps = 0;
+			const long double span = qRed - qHigh;
+			long double pressure = span > 0.0L ?
+				(qStop - qHigh) / span : 1.0L;
+			if (pressure < 0.0L)
+				pressure = 0.0L;
+			if (pressure > 1.0L)
+				pressure = 1.0L;
+			long double d2 = 2.0L * bMax;
+			if (d2 > drainMax)
+				d2 = drainMax;
+			v2 = -d2 * pressure;
+		}
+		desired = v2;
+		runtime.qb2VetoReason = veto;
+	}
+	if (runtime.qcExitRecoveryPending && desired > 0.0L)
+		desired = 0.0L;               // no upward command during recovery
+	// Handoff in progress: the batch is done and the current effective rate is
+	// being handed back.  Close out, do not steer.
+	if (runtime.qcHandoffPending)
+		desired = 0.0L;
+	if (desired < -drainMax)
+		desired = -drainMax;
+	// The total target may never fall below the floor of the FLOOR set.  With
+	// the background flow included this is 6.812 G, so DRAIN_MAX is bounded by
+	// C - 6.812 G = 3.188 G and can no longer approach C.
+	if (cWire + desired < floorWire)
+		desired = floorWire - cWire;
+
+	const long double curU = (long double)runtime.qcBoostEffectiveBps -
+		(long double)runtime.qcDrainTargetBps;
+	if (runtime.qcPendingGeneration != 0) {
+		const long double pend =
+			(long double)runtime.qcBoostCommandedBps -
+			(long double)runtime.qcDrainCommandedBps;
+		if (desired < pend - deadband) {
+			runtime.qcGenerationCounter++;
+			runtime.qcRBeforeCommandBps = (uint64_t)(cWire + curU);
+			runtime.qcBoostCommandedBps =
+				(uint64_t)(desired > 0.0L ? desired : 0.0L);
+			runtime.qcDrainCommandedBps =
+				(uint64_t)(desired < 0.0L ? -desired : 0.0L);
+			runtime.qcRCommandedBps = (uint64_t)(cWire + desired);
+			runtime.qcPendingGeneration = runtime.qcGenerationCounter;
+			runtime.qcCommandTimeNs = nowNs;
+			runtime.qcPendingEtaNs = nowNs + (uint64_t)(hGuard * 1e9L);
+			runtime.qcExpectedEffectTimeNs = runtime.qcPendingEtaNs;
+		}
+		return;
+	}
+	long double delta = desired - curU;
+	if (delta < 0.0L)
+		delta = -delta;
+	if (delta < deadband)
+		return;
+	runtime.qcGenerationCounter++;
+	runtime.qcRBeforeCommandBps = (uint64_t)(cWire + curU);
+	runtime.qcBoostCommandedBps = (uint64_t)(desired > 0.0L ? desired : 0.0L);
+	runtime.qcDrainCommandedBps = (uint64_t)(desired < 0.0L ? -desired : 0.0L);
+	runtime.qcRCommandedBps = (uint64_t)(cWire + desired);
+	runtime.qcPendingGeneration = runtime.qcGenerationCounter;
+	runtime.qcCommandTimeNs = nowNs;
+	runtime.qcPendingEtaNs = nowNs + (uint64_t)(hGuard * 1e9L);
+	runtime.qcExpectedEffectTimeNs = runtime.qcPendingEtaNs;
+}
+
+
 uint64_t RdmaHw::ComputeDelayCreditBudget(CbapLinkRuntime &runtime,
 	uint64_t queueBytes, uint32_t newFlowCount, uint64_t nowNs,
 	uint32_t epoch, CbapDelayCreditRecord *out)
@@ -897,6 +1585,48 @@ void RdmaHw::RecordCbapAppliedRateAudit()
 		row.rhoCapacityBps = (uint64_t)std::floor(
 			s_cbapConfig.rho * link->second.config.capacityBps);
 		row.effectiveCapacityBps = link->second.plannerCapacityBps;
+		// Closed-loop ledger: the chain from budget to served rate, so a break
+		// is visible per epoch instead of having to be inferred.
+		row.baseCapacityBps = link->second.admissionBaseCapacityBps;
+		row.boostEffectiveBps = link->second.qcBoostEffectiveBps;
+		row.drainEffectiveBps = link->second.qcDrainTargetBps;
+		row.effectivePlannerBudgetBps =
+			link->second.effectivePlannerBudgetBps;
+		row.arrivalRateBps = link->second.latest.arrivalRateBps;
+		row.servedRateBps = link->second.latest.serviceRateBps;
+		row.unallocatedDeltaBps = link->second.lastUnallocatedDeltaBps;
+		// Residual is computed AFTER the per-flow accumulation loop closes --
+		// see below.  Computing it here read plannerTargetSumBps while it was
+		// still 0, which is why full_unallocated equalled B_eff.
+		row.fullUnallocatedBps = 0;
+		// Attribute a non-zero residual to a real cause rather than letting
+		// capacity vanish unrecorded.
+		row.unallocatedReason = 0;
+		if (0){
+			bool anyBelowCeiling = false, anyDemand = false;
+			for (std::map<uint32_t, CbapFlowRuntime>::const_iterator fl =
+					s_cbapFlows.begin(); fl != s_cbapFlows.end(); ++fl){
+				if (!fl->second.active || fl->second.finished || !fl->second.qp)
+					continue;
+				const std::vector<uint32_t> &pth = s_cbapFlowPaths[fl->first];
+				if (std::find(pth.begin(), pth.end(), link->first) == pth.end())
+					continue;
+				if (fl->second.qp->GetBytesLeft() > 0)
+					anyDemand = true;
+				if (fl->second.qp->cbap.targetRateBps + 1 <
+						fl->second.qp->m_max_rate.GetBitRate())
+					anyBelowCeiling = true;
+			}
+			if (!anyDemand)
+				row.unallocatedReason = 2;            // NO_DEMAND
+			else if (!anyBelowCeiling)
+				row.unallocatedReason = 1;            // PER_FLOW_CAP
+			else if (row.floorClampCount > 0)
+				row.unallocatedReason = 3;            // FLOOR
+			else
+				row.unallocatedReason = 4;            // SCOPE
+		}
+		row.clampReason = link->second.lastClampReason;
 		row.backgroundRateBps = link->second.config.backgroundBps;
 		row.legacyFloorRateBps = legacyFloor;
 		for (std::map<uint32_t, CbapFlowRuntime>::const_iterator flow =
@@ -918,6 +1648,12 @@ void RdmaHw::RecordCbapAppliedRateAudit()
 			row.plannerGrantSumBps += planner;
 			row.targetRateSumBps += requested;
 			row.appliedRateSumBps += applied;
+			// Scope-split sums.  planner/targetRateSum above are kept for
+			// continuity but are ambiguous: planner switches to admitRateBps
+			// during ADMISSION_HOLD, and targetRateSum sums requestedRateBps.
+			// These three each sum exactly one field, always.
+			row.admissionGrantSumBps += qp->cbap.admitRateBps;
+			row.plannerTargetSumBps += qp->cbap.targetRateBps;
 			row.actualTxRateSumBps += qp->cbap.recentActualRateBps[1];
 			if (requested > 0 && requested < legacyFloor)
 				row.flowsBelowLegacyFloor++;
@@ -933,6 +1669,60 @@ void RdmaHw::RecordCbapAppliedRateAudit()
 		}
 		uint64_t tolerance = std::max((uint64_t)1,
 			(uint64_t)std::ceil(1e-9L * row.capacityBps));
+		// --- single conservation account, evaluated post-accumulation ------
+		//   B_eff = explicit_fixed_reserved + plannerTargetSum + fullUnalloc
+		// effectivePlannerBudgetBps is already net of the background
+		// reservation (subtracted when effectiveCapacityBps is formed), so the
+		// explicit reserved term is 0 here and is recorded as such rather than
+		// left implicit.
+		row.explicitFixedReservedBps = 0;
+		{
+			const long double beff =
+				(long double)link->second.effectivePlannerBudgetBps;
+			const long double placed =
+				(long double)row.explicitFixedReservedBps +
+				(long double)row.plannerTargetSumBps;
+			row.fullUnallocatedBps = beff > placed ?
+				(uint64_t)(beff - placed) : 0;
+		}
+		row.unallocatedReason = 0;
+		if (row.fullUnallocatedBps > 0){
+			bool anyBelowCeiling2 = false, anyDemand2 = false;
+			for (std::map<uint32_t, CbapFlowRuntime>::const_iterator fl =
+					s_cbapFlows.begin(); fl != s_cbapFlows.end(); ++fl){
+				if (!fl->second.active || fl->second.finished || !fl->second.qp)
+					continue;
+				const std::vector<uint32_t> &pth = s_cbapFlowPaths[fl->first];
+				if (std::find(pth.begin(), pth.end(), link->first) == pth.end())
+					continue;
+				if (fl->second.qp->GetBytesLeft() > 0)
+					anyDemand2 = true;
+				if (fl->second.qp->cbap.targetRateBps + 1 <
+						fl->second.qp->m_max_rate.GetBitRate())
+					anyBelowCeiling2 = true;
+			}
+			if (link->second.lastFillInvoked == 0)
+				row.unallocatedReason = 4;            // SCOPE: fill never ran
+			else if (!anyDemand2)
+				row.unallocatedReason = 2;            // NO_DEMAND
+			else if (!anyBelowCeiling2)
+				row.unallocatedReason = 1;            // PER_FLOW_CAP
+			else if (row.floorClampCount > 0)
+				row.unallocatedReason = 3;            // FLOOR
+			else
+				row.unallocatedReason = 4;            // SCOPE
+		}
+		row.fillInvoked = link->second.lastFillInvoked;
+		row.activeControlQps = link->second.lastActiveControlQps;
+		row.inputBudgetBps = link->second.lastInputBudgetBps;
+		row.returnedTargetSumBps = link->second.lastReturnedTargetSumBps;
+		row.skipReason = link->second.lastSkipReason;
+		row.exclScope = link->second.lastExclScope;
+		row.exclFinished = link->second.lastExclFinished;
+		row.exclWrongGeneration = link->second.lastExclWrongGeneration;
+		row.exclMissingPath = link->second.lastExclMissingPath;
+		row.floorSetCount = link->second.lastFloorSetCount;
+		row.backgroundInControl = link->second.lastBackgroundInControl;
 		row.appliedCapacityExcessBps = row.appliedRateSumBps >
 			row.effectiveCapacityBps ? row.appliedRateSumBps -
 			row.effectiveCapacityBps : 0;
@@ -1221,6 +2011,309 @@ void RdmaHw::DeliverCbapPortSummary(uint32_t linkId,
 		crec.sumTargetBps = runtime.config.backgroundBps + (uint64_t)effective;
 		crec.oversubscribed = crec.sumTargetBps > snapshot.capacityBps;
 		s_cbapDelayCreditRecords.push_back(crec);
+	}
+	// Queue-bounded boost/drain controller (method D).  Separate from the
+	// EXPERIMENTAL credit path above: its own flag, its own state, and it never
+	// runs together with it -- delayCreditEnable and queueControllerEnable are
+	// mutually exclusive by preflight assertion in third.cc.
+	//
+	// Ordered after the flow census for the same reason the credit call is: the
+	// packetization margin scales with the active sender count.
+	if (s_cbapConfig.queueControllerEnable) {
+		uint32_t nActive = record.activeControlledFlows +
+			record.pendingControlledFlows;
+		// --- per-QP ledger, keyed by QP identity so the set is UNIQUE -------
+		// The background flow is a member like any other: counting it again
+		// through a separate term is what produced a 6.600 G floor where 65
+		// unique QPs give 6.500 G payload / 6.812 G wire.
+		// DEFECT A: this used qcOnWirePacketBytes (= 1064, a hand-set
+		// SAFETY MARGIN) as the conversion numerator, inflating the floor by
+		// one 104.8 Mbps share (6.916 G observed vs 6.812 G correct).  The
+		// link serializes 1048 B, so that is the only legal numerator.
+		const uint64_t payloadBytes = CbapPayloadBytesPerPacket();
+		const uint64_t wireBytes = CbapLinkBytesPerPacket();
+		// --- (0) which batch, if any, does the controller own? -------------
+		// A controlled generation exists only while the NEWEST admitted CBAP
+		// batch still has a live member on this link.  "The ledger is
+		// non-empty" is not evidence of ownership -- that equivalence is
+		// defect B, and it kept the controller running for the whole 3 s run.
+		//
+		// The discriminator is the batch, NOT the flow's identity: in S3 the
+		// background flow (src host 65, pg=0, t=0.5 s) is a first-class member
+		// of s_cbapFlows with its own path row, admitted in its own earlier
+		// batch, and the 64 incast flows (pg=3, t=1.9 s) arrive later as a
+		// separate batch.  Selecting the newest live batch therefore excludes
+		// the background flow while the incast batch is running, and excludes
+		// EVERYTHING once the incast batch has drained -- which is precisely
+		// the 384,944 single-member epochs that produced DRAIN_MAX = 0.9894 C.
+		//
+		// Deliberately NOT special-cased on flow id, host 65, or a hardcoded
+		// member count: the rule is structural.
+		uint32_t ownedBatch = 0;
+		bool ownedBatchFound = false;
+		for (std::map<uint32_t, CbapFlowRuntime>::const_iterator flow =
+				s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow) {
+			if (!flow->second.active || flow->second.finished ||
+					!flow->second.qp || !flow->second.hw)
+				continue;
+			std::map<uint32_t, std::vector<uint32_t> >::const_iterator pit =
+				s_cbapFlowPaths.find(flow->first);
+			if (pit == s_cbapFlowPaths.end())
+				continue;
+			if (std::find(pit->second.begin(), pit->second.end(), linkId) ==
+					pit->second.end())
+				continue;
+			if (!ownedBatchFound || flow->second.batchId > ownedBatch) {
+				ownedBatch = flow->second.batchId;
+				ownedBatchFound = true;
+			}
+		}
+		// A generation must be a genuine controlled batch: the SBA allocator
+		// only grants to batches it admitted, so a batch id of 0 means "no
+		// controlled admission happened", and the controller owns nothing.
+		if (ownedBatch == 0)
+			ownedBatchFound = false;
+
+		// --- defect C: build the THREE sets in one scan --------------------
+		// floorProtectedQps is every live CBAP flow on this link, so the
+		// background flow keeps its MIN_RATE guarantee for the whole run and
+		// DRAIN_MAX can never reach C.  newGenerationQps is the newest batch
+		// only.  oldSideQps is the remainder -- the same discriminator
+		// ReplanCbapSbaMigrationTargets uses (batchId == newestBatch), so the
+		// two never disagree about which side a flow is on.
+		runtime.qcFloorProtectedQps.clear();
+		runtime.qcNewGenerationQps.clear();
+		runtime.qcOldSideQps.clear();
+		for (std::map<uint32_t, CbapFlowRuntime>::const_iterator flow =
+				s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow) {
+			if (!flow->second.active || flow->second.finished ||
+					!flow->second.qp || !flow->second.hw)
+				continue;
+			std::map<uint32_t, std::vector<uint32_t> >::const_iterator fpit =
+				s_cbapFlowPaths.find(flow->first);
+			if (fpit == s_cbapFlowPaths.end())
+				continue;
+			if (std::find(fpit->second.begin(), fpit->second.end(), linkId) ==
+					fpit->second.end())
+				continue;
+			// Membership is driven by the authoritative lifecycle flags
+			// (active set at admission, finished set only by
+			// FinishCbapFlow()), never by this epoch's packet activity.
+			runtime.qcFloorProtectedQps.insert(flow->first);
+			if (ownedBatchFound && flow->second.batchId == ownedBatch)
+				runtime.qcNewGenerationQps.insert(flow->first);
+			else
+				runtime.qcOldSideQps.insert(flow->first);
+		}
+		runtime.qcFloorCount = (uint32_t)runtime.qcFloorProtectedQps.size();
+		runtime.qcNewGenCount = (uint32_t)runtime.qcNewGenerationQps.size();
+		runtime.qcOldSideCount = (uint32_t)runtime.qcOldSideQps.size();
+
+		std::set<uint32_t> live;
+		for (std::map<uint32_t, CbapFlowRuntime>::const_iterator flow =
+				s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow) {
+			if (!flow->second.active || flow->second.finished ||
+					!flow->second.qp || !flow->second.hw)
+				continue;
+			// (5) Read-only path lookup: find(), never operator[].  An
+			// implicit empty insert would corrupt the
+			// s_cbapFlows.size() == s_cbapFlowPaths.size() consistency check.
+			std::map<uint32_t, std::vector<uint32_t> >::const_iterator pit =
+				s_cbapFlowPaths.find(flow->first);
+			if (pit == s_cbapFlowPaths.end()) {
+				// PATH_METADATA_MISSING_AFTER_OWNERSHIP: only meaningful for a
+				// QP we already own; a missing path can only ever explain
+				// membership REDUCTION, never an extra member.
+				if (runtime.qcLedger.count(flow->first))
+					runtime.qcPathMetadataMissing++;
+				continue;
+			}
+			const std::vector<uint32_t> &path = pit->second;
+			if (std::find(path.begin(), path.end(), linkId) == path.end())
+				continue;
+			// DEFECT C: the ledger holds every FLOOR member, because the
+			// floor must cover the background flow too.  ownsRate marks the
+			// narrower set that is actually STEERED (the newest batch).  The
+			// background flow therefore contributes 100 Mbps to the floor and
+			// is never boosted or drained -- it keeps baseline DCQCN
+			// behaviour and its old-side release semantics.
+			const bool inGeneration = ownedBatchFound &&
+				flow->second.batchId == ownedBatch;
+			CbapQpLedger &led = runtime.qcLedger[flow->first];
+			led.inFloor = true;
+			led.ownsRate = inGeneration;
+			led.generationId = inGeneration ? ownedBatch : 0;
+			led.linkId = linkId;
+			if (inGeneration)
+				live.insert(flow->first);
+			led.minRatePayloadBps = flow->second.hw->m_minRate.GetBitRate();
+			led.payloadPacketBytes = payloadBytes;
+			led.wirePacketBytes = wireBytes;
+			// Sender-effective, converted PAYLOAD -> LINK once, here,
+			// through the single authoritative function.
+			const uint64_t senderWire = PayloadRateToLinkRate(
+				flow->second.qp->m_rate.GetBitRate());
+			led.senderEffectiveWireBps = senderWire;
+			if (led.oldWireBps == 0)
+				led.oldWireBps = senderWire;
+			if (!led.pendingUp && !led.pendingDown)
+				led.predictedArrivalWireBps = senderWire;
+		}
+		// --- (1) completion -> (2) ownership exit -> (3) GC ---------------
+		// Three DISTINCT steps.  A QP that finished loses ownsRate immediately
+		// (so it stops contributing to the floor and to protected_count), but
+		// its ledger entry survives until any in-flight command has closed, and
+		// only then is it garbage-collected.  65 -> 64 -> 63 is a legal
+		// sequence; each step is driven by FinishCbapFlow()'s finished flag,
+		// which is the sole authoritative completion event.
+		for (std::map<uint32_t, CbapQpLedger>::iterator it =
+				runtime.qcLedger.begin(); it != runtime.qcLedger.end(); ) {
+			// (2) ownership exit: idempotent, affects THIS QP only and never
+			// terminates the generation for its peers.  Losing ownsRate is
+			// NOT losing the floor: the background old-side flow is never
+			// steered yet must stay floored for the whole run.
+			const bool stillFloored =
+				runtime.qcFloorProtectedQps.count(it->first) != 0;
+			it->second.inFloor = stillFloored;
+			it->second.ownsRate = live.count(it->first) != 0;
+			// (3) GC keys on FLOOR membership, not on steering membership.
+			// Keying it on `live` -- which holds only generation members --
+			// erased the background flow's entry on the same epoch it was
+			// created, so the floor sum found nothing and returned 0 while
+			// floor_count still reported 1.  That is what made DRAIN_MAX
+			// reach 1.0 C for the last 30 epochs of the batch.
+			if (stillFloored || it->second.ownsRate) {
+				++it;
+				continue;
+			}
+			const bool cmdInFlight =
+				(it->second.pendingUp || it->second.pendingDown) &&
+				record.deliveryTimeNs < it->second.effectDeadlineNs;
+			if (cmdInFlight) {
+				it->second.exitRecoveryPending = true;
+				++it;              // (4) retire deferred: command in flight
+				continue;
+			}
+			runtime.qcLedger.erase(it++);
+		}
+		// protected_count reports the FLOOR set: that is the quantity which
+		// bounds DRAIN_MAX.  The steered set is reported as new_gen_count.
+		runtime.qcProtectedQps = runtime.qcFloorProtectedQps;
+		runtime.qcLedgerCount = (uint32_t)runtime.qcLedger.size();
+		runtime.qcOwnedMemberCount = (uint32_t)live.size();
+
+		// --- (4) ownership / retire ---------------------------------------
+		// DEFECT B was: qcOwnsRates = !qcLedger.empty().  Ownership now
+		// requires a live controlled generation.  Any pending command must
+		// still close before the controller stops, so the batch's last
+		// slowdown is not abandoned mid-flight.
+		bool anyPending = false;
+		for (std::map<uint32_t, CbapQpLedger>::const_iterator it =
+				runtime.qcLedger.begin(); it != runtime.qcLedger.end(); ++it)
+			if (it->second.pendingUp || it->second.pendingDown)
+				anyPending = true;
+		if (runtime.qcPendingGeneration != 0)
+			anyPending = true;
+
+		const bool wasOwning = runtime.qcOwnsRates;
+		if (ownedBatchFound && !live.empty()) {
+			if (!wasOwning) {
+				runtime.qcActiveGenerationId = ownedBatch;
+				runtime.qcOwnershipEnterNs = record.deliveryTimeNs;
+				runtime.qcOwnershipTransitions++;
+			}
+			runtime.qcOwnsRates = true;
+			runtime.qcHandoffPending = false;
+		} else if (wasOwning && anyPending) {
+			// Batch drained or handed off, but commands are still in flight:
+			// stop producing NEW boost/drain, let the ledger close, keep the
+			// current effective rate.  Ownership has not yet been released.
+			runtime.qcHandoffPending = true;
+			runtime.qcOwnsRates = true;
+		} else if (wasOwning) {
+			runtime.qcOwnsRates = false;
+			runtime.qcHandoffPending = false;
+			runtime.qcActiveGenerationId = 0;
+			runtime.qcOwnershipExitNs = record.deliveryTimeNs;
+		} else {
+			runtime.qcOwnsRates = false;
+			runtime.qcHandoffPending = false;
+			runtime.qcActiveGenerationId = 0;
+		}
+		runtime.qcExitRecoveryPending = false;
+		for (std::map<uint32_t, CbapQpLedger>::const_iterator it =
+				runtime.qcLedger.begin(); it != runtime.qcLedger.end(); ++it)
+			if (it->second.exitRecoveryPending)
+				runtime.qcExitRecoveryPending = true;
+
+		const bool pfcSafe = !snapshot.localPaused &&
+			!snapshot.downstreamPaused;
+		QueueControllerEpoch(runtime, record.deliveryTimeNs,
+			record.queueBytes, 0, 0, nActive, pfcSafe, 0, 0);
+
+		// Propagate the aggregate absolute target into per-QP pending state so
+		// the arrival envelope knows which direction each QP is moving.
+		if (runtime.qcPendingGeneration != 0 &&
+				!runtime.qcHandoffPending &&
+				runtime.qcCommandTimeNs == record.deliveryTimeNs) {
+			// DEFECT C: the denominator is the GENERATION size (64), not the
+			// ledger/floor size (65).  Dividing by 65 would hand a share to
+			// the background flow, which must not be steered.
+			const uint32_t genSize = runtime.qcNewGenCount;
+			// LEDGER_GHOST_ARRIVAL fix, defect 1: the share must be the DELTA
+			// between the commanded and the currently effective aggregate,
+			// because it is applied on top of senderEffective (which already
+			// contains the effective boost).  Using the absolute commanded
+			// value made a down-to-zero command compute share = 0: no pending
+			// flag, and commandedWireBps frozen at the boosted rate.
+			const long double commandedNet =
+				(long double)runtime.qcBoostCommandedBps -
+				(long double)runtime.qcDrainCommandedBps;
+			const long double effectiveNet =
+				(long double)runtime.qcBoostEffectiveBps -
+				(long double)runtime.qcDrainTargetBps;
+			const long double share = genSize == 0 ? 0.0L :
+				(commandedNet - effectiveNet) / (long double)genSize;
+			for (std::map<uint32_t, CbapQpLedger>::iterator it =
+					runtime.qcLedger.begin();
+					it != runtime.qcLedger.end(); ++it) {
+				if (!it->second.ownsRate)
+					continue;
+				// A pending SLOWDOWN must not be superseded by an upward
+				// command: the old high rate is still arriving.
+				if (it->second.pendingDown && share > 0.0L)
+					continue;
+				const long double target =
+					(long double)it->second.senderEffectiveWireBps + share;
+				it->second.generation = (uint32_t)runtime.qcPendingGeneration;
+				it->second.commandTimeNs = runtime.qcCommandTimeNs;
+				it->second.effectDeadlineNs = runtime.qcPendingEtaNs;
+				it->second.commandedWireBps =
+					(uint64_t)(target > 0.0L ? target : 0.0L);
+				it->second.pendingUp = share > 0.0L;
+				it->second.pendingDown = share < 0.0L;
+			}
+		}
+		// HARD INVARIANT (item 4): not owning => no boost, no drain, no rate
+		// command.  Counted rather than asserted so a violation is visible in
+		// the trace instead of aborting a 3 s run.
+		if (!runtime.qcOwnsRates &&
+				(runtime.qcBoostEffectiveBps != 0 ||
+				 runtime.qcDrainTargetBps != 0 ||
+				 runtime.qcBoostCommandedBps != 0 ||
+				 runtime.qcDrainCommandedBps != 0 ||
+				 runtime.qcPendingGeneration != 0))
+			runtime.qcScopeViolations++;
+		long double target = (long double)snapshot.capacityBps +
+			(long double)runtime.qcBoostEffectiveBps -
+			(long double)runtime.qcDrainTargetBps;
+		// Convert the LINK target back to the PAYLOAD domain exactly once,
+		// at the boundary where it is handed to the senders.
+		long double targetPayload = target > 0.0L ?
+			(long double)LinkRateToPayloadRate((uint64_t)target) : 0.0L;
+		long double credited = targetPayload -
+			(long double)runtime.config.backgroundBps;
+		effective = std::max(0.0L, credited);
 	}
 	record.effectiveCapacityBps =
 		(uint64_t)std::floor(effective);
@@ -1849,6 +2942,15 @@ void RdmaHw::PlanCbapSbaBatch(uint32_t groupId)
 	NS_ASSERT_MSG(Simulator::Now().GetTimeStep() == group.applicationReadyNs,
 		"CBAP-SBA plan did not run at collective application release");
 
+	// SBA_PLAN_AT: when this group is planned vs when it releases.  This is
+	// the line that determines whether a staggered group was planned early
+	// against a stale old-side snapshot.
+	std::printf("SBA_PLAN_AT t=%llu group=%u application_ready=%llu "
+		"common_release=%llu members=%u\n",
+		(unsigned long long)Simulator::Now().GetTimeStep(), groupId,
+		(unsigned long long)group.applicationReadyNs,
+		(unsigned long long)group.commonReleaseNs,
+		(unsigned)group.members.size());
 	std::vector<CbapSbaController::FlowInput> inputs;
 	std::map<uint32_t, Ptr<RdmaQueuePair> > qps;
 	for (uint32_t i = 0; i < group.members.size(); ++i) {
@@ -2390,11 +3492,36 @@ void RdmaHw::EvaluateCbapSbaMigration(uint64_t nowNs)
 		// Write the rate through the one entry point that also recomputes
 		// m_nextAvail -- the send gate in GetNextQindex only ever reads
 		// m_nextAvail, never m_rate.
-		if (currentRate != appliedRate) {
-			flow->second.hw->ChangeRate(qp, DataRate(appliedRate));
-			// rate_command_time: the instant the new pacing rate is installed.
-			if (s_cbapActuationHook)
-				s_cbapActuationHook(flow->first, currentRate, appliedRate);
+		{
+			// Item 1: this path actuates through ChangeRate() and bypasses
+			// SetCbapRate(), so without this record its dispatches are invisible
+			// in rate_transition.csv.  Emitted for BOTH dispatch and no-op.
+			const uint32_t ownerBefore = qp->cbap.handedOff ? 1u : 0u;
+			CbapRateRecord mrec = {};
+			mrec.timeNs = nowNs;
+			mrec.epoch = s_cbapEpoch;
+			mrec.batchId = qp->cbap.batchId;
+			mrec.flowId = flow->first;
+			mrec.phaseBefore = qp->cbap.phase;
+			mrec.oldRateBps = currentRate;
+			mrec.targetRateBps = qp->cbap.migrationTargetBps;
+			mrec.newRateBps = appliedRate;
+			mrec.reason = 7;                 // 7 = migration step
+			mrec.rootId = qp->cbap.rootId;
+			mrec.protectionFloorBps = qp->cbap.protectionFloorBps;
+			mrec.capacityValid = true;
+			if (currentRate != appliedRate) {
+				flow->second.hw->ChangeRate(qp, DataRate(appliedRate));
+				// rate_command_time: the instant the new pacing rate is installed.
+				if (s_cbapActuationHook)
+					s_cbapActuationHook(flow->first, currentRate, appliedRate);
+				mrec.phaseAfter = qp->cbap.phase;
+				TagCbapRateRecord(mrec, qp, 2u, ownerBefore);
+			} else {
+				mrec.phaseAfter = qp->cbap.phase;
+				TagCbapRateRecord(mrec, qp, 3u, ownerBefore);
+			}
+			s_cbapRateRecords.push_back(mrec);
 		}
 		// ChangeRate's incremental branch can land in the past, and a QP
 		// parked in HOLD carries m_nextAvail = max-time; pull it back and
@@ -2811,6 +3938,19 @@ void RdmaHw::PlanCbapBatch(uint32_t groupId)
 		Simulator::Now().GetTimeStep()), &RdmaHw::PlanRoundGroup, groupId);
 }
 
+// Fill the observability fields of a rate record.  Reads only.
+void RdmaHw::TagCbapRateRecord(CbapRateRecord &rec, Ptr<RdmaQueuePair> qp,
+		uint32_t kind, uint32_t ownerBefore)
+{
+	rec.role = (qp->m_size >= (1ULL << 30)) ? 1u : 0u;
+	rec.ownerBefore = ownerBefore;
+	rec.ownerAfter = qp->cbap.handedOff ? 1u : 0u;
+	rec.side = qp->cbap.migrationActive
+		? (qp->cbap.migrationIsOldFlow ? 1u : 0u) : 2u;
+	rec.actuationKind = kind;
+	rec.appliedRateAfterBps = qp->m_rate.GetBitRate();
+}
+
 void RdmaHw::SetCbapRate(CbapFlowRuntime &flow, uint64_t newRate,
 		uint32_t reason, uint32_t rootId, bool stale)
 {
@@ -2917,6 +4057,11 @@ void RdmaHw::SetCbapRate(CbapFlowRuntime &flow, uint64_t newRate,
 	qp->cbap.currentRateBps = newRate;
 	qp->cbap.rootId = rootId;
 	record.phaseAfter = qp->cbap.phase;
+	// kind 0 = the rate actually changed, 1 = no-op (deadband / same value),
+	// so replan volume can never be mistaken for command volume.
+	TagCbapRateRecord(record, qp,
+		(newRate != oldRate || pause != wasPaused) ? 0u : 1u,
+		qp->cbap.handedOff ? 1u : 0u);
 	s_cbapRateRecords.push_back(record);
 	if (qp->cbap.handoffEnabled || qp->cbap.delegationEnabled ||
 			qp->cbap.v20Enabled){
@@ -3996,6 +5141,207 @@ void RdmaHw::RecomputeCbapTracking()
 		}
 	if (hasSba) {
 		EvaluateCbapSbaReadmission(now, "control_tick");
+		// FLAG B must be reachable independently of the discredited
+		// equal-split path: proceed when either flag is on.
+		if (!s_cbapConfig.sbaSteadyFill && !s_cbapConfig.steadyCapEnable)
+			return;
+		// --- SBA steady-state allocation, once per link per epoch ----------
+		// Control generation: active, unfinished, SBA-managed QPs of the NEWEST
+		// batch.  The background flow sits in batch 0 and is excluded here; it
+		// keeps its floor through the separate floor set below.
+		uint32_t newestBatch = 0;
+		bool haveBatch = false;
+		for (std::map<uint32_t, CbapFlowRuntime>::const_iterator fl =
+				s_cbapFlows.begin(); fl != s_cbapFlows.end(); ++fl){
+			if (!fl->second.active || fl->second.finished || !fl->second.qp ||
+					!fl->second.qp->cbap.sbaEnabled)
+				continue;
+			if (!haveBatch || fl->second.batchId > newestBatch)
+				newestBatch = fl->second.batchId;
+			haveBatch = true;
+		}
+		std::vector<uint32_t> sbaActive;      // control generation (64)
+		uint32_t floorSetCount = 0;           // floor/protection set (65)
+		uint32_t backgroundInControl = 0;
+		for (std::map<uint32_t, CbapFlowRuntime>::const_iterator fl =
+				s_cbapFlows.begin(); fl != s_cbapFlows.end(); ++fl){
+			if (!fl->second.active || fl->second.finished || !fl->second.qp)
+				continue;
+			floorSetCount++;                  // every active flow has a floor
+			if (!fl->second.qp->cbap.sbaEnabled ||
+					fl->second.qp->cbap.handedOff ||
+					fl->second.qp->cbap.delegatedEnvelope ||
+					fl->second.qp->cbap.v20Enabled)
+				continue;
+			if (haveBatch && fl->second.batchId != newestBatch)
+				continue;                     // not the controlled generation
+			sbaActive.push_back(fl->first);
+			if (fl->second.batchId == 0)
+				backgroundInControl++;
+		}
+		// Budget per link: the queue controller's B_eff, payload domain.
+		std::map<uint32_t, uint64_t> sbaCap;
+		for (std::map<uint32_t, CbapLinkRuntime>::iterator lit =
+				s_cbapLinks.begin(); lit != s_cbapLinks.end(); ++lit){
+			// FLAG B: steady wire-rate cap.  rho is NOT used here; it governs
+			// startup admission only.  All arithmetic in wire bps; the single
+			// conversion to payload happens when the fill result is written.
+			if (s_cbapConfig.steadyCapEnable){
+				const uint64_t cWire = lit->second.config.capacityBps;
+				// measured background: the served rate of flows outside the
+				// control generation, taken from the port telemetry.
+				// The arrival-rate telemetry column is unusable (measured
+				// p50 = 0, max = 45.27 G on a 10 G link), and reverse-solving
+				// bgWire from it drove incastWire onto the MIN_RATE floor in a
+				// fraction of epochs: target oscillated 0.155469 G <-> 0.104800 G
+				// (= 64*MIN_RATE_wire/64), whose time average is the observed
+				// 3.5 % shortfall.  Measure the background directly instead: sum
+				// the applied rate of the active flows that are NOT in the
+				// control generation.  m_rate is a wire rate by codebase
+				// convention, so no conversion is applied here.
+				uint64_t bgWire = 0;
+				for (std::map<uint32_t, CbapFlowRuntime>::const_iterator bf =
+						s_cbapFlows.begin(); bf != s_cbapFlows.end(); ++bf){
+					if (!bf->second.active || bf->second.finished ||
+							!bf->second.qp)
+						continue;
+					const std::vector<uint32_t> &bp =
+						s_cbapFlowPaths[bf->first];
+					if (std::find(bp.begin(), bp.end(), lit->first) == bp.end())
+						continue;
+					if (std::find(sbaActive.begin(), sbaActive.end(),
+							bf->first) != sbaActive.end())
+						continue;              // in the control generation
+					bgWire += bf->second.qp->m_rate.GetBitRate();
+				}
+				// total demand in wire bps: every control QP that still has
+				// bytes left may use up to its ceiling.
+				long double demandWire = 0.0L;
+				for (uint32_t i = 0; i < sbaActive.size(); ++i){
+					CbapFlowRuntime &fr = s_cbapFlows[sbaActive[i]];
+					if (fr.qp && fr.qp->GetBytesLeft() > 0)
+						demandWire += (long double)PayloadRateToLinkRate(
+							fr.qp->m_max_rate.GetBitRate());
+				}
+				long double capWire =
+					s_cbapConfig.steadyCapFraction * (long double)cWire;
+				// Item 2: the static cap bypasses effectivePlannerBudgetBps, so the
+				// queue band has to be applied here or it cannot reach the target.
+				// WIRE domain on both sides -- qcBoost/qcDrain are wire rates,
+				// unlike controlDeltaBps which is payload.
+				if (s_cbapConfig.queueBandEnable){
+					const long double dWire =
+						(long double)lit->second.qcBoostEffectiveBps
+						- (long double)lit->second.qcDrainTargetBps;
+					capWire += dWire;
+					if (capWire < 0.0L)
+						capWire = 0.0L;
+				}
+				else if (s_cbapConfig.queueBandV2Enable){
+					// D4v2: leased, ephemeral top-up.  Never enters
+					// admissionBaseCapacityBps, migration targets or background
+					// floors; min(demand, cap) below still bounds the target and
+					// incastWire = totalTarget - bgWire keeps the background flow
+					// unboosted.  Wire domain on both sides.
+					const uint64_t v2now =
+						(uint64_t)Simulator::Now().GetTimeStep();
+					long double b =
+						(long double)lit->second.qcBoostEffectiveBps;
+					if (v2now > lit->second.qb2LeaseExpireNs)
+						b = 0.0L;               // lease expired: no carry-over
+					const long double dr =
+						(long double)lit->second.qcDrainTargetBps;
+					lit->second.qb2AppliedBoostBps = (uint64_t)b;
+					capWire += b - dr;
+					if (capWire < 0.0L)
+						capWire = 0.0L;
+				}
+				const long double totalTarget =
+					demandWire < capWire ? demandWire : capWire;
+				const uint64_t nQp = (uint64_t)sbaActive.size();
+				// MIN_RATE lives on RdmaHw (m_minRate) and is a PAYLOAD
+				// rate; take it from a control flow's own hw and convert to
+				// wire exactly once.
+				uint64_t minPayload = 100000000ULL;
+				for (uint32_t i = 0; i < sbaActive.size(); ++i){
+					CbapFlowRuntime &fr = s_cbapFlows[sbaActive[i]];
+					if (fr.hw){
+						minPayload = fr.hw->m_minRate.GetBitRate();
+						break;
+					}
+				}
+				const long double floorWire = (long double)nQp *
+					(long double)PayloadRateToLinkRate(minPayload);
+				long double incastWire = totalTarget - (long double)bgWire;
+				if (incastWire < floorWire)
+					incastWire = floorWire;
+				lit->second.lastSteadyTotalTargetWire = (uint64_t)totalTarget;
+				lit->second.lastSteadyIncastTargetWire = (uint64_t)incastWire;
+				lit->second.lastMeasuredBackgroundWire = bgWire;
+				// Single wire->payload conversion at the planner boundary.
+				sbaCap[lit->first] = (uint64_t)incastWire;  // wire domain: CbapPacketGapNs takes a WIRE rate
+			} else {
+				sbaCap[lit->first] = lit->second.effectivePlannerBudgetBps;
+			}
+			lit->second.lastActiveControlQps = (uint32_t)sbaActive.size();
+			lit->second.lastFloorSetCount = floorSetCount;
+			lit->second.lastBackgroundInControl = backgroundInControl;
+			lit->second.lastInputBudgetBps = sbaCap[lit->first];
+			lit->second.lastFillInvoked = 0;
+			lit->second.lastSkipReason = sbaActive.empty() ? 1 : 0;
+			lit->second.lastReturnedTargetSumBps = 0;
+		}
+		if (sbaActive.empty())
+			return;
+		// Floors passed as the fill's starting rates, exactly as the non-SBA
+		// path does; they are INCLUDED in the returned target, never added on
+		// top, so nothing is double counted.
+		std::map<uint32_t, uint64_t> sbaFloors;
+		for (uint32_t i = 0; i < sbaActive.size(); ++i)
+			sbaFloors[sbaActive[i]] = 0;
+		std::map<uint32_t, uint64_t> sbaTargets =
+			ComputeCbapProgressiveFill(sbaActive, sbaCap, sbaFloors);
+		for (std::map<uint32_t, CbapLinkRuntime>::iterator lit =
+				s_cbapLinks.begin(); lit != s_cbapLinks.end(); ++lit){
+			lit->second.lastFillInvoked = 1;
+			lit->second.lastSkipReason = 0;
+			uint64_t rsum = 0;
+			for (uint32_t i = 0; i < sbaActive.size(); ++i){
+				const std::vector<uint32_t> &pth =
+					s_cbapFlowPaths[sbaActive[i]];
+				if (std::find(pth.begin(), pth.end(), lit->first) != pth.end())
+					rsum += sbaTargets[sbaActive[i]];
+			}
+			lit->second.lastReturnedTargetSumBps = rsum;
+		}
+		// Write ONLY targetRateBps, then let the existing nonlinear migration
+		// move appliedRateBps toward it.  admitRateBps is not touched.
+		for (uint32_t i = 0; i < sbaActive.size(); ++i){
+			CbapFlowRuntime &fl = s_cbapFlows[sbaActive[i]];
+			if (!fl.qp)
+				continue;
+			const uint64_t tgt = sbaTargets[sbaActive[i]];
+			if (tgt == 0)
+				continue;
+			fl.qp->cbap.targetRateBps = tgt;
+			// Re-issuing the rate every epoch pins any OVERDUE QP to Now()
+			// inside ChangeRate, which re-clusters the 64 send phases on the
+			// 5 us epoch grid: measured gap p50 121 ns (phase-only) vs 1410 ns
+			// here.  Only act on a material change, using the existing
+			// CBAP_EPSILON_RATE deadband -- no new parameter.
+			const uint64_t curR = fl.qp->m_rate.GetBitRate();
+			const long double eps = s_cbapConfig.epsilonRate > 0.0
+				? s_cbapConfig.epsilonRate : 0.02L;
+			const long double dR = curR > tgt
+				? (long double)(curR - tgt) : (long double)(tgt - curR);
+			// Asymmetric: an INCREASE toward the target is always applied, so the
+			// deadband can no longer leave applied parked up to eps below target
+			// (measured self-inflicted loss: applied stalled at 97.5 % of target).
+			// Only a DECREASE must clear the deadband, which is what suppresses
+			// per-epoch churn.
+			if (curR == 0 || tgt > curR || dR > eps * (long double)curR)
+				SetCbapRate(fl, tgt, 6, 0, false);
+		}
 		return;
 	}
 	EvaluateCbapV20Batches(now);
@@ -4007,6 +5353,42 @@ void RdmaHw::RecomputeCbapTracking()
 				!flow->second.qp->cbap.delegatedEnvelope &&
 				!flow->second.qp->cbap.v20Enabled)
 			active.push_back(flow->first);
+	// SCOPE_CENSUS: why is a flow not in `active`?  Recorded before the early
+	// exit so an empty active set is explained rather than silent.  Counters are
+	// per link; a flow contributes to every link on its path.
+	for (std::map<uint32_t, CbapLinkRuntime>::iterator lit = s_cbapLinks.begin();
+			lit != s_cbapLinks.end(); ++lit){
+		lit->second.lastExclScope = 0;
+		lit->second.lastExclFinished = 0;
+		lit->second.lastExclWrongGeneration = 0;
+		lit->second.lastExclMissingPath = 0;
+		lit->second.lastActiveControlQps = (uint32_t)active.size();
+		lit->second.lastFillInvoked = 0;
+		lit->second.lastSkipReason = active.empty() ? 1 : 0;
+		lit->second.lastInputBudgetBps = 0;
+		lit->second.lastReturnedTargetSumBps = 0;
+	}
+	for (std::map<uint32_t, CbapFlowRuntime>::const_iterator fl =
+			s_cbapFlows.begin(); fl != s_cbapFlows.end(); ++fl){
+		const std::vector<uint32_t> &pth = s_cbapFlowPaths[fl->first];
+		for (std::map<uint32_t, CbapLinkRuntime>::iterator lit =
+				s_cbapLinks.begin(); lit != s_cbapLinks.end(); ++lit){
+			if (std::find(pth.begin(), pth.end(), lit->first) == pth.end()){
+				lit->second.lastExclMissingPath++;
+				continue;
+			}
+			if (fl->second.finished)
+				lit->second.lastExclFinished++;
+			else if (!fl->second.active)
+				lit->second.lastExclWrongGeneration++;
+			else if (!fl->second.qp)
+				lit->second.lastExclScope++;
+			else if (fl->second.qp->cbap.handedOff ||
+					fl->second.qp->cbap.delegatedEnvelope ||
+					fl->second.qp->cbap.v20Enabled)
+				lit->second.lastExclScope++;
+		}
+	}
 	if (active.empty()){
 		EvaluateCbapHandoffBatches(now);
 		ProjectCbapDelegatedEnvelope(now);
@@ -4018,7 +5400,7 @@ void RdmaHw::RecomputeCbapTracking()
 		capacities[link->first] = link->second.initialized ?
 			link->second.latest.effectiveCapacityBps :
 			link->second.previousEffectiveCapacityBps;
-	for (std::map<uint32_t, uint64_t>::const_iterator capacity =
+	for (std::map<uint32_t, uint64_t>::iterator capacity =
 			capacities.begin(); capacity != capacities.end(); ++capacity){
 		// plannerCapacityBps is an audit contract, not a controller input.
 		// While any flow on this link remains in Admission Hold, its applied
@@ -4035,9 +5417,29 @@ void RdmaHw::RecomputeCbapTracking()
 				std::find(path.begin(), path.end(), capacity->first) !=
 					path.end();
 		}
-		if (!admissionActive)
-			s_cbapLinks[capacity->first].plannerCapacityBps =
-				capacity->second;
+		CbapLinkRuntime &lrt = s_cbapLinks[capacity->first];
+		if (!admissionActive){
+			// Outside the hold the tracking capacity replaces the baseline, as
+			// before.
+			lrt.plannerCapacityBps = capacity->second;
+			lrt.admissionBaseCapacityBps = capacity->second >
+					(uint64_t)(lrt.controlDeltaBps > 0 ? lrt.controlDeltaBps : 0)
+				? capacity->second - (uint64_t)(lrt.controlDeltaBps > 0 ?
+					lrt.controlDeltaBps : 0)
+				: capacity->second;
+		}
+		// FIX: ADMISSION_HOLD freezes the generation membership, the initial rho
+		// allocation and the old/background protection -- but NOT the control
+		// delta.  The planner budget therefore tracks boost/drain in every
+		// epoch, including during the hold.
+		{
+			const long double budget =
+				(long double)lrt.admissionBaseCapacityBps +
+				(long double)lrt.controlDeltaBps;
+			lrt.effectivePlannerBudgetBps = budget > 0.0L ?
+				(uint64_t)budget : 0;
+			capacities[capacity->first] = lrt.effectivePlannerBudgetBps;
+		}
 	}
 	std::map<uint32_t, uint64_t> floors;
 	for (uint32_t i = 0; i < active.size(); ++i){
@@ -4057,8 +5459,28 @@ void RdmaHw::RecomputeCbapTracking()
 		}
 		floors[active[i]] = floor;
 	}
+	// --- fill call-site diagnostics (item 2B) ---------------------------
+	// Recorded before and after the call so a zero-target epoch can be told
+	// apart from an epoch where the fill never ran at all.
+	// Reset moved into SCOPE_CENSUS above, before the early exit.
 	std::map<uint32_t, uint64_t> targets =
 		ComputeCbapProgressiveFill(active, capacities, floors);
+	for (std::map<uint32_t, CbapLinkRuntime>::iterator lit = s_cbapLinks.begin();
+			lit != s_cbapLinks.end(); ++lit){
+		lit->second.lastFillInvoked = 1;
+		lit->second.lastSkipReason = 0;
+		lit->second.lastActiveControlQps = (uint32_t)active.size();
+		std::map<uint32_t, uint64_t>::const_iterator ci =
+			capacities.find(lit->first);
+		lit->second.lastInputBudgetBps = ci == capacities.end() ? 0 : ci->second;
+		uint64_t rsum = 0;
+		for (uint32_t i = 0; i < active.size(); ++i){
+			const std::vector<uint32_t> &pth = s_cbapFlowPaths[active[i]];
+			if (std::find(pth.begin(), pth.end(), lit->first) != pth.end())
+				rsum += targets[active[i]];
+		}
+		lit->second.lastReturnedTargetSumBps = rsum;
+	}
 	for (uint32_t i = 0; i < active.size(); ++i){
 		CbapFlowRuntime &flow = s_cbapFlows[active[i]];
 		Ptr<RdmaQueuePair> qp = flow.qp;
@@ -4149,8 +5571,23 @@ void RdmaHw::RecomputeCbapTracking()
 						targets[active[i]]));
 				SetCbapRate(flow, emergency, 4, emergencyRoot, false);
 			}
-			// Ordinary tracking decisions are forbidden until every path link
-			// has a sample and delivery strictly after network release.
+			// ADMISSION_HOLD freezes admitRateBps (provenance) and the
+			// generation membership -- NOT the controller target.  The target
+			// was already set from the progressive fill at the top of this
+			// loop; let the EXISTING nonlinear migration take one step toward
+			// it so the applied rate can converge instead of standing still.
+			// appliedRateBps is never assigned the target directly here: the
+			// step size, floors and clamps all remain the migration's.
+			if (!s_cbapConfig.holdTrackTarget)
+				continue;
+			// Tracking during hold is gated by its own flag so flag=0 is
+			// bit-identical to the pre-fix binary.
+			{
+				const uint64_t tgtHold = qp->cbap.targetRateBps;
+				const uint64_t curHold = qp->m_rate.GetBitRate();
+				if (tgtHold > 0 && tgtHold != curHold)
+					SetCbapRate(flow, tgtHold, 6, 0, false);
+			}
 			continue;
 		}
 		if (qp->cbap.phase == RdmaQueuePair::CBAP_ADMISSION_HOLD){
@@ -6212,6 +7649,40 @@ void RdmaHw::ReleaseRound(Ptr<RdmaQueuePair> qp, uint32_t roundIndex){
 		qp->cbap.baseEligibleBytes = 0;
 		CbapFlowRuntime &flow = s_cbapFlows[qp->crfm.flowId];
 		flow.active = true;
+		// FLAG A: distinct initial send phase, set ONCE here at release.
+		// rank comes from the stable flow_id ordering of this batch, so the
+		// offset is deterministic and never re-drawn.  Only m_nextAvail is
+		// shifted, and by strictly less than one packet time, so no QP's rate,
+		// byte count or start time changes.
+		if (s_cbapConfig.phaseSpreadEnable && !qp->cbap.phaseSpreadApplied){
+			uint32_t rank = 0, nMembers = 0;
+			for (std::map<uint32_t, CbapFlowRuntime>::const_iterator it =
+					s_cbapFlows.begin(); it != s_cbapFlows.end(); ++it){
+				if (!it->second.qp || it->second.finished)
+					continue;
+				if (it->second.batchId != flow.batchId)
+					continue;
+				nMembers++;
+				if (it->first < qp->crfm.flowId)
+					rank++;
+			}
+			const uint64_t rate = qp->m_rate.GetBitRate();
+			if (nMembers > 1 && rate > 0){
+				// T_i = 8 * wire_packet_bytes / R_i
+				const uint64_t tI = (uint64_t)((long double)8.0L *
+					CbapLinkBytesPerPacket() * 1e9L / (long double)rate);
+				const uint64_t off = (uint64_t)((long double)rank * tI /
+					(long double)nMembers);
+				qp->cbap.phaseOffsetNs = off;
+				qp->cbap.phaseRank = rank;
+				if (off > 0){
+					Time first = Simulator::Now() + NanoSeconds(off);
+					if (qp->m_nextAvail < first)
+						qp->m_nextAvail = first;
+				}
+			}
+			qp->cbap.phaseSpreadApplied = true;
+		}
 	}
 	round.startRate = qp->m_rate.GetBitRate();
 	round.minimumRate = round.startRate;
@@ -6809,6 +8280,12 @@ Ptr<Packet> RdmaHw::GetNxtPacket(Ptr<RdmaQueuePair> qp){
 
 void RdmaHw::PktSent(Ptr<RdmaQueuePair> qp, Ptr<Packet> pkt, Time interframeGap){
 	qp->lastPktSize = pkt->GetSize();
+	// Item 3: the unified FCT needs the first data transmit for EVERY cc_mode,
+	// not just CBAP.  This field is plain observability and is present on every
+	// QP whether or not cbap.enabled, so it is safe to stamp outside the guard.
+	// GetTimeStep() to match the units the rest of PktSent already uses.
+	if (qp->cbap.firstDataTxNs == 0)
+		qp->cbap.firstDataTxNs = Simulator::Now().GetTimeStep();
 	if (qp->cbap.enabled){
 		uint64_t now = Simulator::Now().GetTimeStep();
 		uint64_t previous = qp->cbap.lastTxTimeNs;
@@ -7021,6 +8498,52 @@ void RdmaHw::ChangeRate(Ptr<RdmaQueuePair> qp, DataRate new_rate){
 		new_rate = DataRate(qp->m_appRateCapBps);
 	#if 1
 	if (qp->cbap.enabled){
+	// 2x2 diagnostic: rescale ONLY the steered incast QPs so the aggregate
+	// reaches C.  r_new = (C - r_background) / 64.  The background QP is
+	// identified by NOT being steered (ownsRate false) and is left untouched.
+	// This is experiment instrumentation, not the paper controller: it does not
+	// consult rho, MAX_BOOST or any queue bound, and it is off by default.
+	if (s_diagRateNormalize && new_rate.GetBitRate() > 0){
+		bool steered = false;
+		for (std::map<uint32_t, CbapLinkRuntime>::const_iterator lit =
+				s_cbapLinks.begin(); lit != s_cbapLinks.end(); ++lit){
+			std::map<uint32_t, CbapQpLedger>::const_iterator led =
+				lit->second.qcLedger.find(qp->crfm.flowId);
+			if (led != lit->second.qcLedger.end()){
+				steered = led->second.ownsRate;
+				break;
+			}
+		}
+		if (steered){
+			// Background wire rate, measured from the un-steered QP's applied
+			// rate; falls back to 0 when it is not yet known.
+			uint64_t bg = 0;
+			for (std::map<uint32_t, CbapFlowRuntime>::const_iterator fit =
+					s_cbapFlows.begin(); fit != s_cbapFlows.end(); ++fit){
+				if (fit->second.qp == 0)
+					continue;
+				bool own = false;
+				for (std::map<uint32_t, CbapLinkRuntime>::const_iterator lit =
+						s_cbapLinks.begin(); lit != s_cbapLinks.end(); ++lit){
+					std::map<uint32_t, CbapQpLedger>::const_iterator led =
+						lit->second.qcLedger.find(fit->first);
+					if (led != lit->second.qcLedger.end()){
+						own = led->second.ownsRate;
+						break;
+					}
+				}
+				if (!own && fit->second.qp->GetBytesLeft() > 0){
+					bg = fit->second.qp->m_rate.GetBitRate();
+					break;
+				}
+			}
+			if (s_diagLinkCapacityBps > bg){
+				const uint64_t rn = (s_diagLinkCapacityBps - bg) / 64ULL;
+				if (rn > 0)
+					new_rate = DataRate(rn);
+			}
+		}
+	}
 		Time next = Simulator::Now();
 		if (qp->cbap.lastTxTimeNs > 0 && qp->lastPktSize > 0){
 			Time paced = NanoSeconds(qp->cbap.lastTxTimeNs) +
@@ -7034,9 +8557,43 @@ void RdmaHw::ChangeRate(Ptr<RdmaQueuePair> qp, DataRate new_rate){
 		// An active startup-credit gate may have already established a
 		// later token-eligibility time.  Emergency rate changes must not
 		// move that gate earlier.
+		// 2x2 diagnostic: deterministic per-QP phase offset, applied only
+		// here, only when the switch is on.  Shifts WHEN this QP may next
+		// send within one packet interval; does not change new_rate, the
+		// interval, or the QP's long-run throughput.
+		if (s_diagPhaseStagger && qp->lastPktSize > 0 &&
+				new_rate.GetBitRate() > 0){
+			const uint64_t iv = CbapPacketGapNs(qp->lastPktSize,
+				new_rate.GetBitRate());
+			const uint32_t nd = (m_node != 0) ? m_node->GetId() : 0;
+			const uint64_t off = DiagPhaseOffsetNs(nd, qp->crfm.flowId, iv, 64);
+			if (off > 0)
+				next = next + NanoSeconds(off);
+		}
+		// A phase offset assigned at release has not been consumed until the
+// QP's first transmit.  Resetting m_nextAvail to `now` here would
+// re-align all 64 QPs to the same instant and destroy the spreading --
+// measured: gap p50 reverts 121 ns -> 2045 ns.  Preserve the pending
+// offset; once lastTxTimeNs is set, the branch above governs as before.
+if (s_cbapConfig.phaseSpreadEnable && qp->cbap.lastTxTimeNs == 0 &&
+qp->m_nextAvail > next)
+next = qp->m_nextAvail;
+const uint64_t causal_cand = next.GetTimeStep();
+		const uint64_t causal_old_na = qp->m_nextAvail.GetTimeStep();
 		if (qp->cbap.creditGateActive && qp->m_nextAvail > next)
 			next = qp->m_nextAvail;
 		qp->m_nextAvail = next;
+		// Telemetry only: records the pacing decision that was just taken.
+		// Emits nothing when the tracer is closed.
+		if (ns3::CausalPacerTrace::IsOpen())
+			ns3::CausalPacerTrace::Emit(qp->crfm.flowId, 0, 0,
+				"ChangeRate_cbap", qp->m_rate.GetBitRate(),
+				new_rate.GetBitRate(), qp->cbap.lastTxTimeNs,
+				causal_old_na, causal_cand,
+				qp->m_nextAvail.GetTimeStep(), 0, 0,
+				qp->m_nextAvail.GetTimeStep() > causal_old_na ? "LATER" :
+				(qp->m_nextAvail.GetTimeStep() < causal_old_na ? "EARLIER" :
+				 "KEEP"), 0);
 	}else{
 		Time sendingTime = Seconds(
 			qp->m_rate.CalculateTxTime(qp->lastPktSize));
@@ -7246,6 +8803,15 @@ void RdmaHw::RateIncEventTimerMlx(Ptr<RdmaQueuePair> q){
 	q->mlx.m_rpTimeStage++;
 }
 void RdmaHw::RateIncEventMlx(Ptr<RdmaQueuePair> q){
+	// While CBAP owns this QP's rate, DCQCN additive/hyper INCREASE must not
+	// overwrite the controller target -- two writers on m_rate is exactly the
+	// ownership defect this round forbids.  CNP/PFC emergency DECREASE is
+	// deliberately not gated here: CheckRateDecreaseMlx and the CNP path keep
+	// their veto.
+	if (s_cbapConfig.steadyCapEnable && q->cbap.enabled &&
+			q->cbap.sbaEnabled && !q->cbap.handedOff &&
+			q->cbap.targetRateBps > 0)
+		return;
 	// check which increase phase: fast recovery, active increase, hyper increase
 	if (q->mlx.m_rpTimeStage < m_rpgThreshold){ // fast recovery
 		FastRecoveryMlx(q);

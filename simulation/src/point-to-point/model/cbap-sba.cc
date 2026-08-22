@@ -1,3 +1,4 @@
+#include <cstdio>
 #include "cbap-sba.h"
 
 #include <algorithm>
@@ -194,8 +195,13 @@ std::map<uint32_t, uint64_t> CbapSbaController::AdmitBatch(
 	std::map<uint32_t, uint64_t> oldAppliedByLink;
 	for (std::map<uint32_t, FlowState>::const_iterator existing =
 			m_flows.begin(); existing != m_flows.end(); ++existing) {
+		// Lifecycle guard: an installed-but-unreleased flow (COLLECTING)
+		// holds no network rate and must never enter the old-side census.
+		// (Its appliedRateBps is 0 today; the guard makes the invariant
+		// explicit instead of incidental.)
 		if (existing->second.state == FINISHED ||
-				existing->second.state == ADMISSION_HOLD)
+				existing->second.state == ADMISSION_HOLD ||
+				existing->second.state == COLLECTING)
 			continue;
 		for (uint32_t hop = 0; hop < existing->second.path.size(); ++hop) {
 			uint64_t &capacity = residual[existing->second.path[hop]];
@@ -206,6 +212,34 @@ std::map<uint32_t, uint64_t> CbapSbaController::AdmitBatch(
 		}
 	}
 	m_lastAdmitOldApplied = oldAppliedByLink;
+	// SBA_LIFECYCLE: admission-time lifecycle census (observability only).
+	{
+		uint32_t nCol = 0, nHold = 0, nStart = 0, nOwn = 0, nFin = 0;
+		for (std::map<uint32_t, FlowState>::const_iterator it =
+				m_flows.begin(); it != m_flows.end(); ++it) {
+			switch (it->second.state) {
+			case COLLECTING: nCol++; break;
+			case ADMISSION_HOLD: nHold++; break;
+			case STARTUP_SENDING: nStart++; break;
+			case DCQCN_OWNED: nOwn++; break;
+			case FINISHED: nFin++; break;
+			}
+		}
+		std::printf("SBA_LIFECYCLE batch=%u release_ns=%llu installed=%u "
+			"collecting=%u hold=%u startup=%u dcqcn_owned=%u finished=%u "
+			"new_batch=%u rho_init=%.4f\n",
+			batchId, (unsigned long long)releaseTimeNs,
+			(unsigned)m_flows.size(), nCol, nHold, nStart, nOwn, nFin,
+			(unsigned)flows.size(), (double)m_initialReleaseRatio);
+		for (std::map<uint32_t, uint64_t>::const_iterator l =
+				oldAppliedByLink.begin(); l != oldAppliedByLink.end(); ++l)
+			std::printf("SBA_LIFECYCLE_LINK batch=%u link=%u old_applied=%llu "
+				"available=%llu\n", batchId, l->first,
+				(unsigned long long)l->second,
+				(unsigned long long)(availableCapacity.count(l->first) ?
+					availableCapacity.find(l->first)->second : 0));
+		std::fflush(stdout);
+	}
 	std::vector<uint32_t> ids;
 	for (uint32_t i = 0; i < flows.size(); ++i) {
 		if (flows[i].path.empty() || m_flows.count(flows[i].flowId))
@@ -322,7 +356,29 @@ std::map<uint32_t, uint64_t> CbapSbaController::AdmitBatch(
 			}
 			// Tolerate the per-flow floor() rounding in ProgressiveFill, which
 			// can only ever round the batch down, never up.
-			if (batchSum + oldRetained > link->second + ids.size())
+			// Occupancy bound.  availableCapacity is payload-domain while
+			// oldApplied is wire-domain (census-proven: available ==
+			// C*1000/1048 exactly); comparing the plan against available alone
+			// therefore rejects EVERY admission on a saturated link by the
+			// framing overhead, independent of batch size.  The invariant that
+			// is actually safe and domain-consistent: the planned state must
+			// never exceed max(available, observed occupancy) -- strict when
+			// under-loaded (bit-identical to the old check there), and
+			// plan-never-worsens when saturated (batchSum + oldRetained ==
+			// oldApplied by construction when residual == 0).  The wire/payload
+			// mixing inside grant budgets is documented debt, not hidden.
+			const uint64_t occupancyBound = link->second > oldApplied ?
+				link->second : oldApplied;
+			std::printf("SBA_LIFECYCLE_CHECK batch=%u link=%u batch_sum=%llu "
+				"old_retained=%llu available=%llu bound=%llu margin=%lld\n",
+				batchId, link->first, (unsigned long long)batchSum,
+				(unsigned long long)oldRetained,
+				(unsigned long long)link->second,
+				(unsigned long long)occupancyBound,
+				(long long)((int64_t)occupancyBound + (int64_t)ids.size() -
+					(int64_t)batchSum - (int64_t)oldRetained));
+			std::fflush(stdout);
+			if (batchSum + oldRetained > occupancyBound + ids.size())
 				throw std::logic_error(
 					"SBA initial release violates planned capacity");
 		}

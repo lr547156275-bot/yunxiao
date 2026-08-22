@@ -52,6 +52,21 @@ public:
 	RdmaEgressQueue();
 	Ptr<Packet> DequeueQindex(int qIndex);
 	int GetNextQindex(bool paused[]);
+	// Telemetry only: per-QP outcome of the most recent GetNextQindex scan.
+	// Static because the scan and the emit happen in different objects; cleared
+	// at the start of every scan.
+	struct OppRec {
+		uint32_t idx;
+		uint64_t nextAvail;
+		uint64_t bytesLeft;
+		uint64_t rate;
+		uint64_t lastTx;
+		uint32_t flowId;
+		uint32_t batchId;
+		const char *reason;
+	};
+	static std::vector<OppRec> s_oppRec;
+	static int s_oppSelected;
 	int GetLastQueue();
 	uint32_t GetNBytes(uint32_t qIndex);
 	uint32_t GetFlowCount(void);
@@ -147,6 +162,10 @@ protected:
 
   /// Look for an available packet and send it using TransmitStart(p)
   virtual void DequeueAndTransmit(void);
+	// Telemetry only.
+	void EmitOppScan(int slot, uint64_t oppId, int selected, uint64_t sentUid,
+		uint64_t sentBytes, uint64_t oldNa, uint64_t newNa,
+		uint64_t wakeupNs);
 
   /// Resume a paused queue and call DequeueAndTransmit()
   virtual void Resume(unsigned qIndex);

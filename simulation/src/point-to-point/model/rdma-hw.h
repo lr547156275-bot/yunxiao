@@ -95,6 +95,17 @@ public:
 	static bool IsBopQbMode(uint32_t mode);
 	static bool UsesBopQbCredit(uint32_t mode);
 	static bool UsesHpccTelemetryMode(uint32_t mode);
+
+	// --- the ONLY sanctioned payload<->link rate conversion (defect A) -----
+	// Derived from the real per-packet link size (1048 B for CC_MODE 30), NOT
+	// from CBAP_MAX_WIRE_PACKET_BYTES.  Every floor, sumR, boost, drain,
+	// arrival rate, served rate and Q_stop uses the LINK domain; conversion to
+	// the payload domain happens only when handing a rate to a sender.
+	static uint64_t CbapLinkBytesPerPacket(void);
+	static uint64_t CbapPayloadBytesPerPacket(void);
+	static long double CbapPayloadToLinkRatio(void);
+	static uint64_t PayloadRateToLinkRate(uint64_t payloadBps);
+	static uint64_t LinkRateToPayloadRate(uint64_t linkBps);
 	// True for both SBA variants (DCQCN- and HPCC-based post-handoff).
 	static bool IsCbapSbaMode(uint32_t mode);
 	static bool IsCbapMode(uint32_t mode);
@@ -224,6 +235,30 @@ public:
 		// Capacity migration (docs/cbap_sba_capacity_migration_design.md).
 		// Disabled by default so existing baselines are untouched.
 		bool migrationEnabled;
+		// Let the existing migration track the controller target while a flow
+		// is in ADMISSION_HOLD.  Default false: flag=0 reproduces the previous
+		// binary byte-for-byte.
+		bool holdTrackTarget;
+		// Run the queue-controller progressive fill on the CBAP-SBA steady
+		// path.  Without this, RecomputeCbapTracking returns at the hasSba
+		// early exit and the fill never executes.  Default false so flag=0
+		// reproduces the previous binary byte-for-byte.
+		bool sbaSteadyFill;
+		// --- this round's two independent flags, both default false --------
+		bool phaseSpreadEnable;    // FLAG A: per-QP initial send phase
+		bool steadyCapEnable;      // FLAG B: steady wire-rate cap near C
+		double steadyCapFraction;  // 0.995 by default, not a tuning knob
+		// CBAP_QUEUE_BAND_ENABLE.  Default false keeps boost forced to 0 under
+		// the steady cap (the D2/D3 arms).  True lets the queue-banded
+		// boost(Q)/drain(Q) term participate in the aggregate target.
+		bool queueBandEnable;
+		// D4v2 (CBAP_QUEUE_BAND_V2_ENABLE): predictive headroom top-up.
+		// Independent of queueBandEnable (v1, INVALID_OVERBOOST_POLICY) and
+		// mutually exclusive with it at config parse.  Default false: D1/D2/D3
+		// and every flag=0 run are byte-identical.
+		bool queueBandV2Enable;
+		double qb2BmaxRatio;      // BMAX = ratio * C_wire; parse rejects > 0.10
+		double qb2QTargetRatio;   // Q_target = ratio * Q_abs
 		double migrationReleaseRatio;
 		double migrationDecayBase;
 		double migrationRiseBase;
@@ -257,6 +292,30 @@ public:
 		// and the planner may hand out short-lived credit while the measured
 		// queue sits below its target, bounded so the predicted queue after
 		// one horizon cannot cross the hard limit.
+		// --- queue-bounded boost/drain controller (method D) ----------------
+		// Deliberately SEPARATE fields from the EXPERIMENTAL/NOT VALID
+		// delay-credit block below.  Nothing here reuses delayCreditEnable,
+		// maxOversubRatio, creditMaxDrainRatio or the queueDelay* fields; that
+		// path stays dead.  All default to off/zero.
+		bool queueControllerEnable;   // CBAP_QUEUE_CONTROLLER_ENABLE, default 0
+		double qcSoftFraction;        // soft = this * app_hard_delay
+		double qcMaxBoostRatio;       // boost_target <= this * C
+		double qcHGuardS;             // H_guard, seconds (measured 175 us)
+		double qcAppHardDelayS;       // message_size * 8 / C
+		uint64_t qcOnWirePacketBytes; // for the packetization margin
+		uint64_t qcSafetyMarginBytes; // M_safe, from the measured residual
+		// PACKET_PAYLOAD_SIZE. Paired with qcOnWirePacketBytes to
+		// convert between the payload domain (MIN_RATE, sender
+		// pacing) and the wire domain (queue bytes, link rate).
+		uint64_t qcPayloadPacketBytes;
+
+		// --- authoritative wire accounting (defect A) -------------------
+		// The controller lives entirely in the LINK byte domain, because
+		// serialization, queue occupancy and served rate all count
+		// packet->GetSize().  MIN_RATE is the only payload-domain input.
+		// qcLinkBytesPerPacket is DERIVED from the header sizes, never from
+		// CBAP_MAX_WIRE_PACKET_BYTES (a safety margin, not a ratio).
+		uint64_t qcLinkBytesPerPacket;
 		bool delayCreditEnable;
 		double queueDelayTargetS;     // q_target  = C * this / 8
 		double queueDelayHardLimitS;  // hard delay budget above q_sync_floor
@@ -291,11 +350,21 @@ public:
 			  budgetQLowFraction(0.5), budgetQHighFraction(1.0),
 			  maxDrainRatio(0.20), oldBatchWeight(1.0),
 			  newBatchWeight(1.0),
-			  migrationEnabled(false), migrationReleaseRatio(0.5),
+			  migrationEnabled(false), holdTrackTarget(false),
+			  sbaSteadyFill(false), phaseSpreadEnable(false),
+			  steadyCapEnable(false), steadyCapFraction(0.995),
+			  queueBandEnable(false),
+			  queueBandV2Enable(false), qb2BmaxRatio(0.0),
+			  qb2QTargetRatio(0.0),
+			  migrationReleaseRatio(0.5),
 			  migrationDecayBase(0.30), migrationRiseBase(0.30),
 			  migrationRiseSkew(0.35), migrationMaxRtt(5),
 			  migrationTrace(false), initialReleaseRatio(0.0),
 			  coreInitialRelease(false), etaFeasibilityTrace(false),
+			  queueControllerEnable(false), qcSoftFraction(0.0),
+			  qcMaxBoostRatio(0.0), qcHGuardS(0.0), qcAppHardDelayS(0.0),
+			  qcOnWirePacketBytes(0), qcSafetyMarginBytes(0),
+			  qcPayloadPacketBytes(0), qcLinkBytesPerPacket(0),
 			  delayCreditEnable(false), queueDelayTargetS(0.0),
 			  queueDelayHardLimitS(0.0), creditHorizonS(0.0),
 			  maxOversubRatio(0.0), creditMaxDrainRatio(0.0),
@@ -586,12 +655,57 @@ public:
 		uint64_t rebalanceEndNs;
 		bool staleFeedback;
 		bool capacityValid;
+		// --- migration-path observability (item 1) ------------------------
+		// role: 0 incast, 1 background (>= 1 GiB flow)
+		// ownerBefore/After: 0 CBAP, 1 DCQCN (from qp->cbap.handedOff)
+		// side: 0 new, 1 old, 2 not-in-migration
+		// actuationKind: 0 setrate_dispatch, 1 setrate_noop,
+		//                2 migration_dispatch, 3 migration_noop
+		// appliedRateAfterBps: qp->m_rate AFTER the call, so one row shows
+		//                      requested vs actually installed.
+		uint32_t role;
+		uint32_t ownerBefore;
+		uint32_t ownerAfter;
+		uint32_t side;
+		uint32_t actuationKind;
+		uint64_t appliedRateAfterBps;
 	};
 	struct CbapAppliedRateAuditRecord {
 		uint32_t linkId;
 		uint32_t epoch;
 		uint64_t capacityBps;
 		uint64_t rhoCapacityBps;
+		// --- closed-loop ledger for the boost execution chain (item 7) -----
+		uint64_t baseCapacityBps;
+		uint64_t boostEffectiveBps;
+		uint64_t drainEffectiveBps;
+		uint64_t effectivePlannerBudgetBps;
+		uint64_t arrivalRateBps;
+		uint64_t servedRateBps;
+		// DEPRECATED: never written by any code path, therefore always 0.
+		// Retained only so existing readers do not break; it is NOT evidence.
+		// Superseded by fullUnallocatedBps below, which has a real writer.
+		uint64_t unallocatedDeltaBps;
+		// --- unambiguous scope split (each sums exactly one field) ---------
+		uint64_t admissionGrantSumBps;   // sum(admitRateBps)   provenance only
+		uint64_t plannerTargetSumBps;    // sum(targetRateBps)  fill output
+		uint64_t fullUnallocatedBps;     // max(0, B_eff - plannerTargetSum)
+		uint32_t unallocatedReason;      // 0 none 1 per_flow_cap 2 no_demand
+		// --- progressive-fill call-site diagnostics (item 2B) --------------
+		uint32_t fillInvoked;            // 1 if the fill ran this epoch
+		uint32_t activeControlQps;       // size of the `active` vector
+		uint64_t inputBudgetBps;         // capacities[] handed to the fill
+		uint64_t explicitFixedReservedBps;
+		uint64_t returnedTargetSumBps;   // sum of the fill's return value
+		uint32_t skipReason;             // 0 ran 1 no_active 2 not_initialized
+		uint32_t exclScope;
+		uint32_t exclFinished;
+		uint32_t exclWrongGeneration;
+		uint32_t exclMissingPath;
+		uint32_t floorSetCount;
+		uint32_t backgroundInControl;
+		                                 // 3 floor 4 scope
+		uint32_t clampReason;
 		uint64_t effectiveCapacityBps;
 		uint64_t plannerGrantSumBps;
 		uint64_t targetRateSumBps;
@@ -762,6 +876,41 @@ public:
 	// Returns NULL if the flow is unknown.  Const-correct by contract: callers
 	// must not mutate through it, and no control path uses this accessor.
 	static Ptr<RdmaQueuePair> GetCbapQpForAudit(uint32_t flowId);
+	// Read-only snapshot of the queue-controller state for one link, for the
+	// trace only.  Returns false if the link is unknown.
+	struct CbapQcSnapshot {
+		uint64_t boostEffectiveBps, boostCommandedBps, pendingGeneration;
+		uint64_t drainTargetBps, guardExceeded, queueBytes;
+		uint32_t zone;
+		uint32_t activeSenders;   // census the controller used
+		// Reported so the trace never recomputes what the controller
+		// already decided -- an earlier trace recomputed q_stop with
+		// the old endpoint formula and reported phantom violations.
+		uint64_t qStopBytes, qSafeBytes;
+		uint64_t floorBps, drainMaxBps;
+		uint64_t pendingExcessBytes;
+		uint64_t invariantViolations;
+		uint32_t protectedCount;
+		// Same-epoch accounting: q0 is THE sample used for control and for
+		// this trace row. q_next belongs to the next epoch and must not be
+		// paired with this row's Q_stop.
+		uint64_t q0Bytes, epochId, prefixMaxIndex;
+		uint64_t floorWireBps, floorPayloadBps, drainMaxWireBps;
+		uint64_t arrivalSafeWireBps, senderEffectiveWireBps;
+		uint64_t duplicateQpCount;
+		bool ownsRates, exitRecoveryPending, inRed;
+		uint32_t activeGenerationId, ownedMemberCount, ledgerCount;
+		uint32_t floorCount, newGenCount, oldSideCount;
+		uint32_t ownershipTransitions, scopeViolations, pathMetadataMissing;
+		bool handoffPending;
+		// D4v2 observability (all zero when the v2 flag is off)
+		uint64_t qb2LeaseExpireNs, qb2RequestedBps, qb2AppliedBoostBps;
+		uint32_t qb2VetoReason;
+		uint64_t qb2QLowBytes, qb2QHighBytes, qb2QRedBytes, qb2QAbsBytes;
+		uint64_t steadyIncastTargetWire, steadyBackgroundWire;
+		uint64_t steadyInputBudgetBps, steadyReturnedTargetSumBps;
+	};
+	static bool GetCbapQcStateForAudit(uint32_t linkId, CbapQcSnapshot *out);
 	static void ConfigureCbap(const CbapConfig &config,
 			const std::vector<BopMultilinkLink> &links,
 			const std::map<uint32_t, std::vector<uint32_t> > &flowPaths);
@@ -1077,6 +1226,44 @@ public:
 		CBAP_QPHASE_SYNC_BURST = 0,
 		CBAP_QPHASE_NORMAL = 1
 	};
+	// Per-QP pending actuation ledger.  The controller previously used the
+	// SENDER pacing sum as if it were the bottleneck ARRIVAL rate; measured
+	// consequence was a 3.97 G gap (sender 6.6 G while the bottleneck still
+	// received 10.57 G of old-rate packets), which is what drove the queue
+	// 128,329 B past Q_abs.  Arrival must be predicted with a safe envelope
+	// until a command can possibly have taken effect.
+	struct CbapQpLedger {
+		uint32_t generation;
+		uint64_t commandTimeNs;
+		uint64_t effectDeadlineNs;      // commandTimeNs + H_guard
+		uint64_t oldWireBps;            // arrival rate before the command
+		uint64_t commandedWireBps;      // absolute target, never a delta
+		uint64_t senderEffectiveWireBps;
+		uint64_t predictedArrivalWireBps;
+		uint64_t minRatePayloadBps;
+		uint64_t wirePacketBytes;
+		uint64_t payloadPacketBytes;
+		bool pendingUp;
+		bool pendingDown;
+		bool ownsRate;                  // steered by the controller
+		// inFloor: must be guaranteed MIN_RATE.  A superset of ownsRate --
+		// the background old-side flow is inFloor but never steered.
+		bool inFloor;
+		bool exitRecoveryPending;
+		// Link membership and generation captured AT ownership acquisition, so
+		// a later path-metadata loss cannot silently change who is owned.
+		uint32_t generationId;
+		uint32_t linkId;
+		CbapQpLedger()
+			: generation(0), commandTimeNs(0), effectDeadlineNs(0),
+			  oldWireBps(0), commandedWireBps(0),
+			  senderEffectiveWireBps(0), predictedArrivalWireBps(0),
+			  minRatePayloadBps(0), wirePacketBytes(0),
+			  payloadPacketBytes(0), pendingUp(false), pendingDown(false),
+			  ownsRate(false), inFloor(false),
+			  exitRecoveryPending(false),
+			  generationId(0), linkId(0) {}
+	};
 	struct CbapLinkRuntime {
 		BopMultilinkLink config;
 		bool initialized;
@@ -1087,8 +1274,129 @@ public:
 		uint32_t clearStableEpochs;
 		uint64_t previousEffectiveCapacityBps;
 		uint64_t plannerCapacityBps;
+		// --- split of plannerCapacityBps's two former responsibilities -----
+		// plannerCapacityBps used to be BOTH the frozen admission baseline and
+		// the live tracking capacity, so ADMISSION_HOLD froze the queue
+		// controller's boost along with the admission plan.  These separate
+		// them: the baseline stays frozen for the generation, the control delta
+		// is refreshed every epoch.  Payload domain, like the allocator.
+		uint64_t admissionBaseCapacityBps;
+		int64_t controlDeltaBps;
+		uint64_t effectivePlannerBudgetBps;
+		uint64_t lastUnallocatedDeltaBps;
+		uint32_t lastClampReason;      // 0 none, 1 floor, 2 min_rate, 3 cap
+		// Per-epoch record of what the progressive fill actually did, written
+		// at the call site and read by the audit row in the same epoch.
+		uint32_t lastFillInvoked;
+		uint32_t lastActiveControlQps;
+		uint64_t lastInputBudgetBps;
+		uint64_t lastReturnedTargetSumBps;
+		uint32_t lastSkipReason;
+		uint32_t lastExclScope;
+		uint32_t lastExclFinished;
+		uint32_t lastExclWrongGeneration;
+		uint32_t lastExclMissingPath;
+		uint32_t lastFloorSetCount;
+		uint32_t lastBackgroundInControl;
+		uint64_t lastSteadyTotalTargetWire;
+		uint64_t lastSteadyIncastTargetWire;
+		uint64_t lastMeasuredBackgroundWire;
 		uint64_t rootDetectTimeNs;
 		// --- queueing-delay credit state (diagnostic + phase latch) --------
+		// Queue-controller state, per link.  boost_effective PERSISTS until a
+		// new absolute target replaces it: it does not expire with H_guard and
+		// never reverts to C.
+		uint64_t qcBoostEffectiveBps;
+		uint64_t qcBoostCommandedBps;   // the single pending absolute target
+		uint64_t qcPendingGeneration;   // 0 = none pending
+		uint64_t qcDrainTargetBps;
+		// --- D4v2 state (audit + lease; zero and inert when flag off) ------
+		// veto codes: 0 none, 1 boost vetoed (Q_pred past Q_red), 2 boost
+		// clamped to Q_red headroom, 3 lease expired, 5 RED zone forced.
+		uint64_t qb2LeaseExpireNs;
+		uint32_t qb2VetoReason;
+		uint64_t qb2RequestedBps;      // law value before veto/clamp
+		uint64_t qb2AppliedBoostBps;   // boost the capWire actually consumed
+		uint64_t qb2QLowBytes;         // derived band bounds, exported for
+		uint64_t qb2QHighBytes;        // the trace manifest
+		uint64_t qb2QRedBytes;
+		uint64_t qb2QAbsBytes;
+		uint64_t qcGenerationCounter;
+		uint64_t qcCommandTimeNs;       // when the pending target was issued
+		uint32_t qcZone;                // 0 GREEN, 1 YELLOW, 2 RED
+		uint64_t qcGuardExceeded;       // observed H_eff > H_guard, must stay 0
+		uint32_t qcActiveSenders;       // census used for the margin
+		// Protected QP set for this controller generation: every QP
+		// still present in the rate target/effective vector, i.e. one
+		// that would actually receive this command.  Membership is NOT
+		// "did it happen to send this epoch" -- a paced flow between
+		// packets is still protected.  Removed only on completion,
+		// reclaim or handoff; cleared when the generation ends.
+		std::set<uint32_t> qcProtectedQps;
+		uint64_t qcFloorBps;            // sum of protected minimum rates
+		uint64_t qcDrainMaxBps;         // C - floorBps
+		// Actuation ledger, per item 4.
+		uint64_t qcExpectedEffectTimeNs;
+		uint64_t qcActualEffectTimeNs;
+		uint64_t qcRBeforeCommandBps;
+		uint64_t qcRCommandedBps;
+		uint64_t qcREffectiveBps;
+		uint64_t qcRPendingBps;
+		uint64_t qcPendingExcessBytes;
+		uint64_t qcInFlightArrivalBytes;
+		uint64_t qcInvariantViolations;
+		uint64_t qcExclInactive, qcExclNoQp, qcExclOffPath;
+		// REMOVED: qcBackgroundFloorBps.  It double-counted the background
+		// flow, which is already a member of qcProtectedQps -- 65 members
+		// plus one extra gave 6.600 G where 65 unique QPs give 6.500 G
+		// payload.  The floor is now computed only from the unique set.
+		std::map<uint32_t, CbapQpLedger> qcLedger;
+		// --- explicit ownership lifecycle (defect B) --------------------
+		// controllerOwnsRates is NOT "the ledger is non-empty".  It is true
+		// only between the admission of a controlled batch and that batch's
+		// authoritative drain/handoff, with all pending commands closed.
+		uint32_t qcActiveGenerationId;   // batchId of the owned batch, 0 = none
+		bool qcOwnsRates;                // controllerOwnsRates
+		bool qcHandoffPending;           // batch done, pending commands closing
+		uint32_t qcOwnedMemberCount;     // owned QPs in the active generation
+		// --- defect C: THREE distinct sets, never conflated ---------------
+		// floorProtectedQps: every live CBAP flow on this link that must be
+		// guaranteed MIN_RATE -- the background old-side flow included.  It
+		// bounds DRAIN_MAX and is independent of who is being steered.
+		// newGenerationQps: the newest batch only; the boost denominator.
+		// oldSideQps: live flows outside the newest batch (the background
+		// flow), whose release semantics stay in
+		// ReplanCbapSbaMigrationTargets.
+		std::set<uint32_t> qcFloorProtectedQps;
+		std::set<uint32_t> qcNewGenerationQps;
+		std::set<uint32_t> qcOldSideQps;
+		uint32_t qcFloorCount, qcNewGenCount, qcOldSideCount;
+		uint32_t qcLedgerCount;          // ledger size, for GC/audit only
+		uint64_t qcOwnershipEnterNs, qcOwnershipExitNs;
+		uint32_t qcOwnershipTransitions; // must be exactly 1 per batch
+		uint32_t qcScopeViolations;      // command emitted while !ownsRates
+		uint32_t qcPathMetadataMissing;  // PATH_METADATA_MISSING_AFTER_OWNERSHIP
+		bool qcExitRecoveryPending;
+		uint64_t qcFloorWireBps;
+		uint64_t qcFloorPayloadBps;
+		uint64_t qcDrainMaxWireBps;
+		uint64_t qcArrivalSafeWireBps;
+		uint64_t qcSenderEffectiveWireBps;
+		uint64_t qcServedWireBps;
+		uint64_t qcQ0Bytes;             // the ONE queue sample for this epoch
+		uint64_t qcEpochId;
+		uint64_t qcDuplicateQpCount;
+		uint64_t qcPrefixMaxIndex;
+		uint32_t qcPeakActiveSenders;   // high-water mark for the drain floor   // DIAGNOSTIC ONLY, not the floor
+		uint64_t qcQStopBytes;          // last Q_stop
+		uint64_t qcQSafeBytes;          // last Q_safe
+		uint64_t qcQSafeOverAbs;        // times Q_safe exceeded Q_abs
+		uint32_t qcBandInvalid;         // boundary ordering check failed
+		bool qcInRed;                   // RED latch, exits below Q_high
+		uint64_t qcPendingEtaNs;        // when the pending command takes effect
+		uint64_t qcDrainCommandedBps;   // pending drain half of the signed target
+		bool qcDescending;              // a lowering command is in flight
+		bool qcRearmRequired;           // positive boost locked out until rearm
 		CbapQueuePhase queuePhase;
 		// True once the queue has actually risen above the normal bound, i.e.
 		// the synchronous startup burst has been observed.  Without this the
@@ -1105,6 +1413,48 @@ public:
 			: initialized(false), overloadEpochs(0), growthEpochs(0),
 			  clearStableEpochs(0), previousEffectiveCapacityBps(0),
 			  plannerCapacityBps(0), rootDetectTimeNs(0),
+			  admissionBaseCapacityBps(0), controlDeltaBps(0),
+			  effectivePlannerBudgetBps(0), lastUnallocatedDeltaBps(0),
+			  lastClampReason(0), lastFillInvoked(0),
+			  lastActiveControlQps(0), lastInputBudgetBps(0),
+			  lastReturnedTargetSumBps(0), lastSkipReason(0),
+			  lastExclScope(0), lastExclFinished(0),
+			  lastExclWrongGeneration(0), lastExclMissingPath(0),
+			  lastFloorSetCount(0), lastBackgroundInControl(0),
+			  lastSteadyTotalTargetWire(0),
+			  lastSteadyIncastTargetWire(0),
+			  lastMeasuredBackgroundWire(0),
+			  qcBoostEffectiveBps(0), qcBoostCommandedBps(0),
+			  qcPendingGeneration(0), qcDrainTargetBps(0),
+			  qb2LeaseExpireNs(0), qb2VetoReason(0), qb2RequestedBps(0),
+			  qb2AppliedBoostBps(0), qb2QLowBytes(0), qb2QHighBytes(0),
+			  qb2QRedBytes(0), qb2QAbsBytes(0),
+			  qcGenerationCounter(0), qcCommandTimeNs(0), qcZone(0),
+			  qcGuardExceeded(0), qcActiveSenders(0),
+			  qcFloorBps(0), qcDrainMaxBps(0),
+			  qcExpectedEffectTimeNs(0), qcActualEffectTimeNs(0),
+			  qcRBeforeCommandBps(0), qcRCommandedBps(0),
+			  qcREffectiveBps(0), qcRPendingBps(0),
+			  qcPendingExcessBytes(0), qcInFlightArrivalBytes(0),
+			  qcInvariantViolations(0), qcExclInactive(0),
+			  qcExclNoQp(0), qcExclOffPath(0),
+			  qcActiveGenerationId(0), qcOwnsRates(false),
+			  qcHandoffPending(false), qcOwnedMemberCount(0),
+			  qcFloorCount(0), qcNewGenCount(0), qcOldSideCount(0),
+			  qcLedgerCount(0), qcOwnershipEnterNs(0),
+			  qcOwnershipExitNs(0), qcOwnershipTransitions(0),
+			  qcScopeViolations(0), qcPathMetadataMissing(0),
+			  qcExitRecoveryPending(false),
+			  qcFloorWireBps(0), qcFloorPayloadBps(0),
+			  qcDrainMaxWireBps(0), qcArrivalSafeWireBps(0),
+			  qcSenderEffectiveWireBps(0), qcServedWireBps(0),
+			  qcQ0Bytes(0), qcEpochId(0), qcDuplicateQpCount(0),
+			  qcPrefixMaxIndex(0),
+			  qcPeakActiveSenders(0), qcQStopBytes(0),
+			  qcQSafeBytes(0), qcQSafeOverAbs(0),
+			  qcBandInvalid(0), qcInRed(false),
+			  qcPendingEtaNs(0), qcDrainCommandedBps(0),
+			  qcDescending(false), qcRearmRequired(false),
 			  queuePhase(CBAP_QPHASE_SYNC_BURST), syncBurstObserved(false),
 			  qSyncFloorBytes(0),
 			  qHardStartupBytes(0), qHardNormalBytes(0),
@@ -1117,6 +1467,14 @@ public:
 	static uint64_t ComputeDelayCreditBudget(CbapLinkRuntime &runtime,
 		uint64_t queueBytes, uint32_t newFlowCount, uint64_t nowNs,
 		uint32_t epoch, CbapDelayCreditRecord *out);
+	// One control epoch of the queue-bounded controller.  Provably inert when
+	// queueControllerEnable is false (early return before any state change).
+	static void QueueControllerEpoch(CbapLinkRuntime &runtime,
+		uint64_t nowNs, uint64_t queueBytes, uint64_t rEffectiveBps,
+		uint64_t pendingExcessBytes, uint32_t activeSenders,
+		bool pfcSafe, uint64_t inFlightArrivalBytes,
+		uint64_t minRateBps);
+
 	struct CbapScopeBaseFlowRuntime {
 		Ptr<RdmaQueuePair> qp;
 		uint32_t flowId;
@@ -1169,6 +1527,32 @@ public:
 	static void ReplanCbapSbaMigrationTargets(uint64_t nowNs,
 			const char *reason);
 	static std::map<uint32_t, CbapFlowRuntime> s_cbapFlows;
+public:
+	// Telemetry only, read-only: emit one snapshot row per known CBAP QP at the
+	// current instant.  Reads s_cbapFlows and per-QP state; writes nothing.
+	// Identity is (node_id, qp_index); flow_id is reference only because
+	// crfm.flowId is assigned late and reads 0 beforehand.
+	static void CbapGapSnapshot(uint64_t gapId, uint32_t boundary);
+	// Item 1 observability helper.  Read-only with respect to the QP.
+	static void TagCbapRateRecord(CbapRateRecord &rec, Ptr<RdmaQueuePair> qp,
+		uint32_t kind, uint32_t ownerBefore);
+	// --- 2x2 diagnostic switches, both default OFF ----------------------
+	// Experiment instrumentation for the phase/rate causal test.  Not the
+	// paper controller.  Set from the config file; never from results.
+	static bool s_diagPhaseStagger;
+	static bool s_diagRateNormalize;
+	static uint64_t s_diagLinkCapacityBps;
+	// Stable per-QP rank for the phase offset: assigned once, in ascending
+	// (node_id, qp_index) order, so the offset cannot re-randomise per epoch.
+	static std::map<uint64_t, uint32_t> s_diagQpRank;
+	static uint32_t s_diagQpRankCount;
+	static uint32_t DiagQpRank(uint32_t nodeId, uint32_t qpIndex);
+	static uint64_t DiagPhaseOffsetNs(uint32_t nodeId, uint32_t qpIndex,
+		uint64_t intervalNs, uint32_t nQp);
+	// Restore the enclosing region's original access level.  This block sits
+	// inside an existing public: section, so closing with private: would demote
+	// every member declared after it.
+public:
 	static std::map<uint32_t, CbapScopeBaseFlowRuntime>
 		s_cbapScopeBaseFlows;
 	static std::map<uint32_t, CbapV20BatchRuntime> s_cbapV20Batches;

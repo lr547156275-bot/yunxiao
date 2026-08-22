@@ -320,6 +320,10 @@ public:
 		uint64_t bytesSentAtRelease;
 		uint64_t bytesAckedAtRelease;
 		uint64_t lastTxTimeNs;
+		// FLAG A bookkeeping: set once at release, never re-applied.
+		bool phaseSpreadApplied;
+		uint64_t phaseOffsetNs;
+		uint32_t phaseRank;
 		uint64_t lastPacketSeq;
 		uint64_t lastPacketWireBytes;
 		uint64_t lastFreshFeedbackNs;

@@ -136,6 +136,26 @@ string cbap_port_summary_file, cbap_admission_file;
 // can be compared without assuming they are the same quantity.  They are not:
 // PFC is evaluated per INGRESS port on ingress_bytes[], while CBAP samples the
 // EGRESS BEgressQueue of the bottleneck port.
+// --- queue-bounded controller (method D).  All default OFF/zero. -----------
+uint32_t cbap_queue_controller_enable = 0;
+double cbap_qc_soft_fraction = 0.5;      // preflight value, not a paper param
+// M_safe: measured prediction uncertainty + uncovered packet
+// granularity. Set from the measured residual, not guessed.
+uint64_t cbap_qc_safety_margin_bytes = 0;
+double cbap_qc_max_boost_ratio = 0.30;
+double cbap_qc_h_guard_us = 175.0;       // measured worst case, quantised
+double cbap_qc_app_hard_delay_us = 838.86;
+string cbap_qc_trace_file;
+static FILE *cbap_qc_trace_csv = NULL;
+// D4v2 controller trace + config (CBAP_QB2_*).  *_set flags enforce
+// fail-fast: enabling v2 without explicit values is a config error, never
+// a silent default.
+string cbap_qb2_trace_file;
+static FILE *cbap_qb2_trace_csv = NULL;
+static std::set<uint32_t> cbap_qb2_manifest_links;
+uint32_t cbap_qb2_enable = 0;
+double cbap_qb2_bmax_ratio = 0.0, cbap_qb2_qtarget_ratio = 0.0;
+uint32_t cbap_qb2_bmax_set = 0, cbap_qb2_qtarget_set = 0;
 string cbap_pfc_audit_file;
 static FILE *cbap_pfc_audit_csv = NULL;
 // Per-ingress-port PFC detail: every port that actually feeds the bottleneck
@@ -193,6 +213,12 @@ string cbap_eta_feasibility_file;
 // Queueing-delay credit.  All zero/off by default, so a scenario that does not
 // mention these keys keeps the strict sum(target) <= C planner exactly.
 uint32_t cbap_delay_credit_enable = 0;
+uint32_t cbap_hold_track_target = 0;
+uint32_t cbap_sba_steady_fill = 0;
+uint32_t cbap_steady_cap = 0;
+double cbap_steady_cap_fraction = 0.995;
+uint32_t cbap_queue_band = 0;          // CBAP_QUEUE_BAND_ENABLE, default off
+uint32_t cbap_phase_spread = 0;
 double cbap_queue_delay_target_us = 0.0;
 double cbap_queue_delay_hard_limit_us = 0.0;
 double cbap_credit_horizon_us = 0.0;
@@ -326,6 +352,8 @@ map<uint32_t, int64_t> multilink_group_predecessors;
 map<uint32_t, uint64_t> multilink_group_gaps;
 map<uint32_t, uint64_t> multilink_group_initial_releases;
 FILE *flow_summary_csv = NULL, *round_summary_csv = NULL;
+FILE *flow_timing_csv = NULL;
+std::string flow_timing_file;
 FILE *feedback_summary_csv = NULL, *controller_summary_csv = NULL;
 FILE *group_round_summary_csv = NULL, *flow_plan_csv = NULL;
 FILE *bop_qc_group_decisions_csv = NULL;
@@ -355,6 +383,49 @@ map<uint64_t,uint32_t> pfc_states;
 map<pair<uint32_t,uint32_t>,uint64_t> trace_last_tx, trace_last_ecn;
 set<uint32_t> selected_flow_set;
 set<pair<uint32_t,uint32_t> > selected_link_set;
+
+// --- pure-observation TX serialization recorder (acceptance only) ---------
+// Default OFF.  When TX_SERIALIZATION_TRACE_FILE is unset the callbacks are
+// never connected, no file is created, and the run is bit-identical to the
+// pre-recorder binary.
+#include "tx-serialization-recorder.h"
+// Multi-link successor.  The single-link header above is retained as
+// provenance (SUPERSEDED_SINGLE_LINK_RECORDER) and is no longer referenced.
+#include "tx-serialization-recorder-ml.h"
+#include "causal-telemetry.h"
+#include "sender-opportunity-telemetry.h"
+#include "gap-snapshot-telemetry.h"
+FILE *ns3::CausalQueueTrace::s_file = 0;
+std::vector<ns3::CausalQueueTrace::Key> ns3::CausalQueueTrace::s_link;
+uint64_t ns3::CausalQueueTrace::s_lo = 0;
+uint64_t ns3::CausalQueueTrace::s_hi = 0;
+uint64_t ns3::CausalQueueTrace::s_rows = 0;
+// CausalPacerTrace statics live in rdma-hw.cc (the library
+// that references them); defining them here would leave the
+// shared object with undefined references.
+string causal_queue_trace_file = "", causal_pacer_trace_file = "";
+string sender_opp_trace_file = "", sender_opp_trace_nodes = "";
+string gap_snapshot_trace_file = "";
+uint64_t gap_snapshot_max_rows = 400000;
+// Live gap detection state for the monitored bottleneck port.
+static bool gs_port_idle = false;
+static uint64_t gs_gap_id = 0;
+uint64_t causal_trace_start_ns = 0, causal_trace_end_ns = 0;
+FILE *ns3::TxSerializationRecorder::s_file = 0;
+uint32_t ns3::TxSerializationRecorder::s_nodeId = 0;
+uint32_t ns3::TxSerializationRecorder::s_ifIndex = 0;
+uint32_t ns3::TxSerializationRecorder::s_linkId = 0;
+uint64_t ns3::TxSerializationRecorder::s_windowStartNs = 0;
+uint64_t ns3::TxSerializationRecorder::s_windowEndNs = 0;
+uint64_t ns3::TxSerializationRecorder::s_recorded = 0;
+FILE *ns3::TxSerializationRecorderMl::s_file = 0;
+std::vector<ns3::TxSerializationRecorderMl::LinkKey>
+	ns3::TxSerializationRecorderMl::s_links;
+std::vector<uint64_t> ns3::TxSerializationRecorderMl::s_perLink;
+uint64_t ns3::TxSerializationRecorderMl::s_windowStartNs = 0;
+uint64_t ns3::TxSerializationRecorderMl::s_windowEndNs = 0;
+uint64_t ns3::TxSerializationRecorderMl::s_recorded = 0;
+string tx_serialization_trace_file = "";
 vector<RdmaHw::BopMultilinkLink> cbap_links;
 map<uint32_t, vector<uint32_t> > cbap_flow_paths;
 map<uint32_t, RdmaHw::BopMultilinkLink> cbap_link_by_id;
@@ -692,7 +763,51 @@ void ReadCbapInputs(){
 	config.initialReleaseRatio = cbap_initial_release_ratio;
 	// Microseconds in the config file, seconds in the model: convert once here
 	// so the control formulas never mix units.
+	config.queueControllerEnable = (cbap_queue_controller_enable != 0);
+	config.qcSoftFraction = cbap_qc_soft_fraction;
+	config.qcMaxBoostRatio = cbap_qc_max_boost_ratio;
+	config.qcHGuardS = cbap_qc_h_guard_us * 1e-6;
+	config.qcAppHardDelayS = cbap_qc_app_hard_delay_us * 1e-6;
+	config.qcOnWirePacketBytes = cbap_max_wire_packet_bytes;
+	config.qcPayloadPacketBytes = packet_payload_size;
+	config.qcSafetyMarginBytes = cbap_qc_safety_margin_bytes;
+	// Mutually exclusive: both scale the same capacity, so running them
+	// together would double-count the congestion response.  The credit path is
+	// EXPERIMENTAL/NOT VALID and must not be revived alongside the controller.
+	if (cbap_queue_controller_enable != 0 && cbap_delay_credit_enable != 0)
+		ConfigError("CBAP_QUEUE_CONTROLLER_ENABLE and "
+			"CBAP_DELAY_CREDIT_ENABLE are mutually exclusive");
 	config.delayCreditEnable = (cbap_delay_credit_enable != 0);
+	config.holdTrackTarget = (cbap_hold_track_target != 0);
+	config.sbaSteadyFill = (cbap_sba_steady_fill != 0);
+	config.steadyCapEnable = (cbap_steady_cap != 0);
+	config.steadyCapFraction = cbap_steady_cap_fraction;
+	config.queueBandEnable = (cbap_queue_band != 0);
+	config.queueBandV2Enable = (cbap_qb2_enable != 0);
+	config.qb2BmaxRatio = cbap_qb2_bmax_ratio;
+	config.qb2QTargetRatio = cbap_qb2_qtarget_ratio;
+	// Fail-fast: v2 must be fully and consistently specified.  A screening
+	// cell silently running with BMAX=0 would be indistinguishable from
+	// "boost has no effect", so missing values are a hard config error.
+	if (cbap_qb2_enable != 0){
+		if (cbap_queue_band != 0)
+			ConfigError("CBAP_QUEUE_BAND_V2_ENABLE and CBAP_QUEUE_BAND_ENABLE "
+				"are mutually exclusive");
+		if (cbap_steady_cap == 0)
+			ConfigError("CBAP_QUEUE_BAND_V2_ENABLE requires "
+				"CBAP_STEADY_CAP_ENABLE 1 (D4v2 = D3 + top-up)");
+		if (!cbap_qb2_bmax_set ||
+				!(cbap_qb2_bmax_ratio > 0.0 && cbap_qb2_bmax_ratio <= 0.10))
+			ConfigError("CBAP_QB2_BMAX_RATIO missing or outside (0, 0.10] "
+				"(the old +0.30C policy is deliberately unreachable)");
+		if (!cbap_qb2_qtarget_set ||
+				!(cbap_qb2_qtarget_ratio > 0.0 && cbap_qb2_qtarget_ratio <= 0.5))
+			ConfigError("CBAP_QB2_QTARGET_RATIO missing or outside (0, 0.5]");
+		if (cbap_qb2_trace_file.empty())
+			ConfigError("CBAP_QB2_TRACE_FILE required when "
+				"CBAP_QUEUE_BAND_V2_ENABLE 1");
+	}
+	config.phaseSpreadEnable = (cbap_phase_spread != 0);
 	config.queueDelayTargetS = cbap_queue_delay_target_us * 1e-6;
 	config.queueDelayHardLimitS = cbap_queue_delay_hard_limit_us * 1e-6;
 	config.creditHorizonS = cbap_credit_horizon_us * 1e-6;
@@ -704,6 +819,11 @@ void ReadCbapInputs(){
 	config.migrationRiseSkew = cbap_migration_rise_skew;
 	config.migrationMaxRtt = cbap_migration_max_rtt;
 	config.migrationTrace = cbap_migration_trace;
+	std::cout << "CBAP_REALLOC_PARSED migration_enable=" << (cbap_migration_enable ? 1 : 0)
+		<< " core_initial_release=" << cbap_core_initial_release
+		<< " initial_release_ratio=" << cbap_initial_release_ratio
+		<< " migration_trace=" << (cbap_migration_trace ? 1 : 0) << std::endl;
+	fflush(stdout);
 	config.scenario = scenario_name;
 	config.algorithm = algorithm_name;
 	config.cbapVersion = cbap_version;
@@ -960,6 +1080,129 @@ static void CbapActuationAtBottleneck(Ptr<const Packet> original,
 		(unsigned long)(now - pend.commandNs), (unsigned long)ch.udp.seq);
 }
 
+// D4v2 controller trace: one row per control epoch per traced link, plus a
+// #MANIFEST comment line per link on the first valid sample so every run is
+// self-describing.  Column derivations:
+//   queue_predicted_bytes = Q_stop (prediction incl. pending envelope)
+//   pending_excess_bytes  = Q_stop - Q_current (predicted accumulation)
+//   service_wire_bps      = link line rate (work-conserving egress)
+//   aggregate_requested   = static cap fed to the fill (base + boost)
+//   aggregate_applied     = incast targets + measured background wire
+//   veto_reason: 0 none, 1 boost vetoed (Q_pred past Q_red), 2 clamped to
+//   Q_red headroom, 3 lease expired, 5 RED zone forced.
+static void SampleCbapQb2Trace(uint32_t linkId, uint64_t queueBytes,
+		uint64_t capacityBps){
+	if (!cbap_qb2_trace_csv)
+		return;
+	RdmaHw::CbapQcSnapshot qc;
+	if (!RdmaHw::GetCbapQcStateForAudit(linkId, &qc))
+		return;
+	if (qc.qb2QAbsBytes > 0 &&
+			cbap_qb2_manifest_links.insert(linkId).second){
+		fprintf(cbap_qb2_trace_csv,
+			"#MANIFEST,link_id=%u,steady_cap_fraction=%.6f,rho=%.6f,"
+			"bmax_ratio=%.6f,bmax_wire_bps=%.0f,qtarget_ratio=%.6f,"
+			"qtarget_bytes=%.0f,q_low=%lu,q_high=%lu,q_red=%lu,q_abs=%lu,"
+			"h_eff_us=%.3f,queue_band_v2=%u,queue_band_v1=%u,migration=%u,"
+			"steady_cap=%u,seed=%u\n",
+			linkId, cbap_steady_cap_fraction, cbap_rho,
+			cbap_qb2_bmax_ratio,
+			cbap_qb2_bmax_ratio * (double)capacityBps,
+			cbap_qb2_qtarget_ratio,
+			cbap_qb2_qtarget_ratio * (double)qc.qb2QAbsBytes,
+			(unsigned long)qc.qb2QLowBytes,
+			(unsigned long)qc.qb2QHighBytes,
+			(unsigned long)qc.qb2QRedBytes,
+			(unsigned long)qc.qb2QAbsBytes,
+			cbap_qc_h_guard_us, cbap_qb2_enable, cbap_queue_band,
+			cbap_migration_enable ? 1u : 0u, cbap_steady_cap, sim_seed);
+		printf("QB2_MANIFEST link=%u bmax_ratio=%.4f qtarget_ratio=%.4f "
+			"q_abs=%lu h_eff_us=%.3f\n", linkId, cbap_qb2_bmax_ratio,
+			cbap_qb2_qtarget_ratio, (unsigned long)qc.qb2QAbsBytes,
+			cbap_qc_h_guard_us);
+	}
+	const char *zone = qc.zone == 3 ? "RED" : (qc.zone == 2 ? "DRAIN" :
+		(qc.zone == 1 ? "HOLD" : "GREEN"));
+	const uint64_t pendingExcess = qc.qStopBytes > qc.q0Bytes ?
+		qc.qStopBytes - qc.q0Bytes : 0;
+	fprintf(cbap_qb2_trace_csv,
+		"%lu,%u,%u,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%s,%u,"
+		"%lu,%lu\n",
+		(unsigned long)Simulator::Now().GetTimeStep(),
+		qc.activeGenerationId,
+		qc.ownsRates ? 1u : 0u,
+		(unsigned long)qc.q0Bytes,
+		(unsigned long)qc.qStopBytes,
+		(unsigned long)pendingExcess,
+		(unsigned long)qc.arrivalSafeWireBps,
+		(unsigned long)capacityBps,
+		(unsigned long)qc.steadyIncastTargetWire,
+		(unsigned long)qc.qb2RequestedBps,
+		(unsigned long)qc.qb2AppliedBoostBps,
+		(unsigned long)qc.qb2LeaseExpireNs,
+		(unsigned long)qc.drainTargetBps,
+		(unsigned long)qc.steadyInputBudgetBps,
+		(unsigned long)(qc.steadyReturnedTargetSumBps +
+			qc.steadyBackgroundWire),
+		zone, qc.qb2VetoReason,
+		(unsigned long)qc.steadyBackgroundWire,
+		(unsigned long)qc.steadyReturnedTargetSumBps);
+}
+
+// Queue-controller trace.  Records every field item 9 requires so the two
+// preflight runs can be audited without re-deriving anything.
+static void SampleCbapQcTrace(uint32_t linkId, uint64_t queueBytes,
+		uint64_t capacityBps){
+	if (!cbap_qc_trace_csv)
+		return;
+	RdmaHw::CbapQcSnapshot qc;
+	if (!RdmaHw::GetCbapQcStateForAudit(linkId, &qc))
+		return;
+	const char *zone = qc.zone == 3 ? "RED" :
+		(qc.zone == 2 ? "YELLOW-DRAIN" :
+		 (qc.zone == 1 ? "YELLOW-HOLD" : "GREEN"));
+	const double sumR = (double)capacityBps + (double)qc.boostEffectiveBps -
+		(double)qc.drainTargetBps;
+	// q0 is the controller's OWN epoch sample; queueBytes read here is the
+	// NEXT sample and is reported separately as q_next. Pairing this row's
+	// Q_stop with q_next is what produced 3968 phantom "Q_stop < Q_current".
+	fprintf(cbap_qc_trace_csv,
+		"%lu,%u,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%.0f,%s,%lu,%lu,%lu,%lu,%lu,"
+		"%lu,%lu,%lu,%lu,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\n",
+		(unsigned long)Simulator::Now().GetTimeStep(), linkId,
+		(unsigned long)qc.epochId,
+		(unsigned long)qc.q0Bytes,
+		(unsigned long)queueBytes,
+		(unsigned long)qc.qStopBytes,
+		(unsigned long)qc.qSafeBytes,
+		(unsigned long)qc.boostCommandedBps,
+		(unsigned long)qc.boostEffectiveBps,
+		(unsigned long)qc.drainTargetBps,
+		sumR, zone,
+		(unsigned long)qc.pendingGeneration,
+		(unsigned long)qc.floorWireBps,
+		(unsigned long)qc.floorPayloadBps,
+		(unsigned long)qc.drainMaxWireBps,
+		(unsigned long)qc.arrivalSafeWireBps,
+		(unsigned long)qc.senderEffectiveWireBps,
+		(unsigned long)qc.duplicateQpCount,
+		(unsigned long)qc.invariantViolations,
+		(unsigned long)qc.prefixMaxIndex,
+		qc.protectedCount,
+		qc.ownsRates ? 1u : 0u,
+		qc.exitRecoveryPending ? 1u : 0u,
+		// defect C: the three sets, reported separately so the assertion
+		// floor=65 / newgen=64 / oldside=1 is checkable per epoch.
+		qc.floorCount,
+		qc.newGenCount,
+		qc.oldSideCount,
+		qc.ledgerCount,
+		// defect B lifecycle counters
+		qc.ownershipTransitions,
+		qc.scopeViolations,
+		qc.pathMetadataMissing);
+}
+
 // Sample every input of the real PFC predicate on the bottleneck switch.
 // Read-only: uses the same accessors CheckShouldPause uses, changes nothing.
 static void SampleCbapPfcAudit(uint32_t linkId, uint64_t egressQueueBytes){
@@ -1078,6 +1321,8 @@ RdmaHw::CbapPortSnapshot ReadCbapPort(uint32_t linkId){
 	snapshot.queueBytes =
 		sw->GetEgressQueueBytes(definition->second.ifIndex);
 	SampleCbapPfcAudit(linkId, snapshot.queueBytes);
+	SampleCbapQcTrace(linkId, snapshot.queueBytes, snapshot.capacityBps);
+	SampleCbapQb2Trace(linkId, snapshot.queueBytes, snapshot.capacityBps);
 	snapshot.ingressBytes =
 		sw->GetRxBytes(definition->second.ifIndex);
 	snapshot.txBytes = sw->GetTxBytes(definition->second.ifIndex);
@@ -1176,7 +1421,9 @@ void WriteCbapSummaries(){
 			"phase_after,old_rate_bps,target_rate_bps,new_rate_bps,"
 			"reason,root_id,feedback_age_ns,credit_remaining_bytes,"
 			"protection_floor_bps,rebalance_start_ns,rebalance_end_ns,"
-			"stale_feedback,capacity_valid\n";
+			"stale_feedback,capacity_valid,"
+			"role,owner_before,owner_after,side,actuation_kind,"
+			"applied_rate_after_bps\n";
 		const vector<RdmaHw::CbapRateRecord> &rows =
 			RdmaHw::GetCbapRateRecords();
 		for (uint32_t i = 0; i < rows.size(); ++i){
@@ -1189,6 +1436,10 @@ void WriteCbapSummaries(){
 				<< r.feedbackAgeNs << ',' << r.creditRemainingBytes << ','
 				<< r.protectionFloorBps << ',' << r.rebalanceStartNs << ','
 				<< r.rebalanceEndNs << ',' << r.staleFeedback << ',' << r.capacityValid
+				<< ',' << r.role << ',' << r.ownerBefore
+				<< ',' << r.ownerAfter << ',' << r.side
+				<< ',' << r.actuationKind
+				<< ',' << r.appliedRateAfterBps
 				<< '\n';
 		}
 	}
@@ -1201,7 +1452,18 @@ void WriteCbapSummaries(){
 			"flows_below_legacy_floor,floor_clamp_count,"
 			"rate_clamp_delta_sum_bps,zero_grant_flow_count,"
 			"paused_zero_grant_count,applied_capacity_excess_bps,"
-			"applied_capacity_violation,actual_arrival_excess_bps\n";
+			"applied_capacity_violation,actual_arrival_excess_bps,"
+			"base_capacity_bps,boost_effective_bps,"
+			"drain_effective_bps,effective_planner_budget_bps,"
+			"arrival_rate_bps,served_rate_bps,"
+			"unallocated_delta_bps,clamp_reason,"
+			"admission_grant_sum_bps,planner_target_sum_bps,"
+			"full_unallocated_bps,unallocated_reason,"
+			"explicit_fixed_reserved_bps,fill_invoked,"
+			"active_control_qps,input_budget_bps,"
+			"returned_target_sum_bps,skip_reason,"
+			"excl_scope,excl_finished,excl_wrong_generation,"
+			"excl_missing_path,floor_set_count,background_in_control\n";
 		const vector<RdmaHw::CbapAppliedRateAuditRecord> &rows =
 			RdmaHw::GetCbapAppliedRateAuditRecords();
 		for (uint32_t i = 0; i < rows.size(); ++i){
@@ -1219,7 +1481,31 @@ void WriteCbapSummaries(){
 				<< r.pausedZeroGrantCount << ','
 				<< r.appliedCapacityExcessBps << ','
 				<< r.appliedCapacityViolation << ','
-				<< r.actualArrivalExcessBps << '\n';
+				<< r.actualArrivalExcessBps
+				<< "," << r.baseCapacityBps
+				<< "," << r.boostEffectiveBps
+				<< "," << r.drainEffectiveBps
+				<< "," << r.effectivePlannerBudgetBps
+				<< "," << r.arrivalRateBps
+				<< "," << r.servedRateBps
+				<< "," << r.unallocatedDeltaBps
+				<< "," << r.clampReason
+				<< "," << r.admissionGrantSumBps
+				<< "," << r.plannerTargetSumBps
+				<< "," << r.fullUnallocatedBps
+				<< "," << r.unallocatedReason
+				<< "," << r.explicitFixedReservedBps
+				<< "," << r.fillInvoked
+				<< "," << r.activeControlQps
+				<< "," << r.inputBudgetBps
+				<< "," << r.returnedTargetSumBps
+				<< "," << r.skipReason
+				<< "," << r.exclScope
+				<< "," << r.exclFinished
+				<< "," << r.exclWrongGeneration
+				<< "," << r.exclMissingPath
+				<< "," << r.floorSetCount
+				<< "," << r.backgroundInControl << '\n';
 		}
 	}
 	if (!cbap_delay_credit_file.empty()){
@@ -1910,6 +2196,65 @@ void UpdateRoundPeakQueue(uint64_t queueBytes){
 	}
 }
 
+static map<uint32_t, Ptr<QbbNetDevice> > causal_slot_dev;
+static Ptr<QbbNetDevice> gs_dev;
+
+// GAP START: a transmission finished and the egress queue is empty, so the wire
+// is about to go idle.  Read-only: only GetNBytesTotal() is consulted.
+static void GapSnapOnTxEnd(Ptr<const Packet> p){
+	if (!ns3::GapSnapshotTrace::IsOpen() || gs_dev == 0)
+		return;
+	if (gs_dev->GetQueue()->GetNBytesTotal() == 0 && !gs_port_idle){
+		gs_port_idle = true;
+		gs_gap_id = ns3::GapSnapshotTrace::NextGapId();
+		ns3::RdmaHw::CbapGapSnapshot(gs_gap_id, 0);
+	}
+}
+// GAP END: the next transmission starts.
+static void GapSnapOnTxBegin(Ptr<const Packet> p){
+	if (!ns3::GapSnapshotTrace::IsOpen())
+		return;
+	if (gs_port_idle){
+		gs_port_idle = false;
+		ns3::RdmaHw::CbapGapSnapshot(gs_gap_id, 1);
+	}
+}
+
+
+// Read the queue depth AT THE EVENT INSTANT.  BeqEnqueue fires AFTER the
+// counter is incremented; BeqDequeue fires BEFORE it is decremented.  The
+// tracer records both interpretations explicitly.
+static uint64_t CausalQBytes(uint32_t slot){
+	map<uint32_t, Ptr<QbbNetDevice> >::const_iterator it =
+		causal_slot_dev.find(slot);
+	if (it == causal_slot_dev.end() || it->second == 0)
+		return 0;
+	return it->second->GetQueue()->GetNBytesTotal();
+}
+static bool CausalBusy(uint32_t slot){
+	map<uint32_t, Ptr<QbbNetDevice> >::const_iterator it =
+		causal_slot_dev.find(slot);
+	if (it == causal_slot_dev.end() || it->second == 0)
+		return false;
+	return !it->second->GetQueue()->GetNBytesTotal() ? false : true;
+}
+static void CausalQueueOnEnqueue(uint32_t slot, Ptr<const Packet> p,
+		uint32_t qIndex){
+	ns3::CausalQueueTrace::OnEnqueue(slot, CausalQBytes(slot), 0, p, qIndex,
+		CausalBusy(slot), 0);
+}
+static void CausalQueueOnDequeue(uint32_t slot, Ptr<const Packet> p,
+		uint32_t qIndex){
+	ns3::CausalQueueTrace::OnDequeue(slot, CausalQBytes(slot), 0, p, qIndex,
+		CausalBusy(slot), 0);
+}
+static void CausalQueueOnTxBegin(uint32_t slot, Ptr<const Packet> p){
+	ns3::CausalQueueTrace::OnTxBegin(slot, CausalQBytes(slot), 0, p);
+}
+static void CausalQueueOnTxEnd(uint32_t slot, Ptr<const Packet> p){
+	ns3::CausalQueueTrace::OnTxEnd(slot, CausalQBytes(slot), 0, p);
+}
+
 void LinkTraceTick(){
 	uint64_t lim=(uint64_t)crfm_max_trace_file_mb*1024*1024;
 	bool record = !bop_multilink_enable ||
@@ -2215,6 +2560,24 @@ void qp_finish(FILE* fout, Ptr<RdmaQueuePair> q){//一条流/QP发完之后的�
 				q->sip.Get(),q->dip.Get(),q->sport,q->m_pg,sid,did,q->m_size,
 				st,fin,fct,q->snd_una,q->m_size*8.0/fct,q->retxBytes,q->retxEvents);
 			fflush(flow_summary_csv);
+		}
+		if(flow_timing_csv){
+			uint64_t readyNs=0, releaseNs=0;
+			if(q->crfm.enabled && !q->crfm.rounds.empty()){
+				releaseNs=q->crfm.rounds.front().releaseTimeNs;
+				uint64_t r=0;
+				if(RdmaHw::GetCbapScopeApplicationReadyNs(
+						q->crfm.rounds.front().roundGroupId,r))
+					readyNs=r;
+			}
+			fprintf(flow_timing_csv,"%s,%s,%u,%u,%u,%u,%lu,%lu,%lu,%lu,%lu,%lu,%lu\n",
+				scenario_name.c_str(),algorithm_name.c_str(),sim_seed,
+				experiment_flows[i].id,sid,did,q->m_size,
+				(uint64_t)q->startTime.GetNanoSeconds(),
+				q->cbap.firstDataTxNs,
+				(uint64_t)Simulator::Now().GetNanoSeconds(),
+				readyNs,releaseNs,q->snd_una);
+			fflush(flow_timing_csv);
 		}
 		break;
 	}
@@ -3154,6 +3517,39 @@ int main(int argc, char *argv[])
 				conf>>cbap_port_summary_file;
 			else if(key.compare("CBAP_PFC_AUDIT_FILE")==0)
 				conf>>cbap_pfc_audit_file;
+			else if(key.compare("CBAP_QUEUE_CONTROLLER_ENABLE")==0)
+				conf>>cbap_queue_controller_enable;
+			else if(key.compare("CBAP_QC_SOFT_FRACTION")==0)
+				conf>>cbap_qc_soft_fraction;
+			else if(key.compare("CBAP_QC_SAFETY_MARGIN_BYTES")==0)
+				conf>>cbap_qc_safety_margin_bytes;
+			else if(key.compare("CBAP_QC_MAX_BOOST_RATIO")==0)
+				conf>>cbap_qc_max_boost_ratio;
+			else if(key.compare("CBAP_QC_H_GUARD_US")==0)
+				conf>>cbap_qc_h_guard_us;
+			else if(key.compare("CBAP_QC_APP_HARD_DELAY_US")==0)
+				conf>>cbap_qc_app_hard_delay_us;
+			else if(key.compare("CBAP_QC_TRACE_FILE")==0)
+				conf>>cbap_qc_trace_file;
+			else if(key.compare("CBAP_QUEUE_BAND_V2_ENABLE")==0){
+				conf>>cbap_qb2_enable;
+				std::cout << "CBAP_QUEUE_BAND_V2_ENABLE\t\t"
+					<< cbap_qb2_enable << "\n";
+			}
+			else if(key.compare("CBAP_QB2_BMAX_RATIO")==0){
+				conf>>cbap_qb2_bmax_ratio;
+				cbap_qb2_bmax_set = 1;
+				std::cout << "CBAP_QB2_BMAX_RATIO\t\t"
+					<< cbap_qb2_bmax_ratio << "\n";
+			}
+			else if(key.compare("CBAP_QB2_QTARGET_RATIO")==0){
+				conf>>cbap_qb2_qtarget_ratio;
+				cbap_qb2_qtarget_set = 1;
+				std::cout << "CBAP_QB2_QTARGET_RATIO\t\t"
+					<< cbap_qb2_qtarget_ratio << "\n";
+			}
+			else if(key.compare("CBAP_QB2_TRACE_FILE")==0)
+				conf>>cbap_qb2_trace_file;
 			else if(key.compare("CBAP_PFC_PORTS_FILE")==0)
 				conf>>cbap_pfc_ports_file;
 			else if(key.compare("CBAP_ACTUATION_FILE")==0)
@@ -3316,6 +3712,79 @@ int main(int argc, char *argv[])
 			else if(key.compare("ROUND_MODE")==0) conf>>round_mode;
 			else if(key.compare("ROUND_TRACE_SELECTED_FLOWS")==0) conf>>round_selected_flow_ids;
 			else if(key.compare("ROUND_TRACE_SELECTED_LINKS")==0) conf>>round_selected_link_ids;
+			else if(key.compare("CBAP_PHASE_SPREAD_ENABLE")==0){
+				conf>>cbap_phase_spread;
+				std::cout << "CBAP_PHASE_SPREAD_ENABLE\t\t" << cbap_phase_spread << "\n";
+			}
+			else if(key.compare("CBAP_STEADY_CAP_FRACTION")==0){
+				conf>>cbap_steady_cap_fraction;
+				std::cout << "CBAP_STEADY_CAP_FRACTION\t\t"
+					<< cbap_steady_cap_fraction << "\n";
+			}
+			else if(key.compare("CBAP_QUEUE_BAND_ENABLE")==0){
+				conf>>cbap_queue_band;
+				std::cout << "CBAP_QUEUE_BAND_ENABLE\t\t" << cbap_queue_band << "\n";
+			}
+			else if(key.compare("CBAP_STEADY_CAP_ENABLE")==0){
+				conf>>cbap_steady_cap;
+				std::cout << "CBAP_STEADY_CAP_ENABLE\t\t" << cbap_steady_cap << "\n";
+			}
+			else if(key.compare("CBAP_SBA_STEADY_FILL")==0){
+				conf>>cbap_sba_steady_fill;
+				std::cout << "CBAP_SBA_STEADY_FILL\t\t"
+					<< cbap_sba_steady_fill << "\n";
+			}
+			else if(key.compare("CBAP_HOLD_TRACK_TARGET")==0){
+				conf>>cbap_hold_track_target;
+				std::cout << "CBAP_HOLD_TRACK_TARGET\t\t"
+					<< cbap_hold_track_target << "\n";
+			}
+			else if(key.compare("CBAP_DIAG_PHASE_STAGGER")==0){
+				uint32_t v; conf>>v;
+				RdmaHw::s_diagPhaseStagger = (v != 0);
+				std::cout << "CBAP_DIAG_PHASE_STAGGER\t\t" << v << "\n";
+			}
+			else if(key.compare("CBAP_DIAG_RATE_NORMALIZE")==0){
+				uint32_t v; conf>>v;
+				RdmaHw::s_diagRateNormalize = (v != 0);
+				std::cout << "CBAP_DIAG_RATE_NORMALIZE\t\t" << v << "\n";
+			}
+			else if(key.compare("GAP_SNAPSHOT_TRACE_FILE")==0){
+				conf>>gap_snapshot_trace_file;
+				std::cout << "GAP_SNAPSHOT_TRACE_FILE\t\t"
+					<< gap_snapshot_trace_file << "\n";
+			}
+			else if(key.compare("GAP_SNAPSHOT_MAX_ROWS")==0)
+				conf>>gap_snapshot_max_rows;
+			else if(key.compare("SENDER_OPP_TRACE_FILE")==0){
+				conf>>sender_opp_trace_file;
+				std::cout << "SENDER_OPP_TRACE_FILE\t\t"
+					<< sender_opp_trace_file << "\n";
+			}
+			else if(key.compare("SENDER_OPP_TRACE_NODES")==0){
+				conf>>sender_opp_trace_nodes;
+				std::cout << "SENDER_OPP_TRACE_NODES\t\t"
+					<< sender_opp_trace_nodes << "\n";
+			}
+			else if(key.compare("CAUSAL_QUEUE_TRACE_FILE")==0){
+				conf>>causal_queue_trace_file;
+				std::cout << "CAUSAL_QUEUE_TRACE_FILE\t\t"
+					<< causal_queue_trace_file << "\n";
+			}
+			else if(key.compare("CAUSAL_PACER_TRACE_FILE")==0){
+				conf>>causal_pacer_trace_file;
+				std::cout << "CAUSAL_PACER_TRACE_FILE\t\t"
+					<< causal_pacer_trace_file << "\n";
+			}
+			else if(key.compare("CAUSAL_TRACE_START_NS")==0)
+				conf>>causal_trace_start_ns;
+			else if(key.compare("CAUSAL_TRACE_END_NS")==0)
+				conf>>causal_trace_end_ns;
+			else if(key.compare("TX_SERIALIZATION_TRACE_FILE")==0){
+				conf>>tx_serialization_trace_file;
+				std::cout << "TX_SERIALIZATION_TRACE_FILE\t\t"
+					<< tx_serialization_trace_file << "\n";
+			}
 			else if(key.compare("CRFM_TRACE_SAMPLE_US")==0) conf>>crfm_trace_sample_us;
 			else if(key.compare("CRFM_MAX_TRACE_FILE_MB")==0) conf>>crfm_max_trace_file_mb;
 			else if(key.compare("CRFM_MAX_TRACE_TOTAL_MB")==0) conf>>crfm_max_trace_total_mb;
@@ -3345,6 +3814,7 @@ int main(int argc, char *argv[])
 					else if(key.compare("BOP_QB_MAX_PACKET_MARGIN")==0) conf>>bop_qb_max_packet_margin;
 					else if(key.compare("BOP_QB_MAX_ENABLE_PHASE_STAGGER")==0) conf>>bop_qb_max_enable_phase_stagger;
 				else if(key.compare("FLOW_SUMMARY_FILE")==0) conf>>flow_summary_file;
+			else if(key.compare("FLOW_TIMING_FILE")==0) conf>>flow_timing_file;
 			else if(key.compare("ROUND_SUMMARY_FILE")==0) conf>>round_summary_file;
 			else if(key.compare("FEEDBACK_SUMMARY_FILE")==0) conf>>feedback_summary_file;
 			else if(key.compare("LINK_TIMESERIES_FILE")==0) conf>>link_timeseries_file;
@@ -4330,6 +4800,15 @@ int main(int argc, char *argv[])
 		if(!flow_summary_csv)ConfigError("cannot open FLOW_SUMMARY_FILE");
 		fprintf(flow_summary_csv,"scenario,algorithm,seed,flow_id,qp_id,src,dst,total_size_bytes,start_time,finish_time,fct,acked_bytes,completed,flow_goodput,retx_bytes,retx_events\n");
 	}
+	// Item 3: one row per completed flow with the raw timestamps needed to
+	// build FCT/BCT/CCT identically for CBAP and for the baselines.  Written
+	// for every cc_mode.  application_ready/network_release are 0 when the
+	// algorithm has no admission stage, which is a fact about the algorithm.
+	if(!flow_timing_file.empty()){
+		flow_timing_csv=fopen(flow_timing_file.c_str(),"w");
+		if(!flow_timing_csv)ConfigError("cannot open FLOW_TIMING_FILE");
+		fprintf(flow_timing_csv,"scenario,algorithm,seed,flow_id,src,dst,total_size_bytes,app_start_ns,first_data_tx_ns,last_ack_ns,application_ready_ns,network_release_ns,acked_bytes\n");
+	}
 	if(!round_summary_file.empty()){
 		round_summary_csv=fopen(round_summary_file.c_str(),"w");
 		if(!round_summary_csv)ConfigError("cannot open ROUND_SUMMARY_FILE");
@@ -4602,6 +5081,33 @@ int main(int argc, char *argv[])
 	//
 	// Now, do the actual simulation.
 	//启动仿真
+	if (!cbap_qb2_trace_file.empty()){
+		cbap_qb2_trace_csv = fopen(cbap_qb2_trace_file.c_str(), "w");
+		if (!cbap_qb2_trace_csv)
+			ConfigError("cannot open CBAP_QB2_TRACE_FILE");
+		fprintf(cbap_qb2_trace_csv,
+			"time_ns,generation,batch_active,queue_current_bytes,"
+			"queue_predicted_bytes,pending_excess_bytes,arrival_wire_bps,"
+			"service_wire_bps,base_target_bps,boost_requested_bps,"
+			"boost_effective_bps,boost_lease_expire_ns,drain_bps,"
+			"aggregate_requested_bps,aggregate_applied_bps,zone,veto_reason,"
+			"background_applied_bps,incast_applied_bps\n");
+	}
+	if (!cbap_qc_trace_file.empty()){
+		cbap_qc_trace_csv = fopen(cbap_qc_trace_file.c_str(), "w");
+		if (cbap_qc_trace_csv)
+			fprintf(cbap_qc_trace_csv,
+				"time_ns,link_id,epoch_id,q0,q_next,q_stop,q_safe,"
+				"boost_commanded,boost_effective,drain,sumR_effective,"
+				"zone,pending_generation,floor_wire_bps,floor_payload_bps,"
+				"drain_max_wire_bps,arrival_safe_wire_bps,"
+				"sender_effective_wire_bps,duplicate_qp_count,"
+				"invariant_violations,prefix_max_index,protected_count,"
+				"owns_rates,exit_recovery_pending,"
+				"floor_count,new_gen_count,old_side_count,ledger_count,"
+				"ownership_transitions,scope_violations,"
+				"path_metadata_missing\n");
+	}
 	if (!cbap_pfc_ports_file.empty()){
 		cbap_pfc_ports_csv = fopen(cbap_pfc_ports_file.c_str(), "w");
 		if (cbap_pfc_ports_csv)
@@ -4631,6 +5137,249 @@ int main(int argc, char *argv[])
 	fflush(stdout);
 	NS_LOG_INFO("Run Simulation.");
 	Simulator::Stop(Seconds(simulator_stop_time));
+	// --- attach the pure-observation TX recorder (default OFF) -----------
+	// MULTI-LINK: every selected bottleneck gets its own callback pair, so a
+	// dual-bottleneck scenario (S6: 84:1 and 83:1) is fully covered.  The link
+	// identity is carried by the registration slot, never hardcoded and never
+	// truncated to "the first bottleneck".
+	//
+	// Reads the PhyTxBegin/PhyTxEnd trace sources QbbNetDevice already fires.
+	// Schedules nothing; mutates nothing.  An unset key leaves the run
+	// bit-identical to the pre-recorder binary.
+	// --- gap-boundary snapshot attach (default OFF) -----------------------
+	if (!gap_snapshot_trace_file.empty()){
+		if (selected_link_set.size() != 1){
+			std::cout << "INVALID_GAP_SNAPSHOT_ATTACH need exactly one "
+				<< "monitored link, got " << selected_link_set.size() << "\n";
+			return 2;
+		}
+		if (!ns3::GapSnapshotTrace::Open(gap_snapshot_trace_file,
+				causal_trace_start_ns, causal_trace_end_ns,
+				gap_snapshot_max_rows)){
+			std::cout << "INVALID_GAP_SNAPSHOT_ATTACH cannot open\n";
+			return 2;
+		}
+		const pair<uint32_t,uint32_t> gsel = *selected_link_set.begin();
+		gs_dev = DynamicCast<QbbNetDevice>(
+			n.Get(gsel.first)->GetDevice(gsel.second));
+		if (gs_dev == 0){
+			std::cout << "INVALID_GAP_SNAPSHOT_ATTACH no device\n";
+			return 2;
+		}
+		gs_dev->TraceConnectWithoutContext("PhyTxEnd",
+			MakeCallback(&GapSnapOnTxEnd));
+		gs_dev->TraceConnectWithoutContext("PhyTxBegin",
+			MakeCallback(&GapSnapOnTxBegin));
+		std::cout << "GAP_SNAPSHOT_ATTACHED node=" << gsel.first
+			<< " if=" << gsel.second << "\n";
+		fflush(stdout);
+	}
+	// --- send-opportunity telemetry attach (default OFF) ------------------
+	// Registers sender ports only.  Identical for CBAP and DCQCN: the emit
+	// sites live in QbbNetDevice, shared by both.
+	if (!sender_opp_trace_file.empty()){
+		if (!ns3::SenderOppTrace::Open(sender_opp_trace_file,
+				causal_trace_start_ns, causal_trace_end_ns,
+				algorithm_name)){
+			std::cout << "INVALID_SENDER_OPP_ATTACH cannot open trace\n";
+			return 2;
+		}
+		if (sender_opp_trace_nodes.empty()){
+			std::cout << "INVALID_SENDER_OPP_ATTACH no nodes configured\n";
+			return 2;
+		}
+		uint32_t so_expected = 0, so_attached = 0;
+		std::stringstream so_ss(sender_opp_trace_nodes);
+		std::string so_tok;
+		while (std::getline(so_ss, so_tok, ',')){
+			if (so_tok.empty())
+				continue;
+			so_expected++;
+			size_t cpos = so_tok.find(':');
+			if (cpos == std::string::npos){
+				std::cout << "INVALID_SENDER_OPP_ATTACH bad token "
+					<< so_tok << "\n";
+				return 2;
+			}
+			uint32_t so_node = (uint32_t)atoi(so_tok.substr(0, cpos).c_str());
+			uint32_t so_if = (uint32_t)atoi(so_tok.substr(cpos + 1).c_str());
+			if (so_node >= n.GetN()){
+				std::cout << "INVALID_SENDER_OPP_ATTACH node out of range "
+					<< so_node << "\n";
+				return 2;
+			}
+			Ptr<QbbNetDevice> so_dev = DynamicCast<QbbNetDevice>(
+				n.Get(so_node)->GetDevice(so_if));
+			if (so_dev == 0){
+				std::cout << "INVALID_SENDER_OPP_ATTACH not a qbb device "
+					<< so_tok << "\n";
+				return 2;
+			}
+			int so_slot = ns3::SenderOppTrace::Register(so_attached, so_node,
+				so_if);
+			if (so_slot < 0){
+				std::cout << "INVALID_SENDER_OPP_ATTACH duplicate "
+					<< so_tok << "\n";
+				return 2;
+			}
+			so_attached++;
+			std::cout << "SENDER_OPP_ATTACHED slot=" << so_slot
+				<< " node=" << so_node << " if=" << so_if << "\n";
+		}
+		if (so_attached != so_expected || so_attached == 0){
+			std::cout << "INVALID_SENDER_OPP_ATTACH attached=" << so_attached
+				<< " expected=" << so_expected << "\n";
+			return 2;
+		}
+		fflush(stdout);
+	}
+	// --- causal telemetry attach (both default OFF) -----------------------
+	// Read-only: the callbacks below only read GetNBytesTotal() and the packet
+	// header; they schedule/cancel nothing and mutate nothing.
+	if (!causal_queue_trace_file.empty()){
+		if (selected_link_set.empty()){
+			std::cout << "INVALID_CAUSAL_ATTACH no selected links\n";
+			return 2;
+		}
+		if (!ns3::CausalQueueTrace::Open(causal_queue_trace_file,
+				causal_trace_start_ns, causal_trace_end_ns)){
+			std::cout << "INVALID_CAUSAL_ATTACH cannot open queue trace\n";
+			return 2;
+		}
+		uint32_t cq_expected = (uint32_t)selected_link_set.size();
+		uint32_t cq_attached = 0;
+		uint32_t cq_ord = 0;
+		for (set<pair<uint32_t,uint32_t> >::const_iterator sel =
+				selected_link_set.begin();
+				sel != selected_link_set.end(); ++sel, ++cq_ord){
+			uint32_t cq_link = cq_ord;
+			for (map<uint32_t, RdmaHw::BopMultilinkLink>::const_iterator it =
+					cbap_link_by_id.begin();
+					it != cbap_link_by_id.end(); ++it)
+				if (it->second.nodeId == sel->first &&
+						it->second.ifIndex == sel->second){
+					cq_link = it->second.linkId;
+					break;
+				}
+			int slot = ns3::CausalQueueTrace::Register(cq_link, sel->first,
+				sel->second);
+			if (slot < 0){
+				std::cout << "INVALID_CAUSAL_ATTACH duplicate link\n";
+				return 2;
+			}
+			Ptr<QbbNetDevice> cqdev = DynamicCast<QbbNetDevice>(
+				n.Get(sel->first)->GetDevice(sel->second));
+			if (cqdev == 0){
+				std::cout << "INVALID_CAUSAL_ATTACH no device\n";
+				return 2;
+			}
+			causal_slot_dev[slot] = cqdev;
+			cqdev->GetQueue()->TraceConnectWithoutContext("BeqEnqueue",
+				MakeBoundCallback(&CausalQueueOnEnqueue, (uint32_t)slot));
+			cqdev->GetQueue()->TraceConnectWithoutContext("BeqDequeue",
+				MakeBoundCallback(&CausalQueueOnDequeue, (uint32_t)slot));
+			cqdev->TraceConnectWithoutContext("PhyTxBegin",
+				MakeBoundCallback(&CausalQueueOnTxBegin, (uint32_t)slot));
+			cqdev->TraceConnectWithoutContext("PhyTxEnd",
+				MakeBoundCallback(&CausalQueueOnTxEnd, (uint32_t)slot));
+			cq_attached++;
+			std::cout << "CAUSAL_QUEUE_ATTACHED slot=" << slot
+				<< " link=" << cq_link << " node=" << sel->first
+				<< " if=" << sel->second << "\n";
+		}
+		if (cq_attached != cq_expected){
+			std::cout << "INVALID_CAUSAL_ATTACH attached=" << cq_attached
+				<< " expected=" << cq_expected << "\n";
+			return 2;
+		}
+		fflush(stdout);
+	}
+	if (!causal_pacer_trace_file.empty()){
+		if (!ns3::CausalPacerTrace::Open(causal_pacer_trace_file,
+				causal_trace_start_ns, causal_trace_end_ns)){
+			std::cout << "INVALID_CAUSAL_ATTACH cannot open pacer trace\n";
+			return 2;
+		}
+		std::cout << "CAUSAL_PACER_ATTACHED\n";
+		fflush(stdout);
+	}
+	if (!tx_serialization_trace_file.empty()){
+		if (selected_link_set.empty()){
+			std::cout << "INVALID_RECORDER_ATTACH no selected links\n";
+			return 2;
+		}
+		if (!ns3::TxSerializationRecorderMl::Open(
+				tx_serialization_trace_file,
+				(uint64_t)(qlen_mon_start), (uint64_t)(qlen_mon_end))){
+			std::cout << "INVALID_RECORDER_ATTACH cannot open "
+				<< tx_serialization_trace_file << "\n";
+			return 2;
+		}
+		uint32_t tx_expected = (uint32_t)selected_link_set.size();
+		uint32_t tx_attached = 0;
+		// INDEPENDENT recorder link registry.  The authoritative physical key is
+		// (node_id, if_index) taken from selected_link_set, which is parsed from
+		// ROUND_TRACE_SELECTED_LINKS and is populated for CBAP, DCQCN and
+		// flag=0 alike.  cbap_link_by_id is CONSULTED only to keep the same
+		// link ids CBAP traces already use; when it is empty (e.g. DCQCN, where
+		// ReadBopMultilinkInputs returns early on !IsCbapMode) a stable ordinal
+		// over the sorted (node,if) set is used instead.  No CBAP
+		// initialisation is triggered here.
+		uint32_t tx_ordinal = 0;
+		for (set<pair<uint32_t,uint32_t> >::const_iterator sel =
+				selected_link_set.begin();
+				sel != selected_link_set.end(); ++sel, ++tx_ordinal){
+			// Physical identity is (node,if); the id is only a label.
+			uint32_t tx_link_id = tx_ordinal;
+			bool tx_id_from_file = false;
+			for (map<uint32_t, RdmaHw::BopMultilinkLink>::const_iterator it =
+					cbap_link_by_id.begin();
+					it != cbap_link_by_id.end(); ++it)
+				if (it->second.nodeId == sel->first &&
+						it->second.ifIndex == sel->second){
+					tx_link_id = it->second.linkId;
+					tx_id_from_file = true;
+					break;
+				}
+			int slot = ns3::TxSerializationRecorderMl::Register(
+				tx_link_id, sel->first, sel->second);
+			if (slot < 0){
+				std::cout << "INVALID_RECORDER_ATTACH duplicate link "
+					<< sel->first << ":" << sel->second << "\n";
+				return 2;
+			}
+			Ptr<QbbNetDevice> tx_dev = DynamicCast<QbbNetDevice>(
+				n.Get(sel->first)->GetDevice(sel->second));
+			if (tx_dev == 0){
+				std::cout << "INVALID_RECORDER_ATTACH no device "
+					<< sel->first << ":" << sel->second << "\n";
+				return 2;
+			}
+			tx_dev->TraceConnectWithoutContext("PhyTxBegin",
+				MakeBoundCallback(
+					&ns3::TxSerializationRecorderMl::TxBegin,
+					(uint32_t)slot));
+			tx_dev->TraceConnectWithoutContext("PhyTxEnd",
+				MakeBoundCallback(
+					&ns3::TxSerializationRecorderMl::TxEnd,
+					(uint32_t)slot));
+			tx_attached++;
+			std::cout << "TX_RECORDER_ATTACHED slot=" << slot
+				<< " link=" << tx_link_id
+				<< " node=" << sel->first
+				<< " if=" << sel->second
+				<< " id_source=" << (tx_id_from_file ? "link_file"
+					: "stable_ordinal") << "\n";
+		}
+		if (tx_attached != tx_expected){
+			std::cout << "INVALID_RECORDER_ATTACH attached=" << tx_attached
+				<< " expected=" << tx_expected << "\n";
+			return 2;
+		}
+		std::cout << "TX_RECORDER_EXPECTED_LINKS=" << tx_expected
+			<< " ATTACHED=" << tx_attached << "\n";
+		fflush(stdout);
+	}
 	Simulator::Run();
 	if (round_mode)
 		WriteCrfmSummaries();
@@ -4673,6 +5422,12 @@ int main(int argc, char *argv[])
 		}
 		fflush(flow_summary_csv);
 	}
+	ns3::TxSerializationRecorder::Close();
+	ns3::TxSerializationRecorderMl::Close();
+	ns3::CausalQueueTrace::Close();
+	ns3::SenderOppTrace::Close();
+	ns3::GapSnapshotTrace::Close();
+	ns3::CausalPacerTrace::Close();
 	Simulator::Destroy();
 	NS_LOG_INFO("Done.");
 	fclose(trace_output);

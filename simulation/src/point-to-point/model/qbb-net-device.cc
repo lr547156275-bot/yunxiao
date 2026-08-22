@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "ns3/qbb-net-device.h"
+#include "../../../scratch/sender-opportunity-telemetry.h"
 #include "ns3/log.h"
 #include "ns3/boolean.h"
 #include "ns3/uinteger.h"
@@ -52,6 +53,16 @@
 NS_LOG_COMPONENT_DEFINE("QbbNetDevice");
 
 namespace ns3 {
+// Owned here: qbb-net-device.cc is inside libns3-point-to-point, which
+// references these symbols.  Telemetry only.
+FILE *SenderOppTrace::s_file = 0;
+std::vector<SenderOppTrace::Key> SenderOppTrace::s_link;
+std::string SenderOppTrace::s_algo = "";
+uint64_t SenderOppTrace::s_lo = 0;
+uint64_t SenderOppTrace::s_hi = 0;
+uint64_t SenderOppTrace::s_rows = 0;
+uint64_t SenderOppTrace::s_opp = 0;
+
 	
 	uint32_t RdmaEgressQueue::ack_q_idx = 3;
 	// RdmaEgressQueue
@@ -90,9 +101,19 @@ namespace ns3 {
 		}
 		return 0;
 	}
+	// Telemetry: per-QP outcome of the most recent scan.  Filled read-only by
+	// GetNextQindex, consumed by DequeueAndTransmit, which owns the port
+	// identity needed to emit.  Cleared at the start of every scan so a stale
+	// entry can never be attributed to a later opportunity.
+	std::vector<RdmaEgressQueue::OppRec> RdmaEgressQueue::s_oppRec;
+	int RdmaEgressQueue::s_oppSelected = -1024;
+
 	int RdmaEgressQueue::GetNextQindex(bool paused[]){
 		bool found = false;
 		uint32_t qIndex;
+		s_oppRec.clear();
+		s_oppSelected = -1024;
+		const bool trace_opp = SenderOppTrace::IsOpen();
 		if (!paused[ack_q_idx] && m_ackQ->GetNPackets() > 0)
 			return -1;
 
@@ -103,6 +124,35 @@ namespace ns3 {
 		for (qIndex = 1; qIndex <= fcount; qIndex++){
 			uint32_t idx = (qIndex + m_rrlast) % fcount;
 			Ptr<RdmaQueuePair> qp = m_qpGrp->Get(idx);
+			if (trace_opp){
+				// Read-only replay of the same predicates, in the same order,
+				// purely to label why this QP was or was not usable.  Assigns
+				// nothing and cannot alter the scan below.
+				OppRec r;
+				r.idx = idx;
+				r.nextAvail = qp->m_nextAvail.GetTimeStep();
+				r.bytesLeft = qp->GetBytesLeft();
+				r.rate = qp->m_rate.GetBitRate();
+				r.lastTx = qp->cbap.lastTxTimeNs;
+				r.flowId = qp->crfm.flowId;
+				r.batchId = qp->cbap.batchId;
+				const bool fin = qp->IsFinished();
+				const bool zgp = qp->cbap.zeroGrantPaused;
+				const bool pau = paused[qp->m_pg];
+				const bool win = qp->IsWinBound();
+				if (fin)
+					r.reason = "FLOW_FINISHED";
+				else if (zgp)
+					r.reason = "HANDOFF_PENDING";
+				else if (pau || win || r.bytesLeft == 0)
+					r.reason = "NO_PACKET";
+				else if (r.nextAvail > Simulator::Now().GetTimeStep())
+					r.reason = "NEXT_AVAIL_FUTURE";
+				else
+					r.reason = "ELIGIBLE";     // refined later: SENT or
+					                           // ELIGIBLE_NOT_SELECTED
+				s_oppRec.push_back(r);
+			}
 			if (!paused[qp->m_pg] && !qp->cbap.zeroGrantPaused &&
 					qp->GetBytesLeft() > 0 && !qp->IsWinBound()){
 				if (m_qpGrp->Get(idx)->m_nextAvail.GetTimeStep() > Simulator::Now().GetTimeStep()) //not available now
@@ -126,6 +176,7 @@ namespace ns3 {
 			}
 			qps.resize(nxt);
 		}
+		s_oppSelected = res;
 		return res;
 	}
 
@@ -263,12 +314,56 @@ namespace ns3 {
 		DequeueAndTransmit();
 	}
 
+	// Telemetry helper: emit one row per QP examined in the scan that just ran,
+	// refining the provisional "ELIGIBLE" label into SENT for the selected QP
+	// and ELIGIBLE_NOT_SELECTED for the rest.  Read-only.
+	void QbbNetDevice::EmitOppScan(int slot, uint64_t oppId, int selected,
+			uint64_t sentUid, uint64_t sentBytes, uint64_t oldNa,
+			uint64_t newNa, uint64_t wakeupNs)
+	{
+		const std::vector<RdmaEgressQueue::OppRec> &recs =
+			RdmaEgressQueue::s_oppRec;
+		for (uint32_t i = 0; i < recs.size(); ++i){
+			const RdmaEgressQueue::OppRec &r = recs[i];
+			const bool is_sel = ((int)r.idx == selected);
+			const char *reason = r.reason;
+			if (std::string(reason) == "ELIGIBLE")
+				reason = is_sel ? "SENT" : "ELIGIBLE_NOT_SELECTED";
+			const uint64_t interval = (is_sel && newNa > oldNa)
+				? (newNa - oldNa) : 0;
+			SenderOppTrace::Emit(slot, oppId,
+				is_sel ? "SEND" : "SCAN", reason,
+				r.idx, r.flowId, 0, r.batchId,
+				is_sel ? sentUid : 0,
+				r.bytesLeft ? 1 : 0, r.bytesLeft, r.rate, r.lastTx,
+				is_sel ? sentBytes : 0, interval,
+				is_sel ? oldNa : r.nextAvail,
+				r.nextAvail, is_sel ? newNa : r.nextAvail,
+				wakeupNs, 0, selected);
+		}
+	}
+
 	void
 		QbbNetDevice::DequeueAndTransmit(void)
 	{
 		NS_LOG_FUNCTION(this);
 		if (!m_linkUp) return; // if link is down, return
-		if (m_txMachineState == BUSY) return;	// Quit if channel busy
+		if (m_txMachineState == BUSY){
+			// Telemetry: a send opportunity that the serializer refused.
+			if (SenderOppTrace::IsOpen() && SenderOppTrace::InWindow()){
+				const int slot = SenderOppTrace::SlotOf(m_node->GetId(),
+					m_ifIndex);
+				if (slot >= 0)
+					SenderOppTrace::Emit(slot,
+						SenderOppTrace::NextOpportunityId(), "OPPORTUNITY",
+						"NIC_BUSY", 0, 0, 0, 0,
+						m_currentPkt ? m_currentPkt->GetUid() : 0,
+						0, 0, 0, 0,
+						m_currentPkt ? m_currentPkt->GetSize() : 0,
+						0, 0, 0, 0, 0, 0, -1024);
+			}
+			return;	// Quit if channel busy
+		}
 		Ptr<Packet> p;
 		if (m_node->GetNodeType() == 0){
 			int qIndex = m_rdmaEQ->GetNextQindex(m_paused);
@@ -287,8 +382,22 @@ namespace ns3 {
 				m_traceQpDequeue(p, lastQp);
 				TransmitStart(p);
 
+				// Telemetry: capture m_nextAvail BEFORE the pacer advances it,
+				// so the row carries old/new for the QP that actually sent.
+				const uint64_t opp_old_na = lastQp->m_nextAvail.GetTimeStep();
 				// update for the next avail time，更新这个QP下一次可发送时间
 				m_rdmaPktSent(lastQp, p, m_tInterframeGap);
+				if (SenderOppTrace::IsOpen() && SenderOppTrace::InWindow()){
+					const int slot = SenderOppTrace::SlotOf(m_node->GetId(),
+						m_ifIndex);
+					if (slot >= 0){
+						const uint64_t oid =
+							SenderOppTrace::NextOpportunityId();
+						EmitOppScan(slot, oid, qIndex, p ? p->GetUid() : 0,
+							p ? p->GetSize() : 0, opp_old_na,
+							lastQp->m_nextAvail.GetTimeStep(), 0);
+					}
+				}
 			}else { // no packet to send
 				NS_LOG_INFO("PAUSE prohibits send at node " << m_node->GetId());
 				Time t = Simulator::GetMaximumSimulationTime();
@@ -298,8 +407,33 @@ namespace ns3 {
 						continue;
 					t = Min(qp->m_nextAvail, t);
 				}
+				const bool opp_armed_before = !m_nextSend.IsExpired();
 				if (m_nextSend.IsExpired() && t < Simulator::GetMaximumSimulationTime() && t > Simulator::Now()){
 					m_nextSend = Simulator::Schedule(t - Simulator::Now(), &QbbNetDevice::DequeueAndTransmit, this);
+				}
+				// Telemetry: no QP was selected.  WAKEUP_MISSING is reported
+				// only when a finite min(m_nextAvail) existed in the future and
+				// yet no wakeup is armed afterwards -- i.e. the port would sit
+				// idle with work pending and nothing scheduled to revisit it.
+				if (SenderOppTrace::IsOpen() && SenderOppTrace::InWindow()){
+					const int slot = SenderOppTrace::SlotOf(m_node->GetId(),
+						m_ifIndex);
+					if (slot >= 0){
+						const bool finite_future =
+							t < Simulator::GetMaximumSimulationTime() &&
+							t > Simulator::Now();
+						const bool armed_after = !m_nextSend.IsExpired();
+						const uint64_t wake = armed_after
+							? m_nextSend.GetTs() : 0;
+						const uint64_t oid =
+							SenderOppTrace::NextOpportunityId();
+						EmitOppScan(slot, oid, -1024, 0, 0, 0, 0, wake);
+						if (finite_future && !armed_after)
+							SenderOppTrace::Emit(slot, oid, "NO_SELECTION",
+								"WAKEUP_MISSING", 0, 0, 0, 0, 0, 0, 0, 0, 0,
+								0, 0, 0, 0, 0, wake, 0, -1024);
+						(void)opp_armed_before;
+					}
 				}
 			}
 			return;
