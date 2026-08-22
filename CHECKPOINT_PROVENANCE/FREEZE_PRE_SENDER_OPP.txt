@@ -1,0 +1,9 @@
+FREEZE_PRE_SENDER_OPP 2026-08-16T08:30:12Z
+git_head: a745d58dec82ffa445155557147b0bba42d0dee6
+dirty_files: 584
+binary_third: e5020bbd2de2fa4b0add86323f985a70b95e7e680997226bc2e4f7487046c2c9
+lib_p2p: e21b352845e0812d71436dfc3cef7385bbba0060c26f8c827f7cde7a595c3781
+qbb_cc: cf3a17c5ec25df3959c490d3d83245986a8a8eb9cfc6ec5358c3cc2b1bdede27
+qbb_h: 9206d427bdbd6ca321761c3d3d87a430470c9b09b21f360e1559907a4bdb1a7f
+third_cc: 0e637fe1f628d2a6ff4d165192c1aa8d13e554d98836bb5a1e1adb5d5173ad39
+disk_free: /dev/loop4       32G   27G  2.9G  91% /work

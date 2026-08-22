@@ -1,0 +1,2 @@
+/work/simulation/experiment/scheme1_sba/so_cbap_on_out
+/work/simulation/experiment/scheme1_sba/so_dcqcn_on_out

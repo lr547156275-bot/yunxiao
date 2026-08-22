@@ -1,0 +1,45 @@
+# deleted Wed Aug 19 15:58:30     2026 -- superseded raw traces of concluded rounds; summaries retained in dir root
+236	mb_snap_out
+drwxrwxrwx+ 2 root root 4096 Aug 18 01:17 mb_snap_out
+194	mb_off_out
+drwxrwxrwx+ 2 root root 4096 Aug 17 15:53 mb_off_out
+188	mb_phase_out
+drwxrwxrwx+ 2 root root 4096 Aug 17 16:10 mb_phase_out
+187	mb_both_out
+drwxrwxrwx+ 2 root root 4096 Aug 17 17:33 mb_both_out
+210	gs_s3_on_out
+drwxrwxrwx+ 2 root root 4096 Aug 16 20:08 gs_s3_on_out
+194	v3_split_out
+drwxrwxrwx+ 2 root root 4096 Aug 16 22:58 v3_split_out
+194	v4_on_out
+drwxrwxrwx+ 2 root root 4096 Aug 17 00:00 v4_on_out
+194	v4_off_out
+drwxrwxrwx+ 2 root root 4096 Aug 16 23:43 v4_off_out
+195	probe3_dcqcn_out
+drwxrwxrwx+ 2 root root 4096 Aug 18 10:18 probe3_dcqcn_out
+206	sr_dcqcn_s3_out
+drwxrwxrwx+ 2 root root 4096 Aug 16 00:33 sr_dcqcn_s3_out
+191	sr_cbap_s3_out
+drwxrwxrwx+ 2 root root 4096 Aug 16 00:32 sr_cbap_s3_out
+206	pa_dcqcn_out
+drwxrwxrwx+ 2 root root 4096 Aug 18 12:40 pa_dcqcn_out
+199	pa_hpcc_out
+drwxrwxrwx+ 2 root root 4096 Aug 18 13:23 pa_hpcc_out
+187	pa_cap0995_rho075_out
+drwxrwxrwx+ 2 root root 4096 Aug 18 11:23 pa_cap0995_rho075_out
+187	pa_cap0995_rho090_out
+drwxrwxrwx+ 2 root root 4096 Aug 18 11:22 pa_cap0995_rho090_out
+187	pa_cap0995_rho090_b040_out
+drwxrwxrwx+ 2 root root 4096 Aug 18 12:41 pa_cap0995_rho090_b040_out
+187	pa_cap0995_rho09875_out
+drwxrwxrwx+ 2 root root 4096 Aug 18 11:50 pa_cap0995_rho09875_out
+187	pa_cap1000_rho075_out
+drwxrwxrwx+ 2 root root 4096 Aug 18 11:50 pa_cap1000_rho075_out
+187	pa_cap1000_rho090_out
+drwxrwxrwx+ 2 root root 4096 Aug 18 12:16 pa_cap1000_rho090_out
+187	pa_cap1000_rho09875_out
+drwxrwxrwx+ 2 root root 4096 Aug 18 12:16 pa_cap1000_rho09875_out
+161	f_cbapsba_s4_seed2_out
+drwxrwxrwx+ 2 root root 4096 Aug 18 10:18 f_cbapsba_s4_seed2_out
+161	g_cbapsba_s4_seed2_out
+drwxrwxrwx+ 2 root root 4096 Aug 18 10:18 g_cbapsba_s4_seed2_out

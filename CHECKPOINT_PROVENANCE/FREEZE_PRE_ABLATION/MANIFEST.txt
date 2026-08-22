@@ -1,0 +1,67 @@
+FREEZE_PRE_ABLATION 2026-08-17T04:22:28Z
+git_head: a745d58dec82ffa445155557147b0bba42d0dee6
+dirty_files: 615
+
+--- binaries ---
+21b6cf8e99aae74d99ca577695bfdbe3ec1c1a12c8ea7028fc13f61f0ab9e316  simulation/build/scratch/third
+f6ac0688540eebfe43e8409f01040cc130ba6b0fd4ea9278acc8fe13ba60f0a2  simulation/build/libns3.18-point-to-point-debug.so
+
+--- sources ---
+70cf542d53d52431549a9520b197725f9952fe813f117bdf026fe282a623dffa  simulation/src/point-to-point/model/rdma-hw.cc
+4ab7fb572b839f94d5a43dcb1e766b1290b4e45dd4bb5d467517c968489de5a2  simulation/src/point-to-point/model/rdma-hw.h
+f3b56cee42e6a9fa756a5bec78a07dee6a1cfcb17730404a7095a0a537c94270  simulation/src/point-to-point/model/qbb-net-device.cc
+d1b55829781d528b737089b23d2cb91a66ae84da35126c51c1fdf12836440ca7  simulation/src/point-to-point/model/qbb-net-device.h
+b7498cca7bb812057cf3abe284c95fb4fd80915b92a5dcf468163dfa5e1c7744  simulation/src/point-to-point/model/rdma-queue-pair.h
+b32efb4feb082ad9edf3988e0ba0eb0dd9ffb7a11d729a0e5c2c32750ab99014  simulation/scratch/third.cc
+
+--- reference result sets (role) ---
+sr_cbap_s3_out   : A = pre-fix CBAP (pre-fill), frozen reference
+sr_dcqcn_s3_out  : E = DCQCN baseline
+sm_off_out       : CBAP with SBA_STEADY_FILL=0 (== A path)
+sm_on_out        : direct-fill smoke (equal split, queue regression)
+v3_split_out     : planner-split reference
+v4_off_out/on_out: audit-split reference
+
+sr_cbap_s3_out     files=21   size=191MB
+    e443687e62b6ff6f0b514e30acd629e3b050314cdf1fd73b126d86c97c53dc9d  flow_summary.csv
+    5b380994af9b7d189288b587a3d8bfdd7f8f399bb71aa3f3009bb33948d8c49d  applied_rate_audit.csv
+    56162dd022dd4d8b835f9c32ae4b85c3c86770ae92363470b209368a6e0570dd  port_summary.csv
+    b489c9fe46a7b4a347030ddca09a839895e66af3383e66e172ba026576a8bcda  selected_link_timeseries.csv
+    cdc58b9133526cba55b11e9bae3fdce494c6b102f56709515c68ef57f743897a  pfc_events.csv
+sr_dcqcn_s3_out    files=14   size=206MB
+    4da5a5e605f9121449f1216f48920c6a0be1cf85e4beb91583a84838815b53ee  flow_summary.csv
+    63dcaf765bdc842112ea872fe099c0f53bf1f4f894b355faf3f088e8a0dbc1db  selected_link_timeseries.csv
+    cdc58b9133526cba55b11e9bae3fdce494c6b102f56709515c68ef57f743897a  pfc_events.csv
+sm_off_out         files=20   size=70MB
+    e443687e62b6ff6f0b514e30acd629e3b050314cdf1fd73b126d86c97c53dc9d  flow_summary.csv
+    35d05785e57bb7751d8affcd3b64af0c005b4d2c223e6848d11d00e8b639e8a8  applied_rate_audit.csv
+    15f89ccf9cd1dec33fbd41754f5874caa6c72a1e6c45fa2045ac8e8eef7e4a48  port_summary.csv
+    14542200a1d04950489a5a043b93c37acfc2c18509f8a22304c3d2093050ddaa  selected_link_timeseries.csv
+    cdc58b9133526cba55b11e9bae3fdce494c6b102f56709515c68ef57f743897a  pfc_events.csv
+sm_on_out          files=20   size=75MB
+    69dcbd163329a8fe04cd7d5e744708bdff5965df2964cf85af1346b146c17b53  flow_summary.csv
+    e03c99308e69b3bc47e90255e57fcd3692b3ffbc26abad6f95218f3d588aa3ab  applied_rate_audit.csv
+    a0a1f9b73c3541de0a2b21378933eda595cdf422c0a8a5ca1468645b10045a95  port_summary.csv
+    cab6171500910e0a7b30bdd95735909b56a7f345d30c9d4e0c9e62f882fb8b53  selected_link_timeseries.csv
+    cdc58b9133526cba55b11e9bae3fdce494c6b102f56709515c68ef57f743897a  pfc_events.csv
+v3_split_out       files=21   size=194MB
+    e443687e62b6ff6f0b514e30acd629e3b050314cdf1fd73b126d86c97c53dc9d  flow_summary.csv
+    1541507732b472aebba74905f801471bacf64f34762c82a188324e8eed81c33b  applied_rate_audit.csv
+    15f89ccf9cd1dec33fbd41754f5874caa6c72a1e6c45fa2045ac8e8eef7e4a48  port_summary.csv
+    b489c9fe46a7b4a347030ddca09a839895e66af3383e66e172ba026576a8bcda  selected_link_timeseries.csv
+    cdc58b9133526cba55b11e9bae3fdce494c6b102f56709515c68ef57f743897a  pfc_events.csv
+v4_off_out         files=21   size=194MB
+    e443687e62b6ff6f0b514e30acd629e3b050314cdf1fd73b126d86c97c53dc9d  flow_summary.csv
+    51eff7e1a3260464880842979156aa19047d6cf6075a329c60aa17b369708ff6  applied_rate_audit.csv
+    15f89ccf9cd1dec33fbd41754f5874caa6c72a1e6c45fa2045ac8e8eef7e4a48  port_summary.csv
+    b489c9fe46a7b4a347030ddca09a839895e66af3383e66e172ba026576a8bcda  selected_link_timeseries.csv
+    cdc58b9133526cba55b11e9bae3fdce494c6b102f56709515c68ef57f743897a  pfc_events.csv
+v4_on_out          files=21   size=194MB
+    e443687e62b6ff6f0b514e30acd629e3b050314cdf1fd73b126d86c97c53dc9d  flow_summary.csv
+    51eff7e1a3260464880842979156aa19047d6cf6075a329c60aa17b369708ff6  applied_rate_audit.csv
+    15f89ccf9cd1dec33fbd41754f5874caa6c72a1e6c45fa2045ac8e8eef7e4a48  port_summary.csv
+    b489c9fe46a7b4a347030ddca09a839895e66af3383e66e172ba026576a8bcda  selected_link_timeseries.csv
+    cdc58b9133526cba55b11e9bae3fdce494c6b102f56709515c68ef57f743897a  pfc_events.csv
+
+--- disk ---
+/dev/loop4       32G   28G  2.6G  92% /work

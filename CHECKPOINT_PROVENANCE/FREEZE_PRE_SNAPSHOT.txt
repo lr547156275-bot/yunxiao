@@ -1,0 +1,11 @@
+FREEZE_PRE_SNAPSHOT 2026-08-16T11:32:45Z
+git_head: a745d58dec82ffa445155557147b0bba42d0dee6
+dirty_files: 596
+235edfe06ccbd9a07420f353972797eb79d9cfc79a85eacc658702740f73e625  simulation/build/scratch/third
+ed0836be7f5fc9a48de66214d1ff2f1b3ebae730583e9187a5d03208cf04b0f1  simulation/build/libns3.18-point-to-point-debug.so
+f3b56cee42e6a9fa756a5bec78a07dee6a1cfcb17730404a7095a0a537c94270  simulation/src/point-to-point/model/qbb-net-device.cc
+d1b55829781d528b737089b23d2cb91a66ae84da35126c51c1fdf12836440ca7  simulation/src/point-to-point/model/qbb-net-device.h
+1f12f5409d0940a9d2ee7c22354df04ea9a13080caa7101c75179ff7160f0959  simulation/src/point-to-point/model/rdma-hw.cc
+b7498cca7bb812057cf3abe284c95fb4fd80915b92a5dcf468163dfa5e1c7744  simulation/src/point-to-point/model/rdma-queue-pair.h
+63db2a635035a6cddb650745ca759b0a534892fb5cbfbc343aa9224d177a92af  simulation/scratch/third.cc
+disk: /dev/loop4       32G   28G  2.1G  94% /work
