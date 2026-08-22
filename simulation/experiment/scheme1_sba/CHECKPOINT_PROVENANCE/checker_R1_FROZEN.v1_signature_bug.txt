@@ -1,0 +1,3 @@
+2bfd11518e07978686cdb0e49820efb41f0a7b7e7d1bebe669983fef7f2ff9eb  r1_serialization_gates.py
+d72ac62f8bc5f12136c89745f1e9e9bb1d4adee7c742a0bc283646552003d599  ../../scratch/tx-serialization-recorder.h
+FROZEN_AT_UTC=2026-08-14T05:33:21Z

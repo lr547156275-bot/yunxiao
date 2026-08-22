@@ -1,0 +1,25 @@
+
+==============================================================
+CELL cbap_s1   avail=5.08 GB   need=3.20 GB
+  pg check: flows=17 pg3=17 pg0=0
+  RESUME: reusing existing output (same binary), re-running acceptance
+  exit=0 wall=0s size=60M avail_after=5.08 GB
+  flow_summary lines=18 completed=16 (expected incast: 16)
+  safety: pfc_events=0 drops=0 retx_bytes=0 retx_events=0
+  --- metrics s1 cbap ---
+  incast FCT mean/p95/p99/max = 45.6045 / 45.6056 / 45.6056 / 45.6066 ms
+  CCT (last incast completion) = 45.6066 ms
+  incast goodput = 0.7357 Gbps
+  background flow 0: acked=1050610000 B goodput=7.6408 Gbps completed=0
+  queue mean/p95/p99/max = 1538 / 11528 / 13624 / 14672 B
+  queue delay mean/max   = 1.231 / 11.738 us
+  link utilisation mean  = 0.8338
+  ECN marks total        = 0
+  CELL cbap_s1 ACCEPTED
+
+==============================================================
+CELL dcqcn_s1   avail=5.08 GB   need=3.20 GB
+  pg check: flows=17 pg3=17 pg0=0
+  start=2026-08-15T05:28:17Z binary=265fe2a1a31d5e18
+  exit=0 wall=276s size=20M avail_after=5.10 GB
+STOP: missing/empty port_summary.csv

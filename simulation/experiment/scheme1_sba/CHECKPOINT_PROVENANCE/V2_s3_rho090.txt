@@ -1,0 +1,171 @@
+==============================================================================
+TOP-LEVEL ACCEPTANCE v2 -- S3 rho=0.90
+==============================================================================
+  LEGACY_R1            = SUPERSEDED_BY_PACKET_AWARE_R1ABC
+  LEGACY_CHECKER_SHA   = 59dfdb2786a44fa2818f8d9191bdca3b46afec3f0bd2434cded01044b86fb4f1
+  R1ABC_CHECKER_SHA    = 924e1594a8df551d699910382f7be9883fa23b730bc2cf70becc5c7dc6c1944b
+  R1ABC_SELFTEST_SHA   = 30d7f49c57280a1dde1da051da98161a54fa3ec476a4cd2ab47ce9e483646212
+  RECORDER_SHA         = 54a11a1d3df4177fc93e72000ba0f6e0276ab58bd72f1e00c94d30bfc95aa73d
+  counting rule        = 19 unchanged gates + 1 composite R-1 = 20
+                         (the 14 R-1a/b/c subchecks are NOT added)
+
+------------------------------------------------------------------------------
+PART 1 -- 19 unchanged top-level gates (from frozen independent_acceptance.py)
+------------------------------------------------------------------------------
+==========================================================================
+INDEPENDENT ACCEPTANCE -- S3 rho=0.90
+==========================================================================
+  frozen: link=1048B payload=1000B ratio=1.048000 MIN_RATE=100M(payload)
+  frozen: C=10G Q_abs=1048575B Q_red=981503B MAX_BOOST=0.30C
+
+
+--- measured quantities ---
+  admission events                           65
+  distinct flows admitted                    65
+  distinct batches                           2 -> [('0', 1), ('1', 64)]
+  t_overlap (last admission)                 2000.005000 ms
+  live flows at t_overlap (independent)      65
+  floor_payload (independent)                6.5000 G
+  floor_wire (independent)                   6.8120 G
+  DRAIN_MAX (independent)                    3.1880 G = 0.3188 C
+  header_overhead per packet                 48 B (4.8000%)
+  queue samples                              404 (from port_summary.csv:queue_bytes)
+  queue mean/p95/p99/max                     12330 / 45064 / 49256 / 54496 B
+  queue delay mean/max                       9.864 / 43.597 us
+  queue max as %% of Q_abs                   5.20%
+  input bytes total (raw)                    2251104 B
+  output bytes total (raw)                   2208136 B
+  arrival rate max/mean                      45.2736 / 8.9153 G
+  served rate max/mean                       10.0608 / 8.7451 G
+  tx_bytes_delta samples                     199998
+  tx_bytes_delta divisible by 1048           199994/199998 (100.0%)
+  actuation rows                             1256, stages=[('arrival_at_bottleneck', 215), ('counters_pending_54_inflight_0', 1), ('counters_unmatched_0_superseded_340_negative_0', 1), ('first_affected_at_bottleneck', 215), ('rate_command', 609), ('sender_rate_effect', 215)]
+  actuation generations                      610 distinct
+  actuation (generation,flow) keys           610
+  applied_rate_audit rows                    398
+  applied capacity violations                0
+  actual arrival excess max                  92.9000 G
+  NOTE                                       arrival > C is permitted by design; reported not gated
+  incast FCT mean                            59.390868 ms
+  incast FCT p95                             59.404591 ms
+  incast FCT p99                             59.406088 ms
+  incast CCT (last completion)               59.406587 ms
+  incast goodput (aggregate/CCT)             9.0372 Gbps
+  background flow 0                          acked=1845700000 B goodput=7.3828 G completed=0
+  [CONTROLLER] zone residency                [('GREEN', 599999)]
+  [CONTROLLER] zone switches                 0
+  [CONTROLLER] owning epochs                 11910 of 599999
+
+--- gates ---
+  [PASS] L-1. live set at peak overlap == 65 (incast 64 + background 1)
+         reconstructed live set = 65   <- admission.csv + flow_summary.csv
+  [PASS] L-2. newest batch (control generation) == 64 flows
+         newest batch 1 has 64 flows   <- admission.csv batch_id
+  [PASS] L-3. background flow is NOT in the control generation
+         1 older-batch flow(s), none in the newest batch   <- admission.csv batch_id
+  [PASS] L-4. floor set (live) strictly contains the generation
+         floor 65 > generation 64   <- admission.csv + flow_summary.csv
+  [PASS] L-5. 64/64 incast flows complete
+         64 incast completions   <- flow_summary.csv completed
+  [PASS] Q-1. raw queue max <= Q_abs (reported truthfully, never relaxed)
+         max 54496 B = 5.20% of Q_abs 1048575 B   <- port_summary.csv:queue_bytes
+  [FAIL] R-1. served rate never exceeds link capacity C
+         max served 10.0608 G <= C 10.0000 G   <- port_summary.csv:service_rate_bps
+  [PASS] W-1. no byte-domain cross comparison (floor uses link domain)
+         floor_wire = floor_payload x 1.048000 exactly   <- derived from frozen constants
+  [PASS] P-1. pending/in-flight is accounted per (generation, QP)
+         610 distinct (generation, flow_id) command keys   <- actuation.csv
+  [PASS] S-1. zero PFC pause events
+         0 rows in pfc_events.csv   <- pfc_events.csv
+  [PASS] S-2. zero PFC pause duration on the traced link
+         pause_ns=0 events=0   <- selected_link_timeseries.csv
+  [PASS] S-3. zero retransmissions
+         retx_bytes=0 retx_events=0   <- flow_summary.csv
+  [PASS] S-4. zero headroom drops
+         0 "Drop:" lines in run.log   <- run.log
+  [PASS] C-1. not owning => boost == 0 and drain == 0
+         0 non-owning epochs with non-zero boost/drain   <- [CONTROLLER] qc_trace.csv
+  [PASS] C-2. boost and drain are never both non-zero
+         0 epochs with both non-zero   <- [CONTROLLER] qc_trace.csv
+  [PASS] C-3. boost never exceeds MAX_BOOST = 0.30 C
+         max boost 2.4832 G <= 3.0000 G   <- [CONTROLLER] qc_trace.csv
+  [PASS] X-1. controller floor_count matches independent live set
+         controller 65 vs independent 65   <- cross-check
+  [PASS] X-2. controller generation matches independent newest batch
+         controller 64 vs independent 64   <- cross-check
+  [PASS] X-3. controller floor_wire matches the independent closed form
+         controller 6.8120 G vs independent 6.8120 G   <- cross-check
+  [PASS] C-4. zero scope violations
+         scope_violations=0   <- [CONTROLLER] qc_trace.csv
+
+  19/20 gates passed
+
+  HARD GATE FAILED -- stop; retain full trace; do not continue.
+
+------------------------------------------------------------------------------
+PART 2 -- composite R-1 (from frozen r1_gates_v4.py)
+------------------------------------------------------------------------------
+
+--- R-1b: packet-aware window service curve (core only) ---
+  window    max_served_B       C*w/8_B  Lmax_B   excess_B   pkts  worst window [t0,t1] ns
+  5us               6288       6250.00    1048      38.00      6  [2000015737, 2000020737]
+  50us             62880      62500.00    1048     380.00     60  [2000050737, 2000100737]
+  500us           606792     625000.00    1048       0.00    579  [2000000737, 2000500737]
+==========================================================================
+R-1a/b/c v4 -- S3 rho=0.90 [R-1a/b/c]
+==========================================================================
+  C            : 10.0000 Gbps
+  time epsilon : 1 ns (one simulator tick; NO percentage tolerance)
+
+--- measured ---
+  rows                                       321509
+  link identity (node,if,link)               [('84', '1', '0')]
+  core evaluation interval                   [1990000000, 2147483647] ns
+  unmatched END  lead/core/trail             1 / 0 / 0
+  unmatched BEGIN lead/core/trail            0 / 0 / 0
+  BOUNDARY_CLIPPED_PACKET (leading END)      uid=1891089 t=1989995293
+  complete pairs (all zones)                 160754
+  complete pairs fully inside core           160744
+  pairs excluded as boundary/guard           10
+  min inter-packet gap (core)                0 ns
+  max inter-packet gap (core)                11601 ns
+  core packet sizes observed                 [624, 1048]
+  core first TX_BEGIN / last TX_END          1990000737 / 2147483276 ns
+  5us worst window first pkt                 uid=1910223 tx_start=2000015028 tx_finish=2000015866 size=1048
+  50us worst window first pkt                uid=1910216 tx_start=2000050224 tx_finish=2000051062 size=1048
+  500us worst window first pkt               uid=1910203 tx_start=2000000634 tx_finish=2000001472 size=1048
+  busy periods (core)                        93952
+  worst busy period (by utilisation)         [1990000737, 1990001575] 1 pkts work=838 ns span=838 ns util=1.000000
+  core evaluation span                       157482539 ns
+  long-run average wire service rate         8.556254 Gbps
+
+--- gates ---
+  [PASS] R-1a.1 every packet_uid has at most one TX_BEGIN and one TX_END duplicate BEGIN=0 duplicate END=0
+  [PASS] R-1a.2a core interval has zero unmatched BEGIN and zero unmatched END core unmatched END=0 BEGIN=0
+  [PASS] R-1a.2b leading guard has at most 1 unmatched END (and no BEGIN) leading unmatched END=1 BEGIN=0
+  [PASS] R-1a.2c trailing guard has at most 1 unmatched BEGIN (and no END) trailing unmatched BEGIN=0 END=0
+  [PASS] R-1a.3 TX_END >= TX_BEGIN for every complete pair            0 pairs with END < BEGIN
+  [PASS] R-1a.4 duration == size_bytes*8/C for every core packet (+/-1 tick) 0 deviate; first: []
+  [PASS] R-1a.5 TX_BEGIN never earlier than the previous TX_END (core) 0 violations; first: []
+  [PASS] R-1a.6 zero overlapping serialization intervals (core)       0 overlaps; first: []
+  [PASS] R-1b.5us served <= C*w/8 + Lmax (Lmax from real GetSize())   excess 38.00 B <= Lmax 1048 B
+  [PASS] R-1b.50us served <= C*w/8 + Lmax (Lmax from real GetSize())  excess 380.00 B <= Lmax 1048 B
+  [PASS] R-1b.500us served <= C*w/8 + Lmax (Lmax from real GetSize()) excess 0.00 B <= Lmax 1048 B
+  [PASS] R-1c.1 every busy period: work_ns <= span_ns + 1 tick        0 periods violate; first: []
+  [PASS] R-1c.1x cross-check |work_ns - sum(size*8/C)| <= npkt * 1 tick 0 periods deviate; first: []
+  [PASS] R-1c.2 long-run average over the core span <= C              8.556254 Gbps <= 10.0000 Gbps
+
+  14/14 gates passed
+
+==============================================================================
+COMPOSITION
+==============================================================================
+  legacy gate replaced ONE-FOR-ONE:
+    "R-1. served rate never exceeds link capacity C"
+    legacy verdict was: FAIL  (SUPERSEDED, not counted)
+  unchanged gates carried forward : 19
+  composite R-1 subchecks         : 14/14
+  composite R-1 verdict           : PASS
+
+  R-1 composite = PASS (14/14 subchecks)
+  TOP_LEVEL_ACCEPTANCE = 20/20

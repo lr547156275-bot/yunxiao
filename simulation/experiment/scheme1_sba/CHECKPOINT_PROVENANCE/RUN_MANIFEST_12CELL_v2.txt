@@ -1,0 +1,67 @@
+RUN_MANIFEST_12CELL_v2  (ckpt3, uniform multi-link per-packet recorder)
+generated_utc=2026-08-14T08:45:05Z
+git_head=a745d58dec82ffa445155557147b0bba42d0dee6
+MAX_JOBS=1
+disk_available=5.3G
+
+=== FROZEN TOOLCHAIN ===
+binary_sha=a6bd0124729870be2caaed87e8beb98767dab7175d7f0f1850d29a47d1abe5b9
+libns3_sha=c643f5cc332e02763946b01b8aa1cc17c50daf4dda53a371c13e4576525eb122
+recorder_ml_sha=4b9a4098a6d31625e46d24cfd371956cfb1a3bb9c98bbc327a7de332c0ce4b10
+recorder_single_sha=54a11a1d3df4177fc93e72000ba0f6e0276ab58bd72f1e00c94d30bfc95aa73d  # SUPERSEDED_SINGLE_LINK_RECORDER
+third_cc_sha=061e5b2729d3ab3f1a6389c4b29f6a85e1e1cd4d4be0b265dfa6d27d0f87465d
+
+=== FROZEN CHECKERS ===
+r1_gates_v4_sha=924e1594a8df551d699910382f7be9883fa23b730bc2cf70becc5c7dc6c1944b
+r1_gates_v4_selftest_sha=30d7f49c57280a1dde1da051da98161a54fa3ec476a4cd2ab47ce9e483646212
+r1_gates_ml_v2_sha=13f0a98dd4811c432d3e5265356556f683ab34570748fe0b6548a03e78124c3f
+r1_gates_ml_v2_selftest_sha=c7d0a6395e82c1df2e305b0983d8469b500b0204071f340580e9517d4222de1d
+r1_gates_ml_v1_sha=ec374d801add2be773d6a53832b9adccd14a2066cbd2f40a6b3aca96ed68a99b  # SUPERSEDED_BY_EXPLICIT_SIMULATION_END_BOUNDARY_MODEL
+independent_acceptance_sha=59dfdb2786a44fa2818f8d9191bdca3b46afec3f0bd2434cded01044b86fb4f1
+independent_acceptance_v2_sha=9a78d7dcd6a50ebeac49c85d1de28f3153fcbfe4b6f9b09d038eaf7ec14ce828
+
+=== BOUNDARY MODEL (frozen) ===
+tick=1 ns (ns-3 Time::NS, TRUNCATING -- verified 838.4->838, 153.6->153)
+D(L,l)=floor((L*8/C_l)/tick)*tick
+core_hi_l=min(T_qlen, T_stop - Dmax_l)   [NOT min(T_qlen,T_stop)-Dmax_l]
+
+=== PER-CELL ===
+cell       algo   cfg_sha   flow_sha  link_sha  path_sha  sched_sha tx_trace
+s1         cbap   11f3a2fd4 ff0d9e73a 70903775c 5c3c0e78e 335da04c7 ckpt3_cbap_s1_out/tx_serialization.csv
+s1         dcqcn  dc3e2d0ed ff0d9e73a 70903775c 5c3c0e78e 335da04c7 ckpt3_dcqcn_s1_out/tx_serialization.csv
+s2         cbap   6837c1ca6 be55378ea 70903775c 1557487d2 c76a3b436 ckpt3_cbap_s2_out/tx_serialization.csv
+s2         dcqcn  0d1aff685 be55378ea 70903775c 1557487d2 c76a3b436 ckpt3_dcqcn_s2_out/tx_serialization.csv
+s3         cbap   2eae05c51 6b922c67e 70903775c 1557487d2 8a40b3d13 ckpt3_cbap_s3_out/tx_serialization.csv
+s3         dcqcn  949cc5cef 6b922c67e 70903775c 1557487d2 8a40b3d13 ckpt3_dcqcn_s3_out/tx_serialization.csv
+s4         cbap   4a6ee9390 6b922c67e 70903775c 1557487d2 8a40b3d13 ckpt3_cbap_s4_out/tx_serialization.csv
+s4         dcqcn  0724577cb 6b922c67e 70903775c 1557487d2 8a40b3d13 ckpt3_dcqcn_s4_out/tx_serialization.csv
+s5         cbap   a0e484c0b a444b1585 70903775c 1557487d2 4171bac05 ckpt3_cbap_s5_out/tx_serialization.csv
+s5         dcqcn  312ed9885 a444b1585 70903775c 1557487d2 4171bac05 ckpt3_dcqcn_s5_out/tx_serialization.csv
+s6         cbap   a580a4bd1 4f924144e a0ae61dc3 f0877a2e4 fa55153cb ckpt3_cbap_s6_out/tx_serialization.csv
+s6         dcqcn  9a199c017 4f924144e a0ae61dc3 f0877a2e4 fa55153cb ckpt3_dcqcn_s6_out/tx_serialization.csv
+
+=== EXPECTED LINKS PER SCENARIO ===
+s1=0:84:1,
+s2=0:84:1,
+s3=0:84:1,
+s4=0:84:1,
+s5=0:84:1,
+s6=0:84:1,1:83:1,
+
+=== AUDIT RESULTS ===
+missing_inputs=0  pg_violations=0  equivalence_violations=0  leaks=0
+unique_tx_paths=12/12
+
+=== FULL CONFIG SHAs ===
+11f3a2fd41857e742e1d34d429edfde6ea0cce66b57ba2adc95ecafef67d8758  ckpt3_cbap_s1.txt
+dc3e2d0ed0a74bbdada7bb2441086c0da341c80f5eb880be9c10aae77804c517  ckpt3_dcqcn_s1.txt
+6837c1ca6989023b51b051048e4ee29783171c3a5aa5876099b392a0a0e7d51b  ckpt3_cbap_s2.txt
+0d1aff685d22c045d63d827a653eda5b8b71b2c9904af19d4c8d712ba1115052  ckpt3_dcqcn_s2.txt
+2eae05c51cc3fed2e86b234dc71b8805d821ac029d5329287409de488d77d110  ckpt3_cbap_s3.txt
+949cc5cef180c1c0b7794f2dc25c1a1df34eae2db872b6fcb93460e6865cee9b  ckpt3_dcqcn_s3.txt
+4a6ee9390e04d5fcc5783dab649d46bf3ba418ff1d121724cc57df8554ae51c7  ckpt3_cbap_s4.txt
+0724577cb20052541aecf199e032a50c82236eec9be86232dc21650b72efec17  ckpt3_dcqcn_s4.txt
+a0e484c0b91f260f5cfea8334197002167210b120edc988d807a63aa1bc7a880  ckpt3_cbap_s5.txt
+312ed9885a095f991b07c2166d91238d2fb2c5809fbb3c2cd40fe04342aac04d  ckpt3_dcqcn_s5.txt
+a580a4bd1e5b4cf9aed7ebc09c04d54eac070b042bd3a042074a7ee0b2644106  ckpt3_cbap_s6.txt
+9a199c017431626e15b361452d7f9aa92a181873206b20f06179b96a6ad8a142  ckpt3_dcqcn_s6.txt

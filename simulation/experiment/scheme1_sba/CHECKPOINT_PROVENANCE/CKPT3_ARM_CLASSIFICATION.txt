@@ -1,0 +1,37 @@
+CKPT3 BATCH CLASSIFICATION (corrected)
+labelled_at=2026-08-15T08:35:18Z
+binary_sha=265fe2a1a31d5e1809458c9e5b44120b528c2524ae2642cbd7185072a7b68103
+
+ARM = ABLATION_FULL_CAPACITY_REALLOCATION_OFF
+PREVIOUS LABEL = ABLATION_MIGRATION_OFF  -- withdrawn as too narrow
+
+ROOT CAUSE (investigated)
+  s{1..6}_config.txt set none of CBAP_MIGRATION_ENABLE /
+  CBAP_CORE_INITIAL_RELEASE / CBAP_INITIAL_RELEASE_RATIO, so third.cc defaults
+  disable migration, core handover AND initial release (rho=0) together.
+  Initial release and nonlinear migration are therefore NOT separable here.
+
+CORRECTION ALREADY ON RECORD
+  An earlier note claimed iii5_s3_* measured 59.39 ms.  WRONG:
+  iii5_s3_on_out mean incast FCT = 729.399 ms, bit-identical per-flow FCTs to
+  ckpt3_cbap_s3_out.  The 59 ms figures are rec2_s3_on_out (rho=0.90) and
+  v2_s3_rho09875_out (rho=0.9875), both migration ENABLED.
+
+WORKING POINTS ON RECORD
+  reallocation ON,  rho=0.90     59.391 ms  rec2_s3_on_out       MAIN (pre-registered)
+  reallocation ON,  rho=0.9875   59.340 ms  v2_s3_rho09875_out   AGGRESSIVE/SENSITIVITY
+  reallocation OFF, rho=0        729.399 ms ckpt3_*, iii5_s3_on  ABLATION (this arm)
+
+PRE-REGISTERED PLAN (not to be changed on the basis of results)
+  MAIN      CBAP rho=0.90 migration ON  vs  DCQCN stock baseline, S1-S6,
+            paired on topology/flow/path/PG/seed/buffer/ECN/PFC
+            order: S3 pair smoke test first, then full S1-S6
+  SENS      rho=0.9875 reported with incast FCT/p99/goodput, background
+            FCT/goodput, queue mean/p95/p99/max, utilisation, ECN/PFC/drop/retx;
+            explicitly test whether its gain comes from pushing background to
+            MIN_RATE
+  ABLATION1 ABLATION_CAPACITY_REALLOCATION_OFF  (this arm, done)
+  ABLATION2 ABLATION_NONLINEAR_MIGRATION_OFF    (same initial release as MAIN,
+            only post-allocation migration disabled; NOT yet run)
+
+STATUS: current 8-cell batch continues unmodified; no re-run, no overwrite.

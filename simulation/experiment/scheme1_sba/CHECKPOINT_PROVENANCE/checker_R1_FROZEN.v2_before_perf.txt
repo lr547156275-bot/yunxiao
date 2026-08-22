@@ -1,0 +1,4 @@
+2bfd11518e07978686cdb0e49820efb41f0a7b7e7d1bebe669983fef7f2ff9eb  r1_serialization_gates.py
+54a11a1d3df4177fc93e72000ba0f6e0276ab58bd72f1e00c94d30bfc95aa73d  ../../scratch/tx-serialization-recorder.h
+FROZEN_AT_UTC=2026-08-14T05:46:25Z
+NOTE=recorder header re-frozen after Ptr<const Packet> signature fix; gate FORMULAS unchanged (r1_serialization_gates.py hash identical)

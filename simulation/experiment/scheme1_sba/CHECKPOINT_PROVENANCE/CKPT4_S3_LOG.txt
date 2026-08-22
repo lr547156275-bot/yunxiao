@@ -1,0 +1,7 @@
+### ckpt4_cbap_s3 start 11:06:40 ###
+ckpt4_cbap_s3 exit=0 wall_done=11:24:08
+### ckpt4_dcqcn_s3 start 11:24:08 ###
+ckpt4_dcqcn_s3 exit=0 wall_done=11:41:26
+CKPT4_S3_PAIR_DONE
+cbap_s3 exit=0 done=12:12:19
+CKPT4_CBAP_S3_TRACE_DONE

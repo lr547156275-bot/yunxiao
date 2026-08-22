@@ -1,1 +1,0 @@
-timestamp_ns,scenario,algorithm,cbap_version,increase_policy,flow_id,batch_id,phase,current_rate_before_bps,target_rate_bps,max_rate_bps,fractional_candidate_bps,absolute_candidate_bps,selected_delta_bps,new_rate_bps,stable_epoch_count,feedback_age_ns,stale_feedback,limiting_link,reason

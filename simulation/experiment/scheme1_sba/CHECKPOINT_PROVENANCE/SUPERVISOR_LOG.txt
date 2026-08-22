@@ -1,0 +1,6 @@
+[09:28:12] supervisor started pid=15
+[09:28:12] real STOP detected -- NOT retrying, supervisor exiting
+[09:36:01] supervisor started pid=200
+[09:36:01] real STOP detected -- NOT retrying, supervisor exiting
+[10:14:46] supervisor started pid=17
+[10:14:47] 8/8 accepted -- supervisor exiting

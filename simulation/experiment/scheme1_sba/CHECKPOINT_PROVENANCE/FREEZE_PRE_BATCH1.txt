@@ -1,0 +1,17 @@
+=== FREEZE BEFORE III.2 / BATCH1 ===
+utc=2026-08-14T15:35:13Z
+git_head=a745d58dec82ffa445155557147b0bba42d0dee6
+git_dirty_files=512
+--- toolchain ---
+265fe2a1a31d5e1809458c9e5b44120b528c2524ae2642cbd7185072a7b68103  /workspaces/yunxiao/simulation/build/scratch/third
+c643f5cc332e02763946b01b8aa1cc17c50daf4dda53a371c13e4576525eb122  /workspaces/yunxiao/simulation/build/libns3.18-point-to-point-debug.so
+84349f041424506b913072796bf2b224d59c4d82e6db679069c12dbd2f6802cd  /workspaces/yunxiao/simulation/scratch/third.cc
+4b9a4098a6d31625e46d24cfd371956cfb1a3bb9c98bbc327a7de332c0ce4b10  /workspaces/yunxiao/simulation/scratch/tx-serialization-recorder-ml.h
+--- checkers ---
+924e1594a8df551d699910382f7be9883fa23b730bc2cf70becc5c7dc6c1944b  r1_gates_v4.py
+13f0a98dd4811c432d3e5265356556f683ab34570748fe0b6548a03e78124c3f  r1_gates_ml_v2.py
+c7d0a6395e82c1df2e305b0983d8469b500b0204071f340580e9517d4222de1d  r1_gates_ml_v2_selftest.py
+59dfdb2786a44fa2818f8d9191bdca3b46afec3f0bd2434cded01044b86fb4f1  independent_acceptance.py
+9a78d7dcd6a50ebeac49c85d1de28f3153fcbfe4b6f9b09d038eaf7ec14ce828  independent_acceptance_v2.py
+--- disk ---
+/dev/loop4       32G   25G  5.1G  84% /workspaces

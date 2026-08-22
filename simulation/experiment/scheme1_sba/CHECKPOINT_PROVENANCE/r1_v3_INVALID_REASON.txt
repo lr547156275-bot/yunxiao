@@ -1,0 +1,5 @@
+STATUS=CHECKER_BOUNDARY_DEFINITION_ERROR
+SHA256=a829d997aae84fa14af118d0a9e815a8e7978baea50b738c643db8c783287f40
+FAILED_GATES=R-1a.2 (unmatched END at leading edge), R-1c.1 (busy-period span omitted leading packet duration)
+ROOT_CAUSE=checker boundary definition, NOT controller/link/recorder
+RETAINED=yes

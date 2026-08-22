@@ -1,0 +1,28 @@
+=== FREEZE BEFORE CAUSAL TELEMETRY ===
+utc=2026-08-16T05:05:27Z
+git_head=a745d58dec82ffa445155557147b0bba42d0dee6
+git_branch=cbap-queue-delay-credit
+git_dirty_files=569
+--- toolchain ---
+290cb41fec981bc848cbfd518257ce2c5df1384d52f2325d67955acaabd880b7  simulation/build/scratch/third
+c643f5cc332e02763946b01b8aa1cc17c50daf4dda53a371c13e4576525eb122  simulation/build/libns3.18-point-to-point-debug.so
+dd54dee455cbe9f7269186facc9a3ac688fb83785be7aab97bc95b29f57be831  simulation/scratch/third.cc
+4b9a4098a6d31625e46d24cfd371956cfb1a3bb9c98bbc327a7de332c0ce4b10  simulation/scratch/tx-serialization-recorder-ml.h
+fa03837dcc6a2a4d3371bb38224f1e44a58e8b517cf8156145cf5ec76db18cfb  simulation/src/point-to-point/model/rdma-hw.cc
+2b6170a40596294a946cd9247b10adeb7e395245b73430aeada7f2f0fda455c2  simulation/src/point-to-point/model/rdma-hw.h
+--- S3 configs+inputs ---
+d41602a8812088a6c921d1bde7257f1a6d2105342978a54067b03e982750e254  sr_cbap_s3.txt
+741e6f99d7d74799680467b3df91c1ecc40ee374bda257f434331c7eca7fc9f2  sr_dcqcn_s3.txt
+6091d5ec28c391c0c8ec79dcaf035d7deb44c2dd57e4c357dffe6bafe8c4fff8  topology.txt
+6b922c67e56c04aa32f67078c89bd8a0a0fafceae58f078bfa272cc8223ada0b  s3_flow.txt
+70903775ca19226b39b3870a25fe748a2fc591bac3d5da4198c22df887e5b4df  s3_cbap_link.txt
+1557487d29e7efb585a37c34ca8056767d5369f510c2bcaf26bed1b1bff649e3  s3_cbap_path.txt
+8a40b3d13abe225d745360e5db26ccf71253837486b43a14423d65e9827200bb  s3_round_schedule.txt
+--- existing results ---
+e443687e62b6ff6f0b514e30acd629e3b050314cdf1fd73b126d86c97c53dc9d  sr_cbap_s3_out/flow_summary.csv
+4da5a5e605f9121449f1216f48920c6a0be1cf85e4beb91583a84838815b53ee  sr_dcqcn_s3_out/flow_summary.csv
+f937caf88faccb8a3d29bbafe8171f8c668ccad2c348d75282d2542a2b471894  sr_cbap_s3_out/tx_serialization.csv
+d946bf6b60c56e47bf9bea9281368825814aca0a6b78a22bfc8decb7b1270fa3  sr_dcqcn_s3_out/tx_serialization.csv
+724d0f25416d4ed57c3ae3fa373005adf7e82f671e1c305fe7d8045022ba7047  sr_cbap_s3_out/actuation.csv
+--- disk ---
+/dev/loop4       32G   27G  3.7G  88% /workspaces

@@ -1,0 +1,58 @@
+=== W2 served/util/idle ===
+  C.served.wire.mean         CBAP=9.576401     DCQCN=9.878142
+  C.served.wire.p95          CBAP=10.060800    DCQCN=10.060800
+  C.served.wire.max          CBAP=10.060800    DCQCN=10.560000
+  C.utilization.mean         CBAP=0.957640     DCQCN=0.987814
+  C.utilization.max          CBAP=1.006080     DCQCN=1.056000
+  C.idle.fraction            CBAP=0.000000     DCQCN=0.000000
+  C.util.frac_below_95       CBAP=0.258822     DCQCN=0.090613
+  C.service_deficit.frac     CBAP=0.042245     DCQCN=0.012067
+  C.served.total_bytes       CBAP=69883784.000 DCQCN=72085744.000
+=== W2 queue ===
+  D.queue.bytes.mean         CBAP=23956.798904 DCQCN=960441.22096
+  D.queue.bytes.p95          CBAP=46112.000000 DCQCN=1273320.0000
+  D.queue.bytes.max          CBAP=54496.000000 DCQCN=1279608.0000
+  D.queue.delay.max          CBAP=43.596800    DCQCN=1023.686400
+  D.queue.pct_Qabs.max       CBAP=5.197149     DCQCN=122.033045
+=== W3 served/util/idle ===
+  C.served.wire.mean         CBAP=9.589561     DCQCN=2.083790
+  C.served.wire.p95          CBAP=10.060800    DCQCN=2.515200
+  C.served.wire.max          CBAP=10.060800    DCQCN=2.515200
+  C.utilization.mean         CBAP=0.958956     DCQCN=0.208379
+  C.utilization.max          CBAP=1.006080     DCQCN=0.251520
+  C.idle.fraction            CBAP=0.000000     DCQCN=0.000000
+  C.util.frac_below_95       CBAP=0.291262     DCQCN=1.000000
+  C.service_deficit.frac     CBAP=NA           DCQCN=NA
+  C.served.total_bytes       CBAP=1234656.0000 DCQCN=268288.00000
+=== W3 queue ===
+  D.queue.bytes.mean         CBAP=23310.990291 DCQCN=0.000000
+  D.queue.bytes.p95          CBAP=45064.000000 DCQCN=0.000000
+  D.queue.bytes.max          CBAP=46112.000000 DCQCN=0.000000
+  D.queue.delay.max          CBAP=36.889600    DCQCN=0.000000
+  D.queue.pct_Qabs.max       CBAP=4.397587     DCQCN=0.000000
+=== CBAP-only arrival/service W2 ===
+  C.arrival.wire.mean        NA
+  C.arrival.wire.max         NA
+  C.service_rate.mean        NA
+  C.service_rate.max         NA
+  C.arrival.frac_above_C     NA
+=== zones/migration/ecn ===
+  E.zone.fraction      zone GREEN     1.000000
+  E.boost.min                    W2       0.000000
+  E.boost.mean                   W2       2.257327
+  E.boost.p95                    W2       2.378284
+  E.boost.max                    W2       2.483245
+  E.boost.frac_nonzero           W2       0.996488
+  E.drain.min                    W2       0.000000
+  E.drain.mean                   W2       0.000000
+  E.drain.p95                    W2       0.000000
+  E.drain.max                    W2       0.000000
+  E.drain.frac_nonzero           W2       0.000000
+  E.zone.fraction      link0          
+  E.boost.mean                   W2       
+  E.drain.mean                   W2       
+  E.migration.events             W0       674.000000
+  E.migration.replans            W0       376.000000
+  E.migration.convergence_time   W4_MIGRATION_CONVERGENCE 1059.440000
+  E.migration.events             W0       
+  ECN W2 CBAP=0.000000 DCQCN=6677.000000

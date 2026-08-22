@@ -1,0 +1,35 @@
+=== (a) is 0.1480 Gbps the MIN_RATE floor? ===
+  MIN_RATE payload = 100 Mbps (config)
+  wire equivalent  = 100e6 * 1048/1000 = 0.1048 Gbps
+  payload equiv of 0.1480 Gbps = 0.1412 Gbps
+  at the median gap (id=955636), applied_rate value counts:
+    0.100817 Gbps  x 1 QPs
+    0.148041 Gbps  x 64 QPs   <- this is the whole steered set
+  sum = 9.575446 Gbps  (95.75% of C)
+  QPs with applied_rate > 1 Gbps: 0  []
+  owns_rate=1 count: 64 ; their applied sum = 9.474629 Gbps
+  commanded sum over QPs with work = 18.283969 Gbps
+    NOTE: commanded 18.28 G > C means the commanded column is a per-QP
+    target that is NOT meant to sum to C, or is wire-vs-payload mixed.
+    Do not read it as "the controller asked for 18 Gbps".
+
+=== (b) do the 64 steered QPs share ONE next_avail? ===
+  distinct next_avail values among pending QPs, per gap:
+    min=2 p50=2 p95=2 max=2
+  largest identical group size, per gap: p50=64 max=64
+  spread max(next_avail)-min(next_avail), per gap (ns):
+    min=14 p50=21470 p95=48298 max=60255
+  gaps where ALL pending QPs share one next_avail: 0 of 1061 (0.00%)
+  detail at gap 955636 (t=2029010728): first/last 4 pending QPs by next_avail
+    node=65  qp=0   next_avail=2029026116 (now+15388) app=0.1008G owns=0
+    node=0   qp=1   next_avail=2029062846 (now+52118) app=0.1480G owns=1
+    node=1   qp=2   next_avail=2029062846 (now+52118) app=0.1480G owns=1
+    node=2   qp=3   next_avail=2029062846 (now+52118) app=0.1480G owns=1
+    node=60  qp=61  next_avail=2029062846 (now+52118) app=0.1480G owns=1
+    node=61  qp=62  next_avail=2029062846 (now+52118) app=0.1480G owns=1
+    node=62  qp=63  next_avail=2029062846 (now+52118) app=0.1480G owns=1
+    node=63  qp=64  next_avail=2029062846 (now+52118) app=0.1480G owns=1
+
+=== (c) how many snapshots does each QP appear in? ===
+  gap-start snapshots per QP: min=1066 p50=1066 max=1066
+  => a max unchanged-run of 7 out of 1066 is NOT a stuck pacer

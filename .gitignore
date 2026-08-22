@@ -63,3 +63,11 @@ simulation/fct.txt
 !simulation/experiment/scheme1_sba/matrix_logs/**
 !simulation/experiment/scheme1_sba/cell_configs/**
 !simulation/experiment/scheme1_sba/final_report/charts/**
+
+# raw simulation traces (GBs) -- regenerable deterministically from configs
+simulation/experiment/scheme1_sba/*_out/
+simulation/experiment/scheme1_sba/*.INVALID*/
+simulation/experiment/scheme1_sba/*.NOTRACE/
+
+# container-generated scratch output
+nohup.out

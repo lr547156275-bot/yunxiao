@@ -1,0 +1,21 @@
+
+================================================================
+CELL cbap_s1   disk_available_before=5.23 GB   (min 2.0 GB)
+================================================================
+exit_code=0  wall=321s  disk_after=5.15 GB  out_size=74M
+error_lines=0
+0
+recorder_attached=1 expected_links=1
+tx_trace_lines=390471
+CELL cbap_s1 COMPLETE
+
+================================================================
+CELL dcqcn_s1   disk_available_before=5.15 GB   (min 2.0 GB)
+================================================================
+exit_code=2  wall=62s  disk_after=5.15 GB  out_size=56K
+CELL dcqcn_s1 FAILED with exit 2 -- stopping batch, retaining everything
+PFC_OUTPUT_FILE				ckpt3_dcqcn_s1_out/pfc_events.csv
+TX_SERIALIZATION_TRACE_FILE		ckpt3_dcqcn_s1_out/tx_serialization.csv
+maxRtt=15200 maxBdp=19000
+Running Simulation.
+INVALID_RECORDER_ATTACH unresolved link 84:1

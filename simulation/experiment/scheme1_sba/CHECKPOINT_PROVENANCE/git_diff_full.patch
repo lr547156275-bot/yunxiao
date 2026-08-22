@@ -1,0 +1,1385 @@
+diff --git a/simulation/experiment/scheme1_sba/CBAP_DYNAMIC_PFC_AND_ACTUATION_AUDIT.md b/simulation/experiment/scheme1_sba/CBAP_DYNAMIC_PFC_AND_ACTUATION_AUDIT.md
+index 9b54da7..1d65ee6 100644
+--- a/simulation/experiment/scheme1_sba/CBAP_DYNAMIC_PFC_AND_ACTUATION_AUDIT.md
++++ b/simulation/experiment/scheme1_sba/CBAP_DYNAMIC_PFC_AND_ACTUATION_AUDIT.md
+@@ -681,6 +681,68 @@ integer number of epochs, so the pending ledger has no partial-epoch remainder.
+ **Measured value: `H_guard` = 175 µs (35 epochs).** The 160 µs candidate was
+ slightly low — the cross-rho global max is 170.328 µs (§3), which rounds up to 175.
+ 
++### Boost is a PERSISTENT ABSOLUTE TARGET (method D) — corrects an error of mine
++
++An earlier draft of this contract modelled `boost` as a **pulse**: a value whose
++effect I integrated over one `H_guard` window and then implicitly let expire. From
++that model I concluded YELLOW was unreachable in S3 without lowering
++`SOFT_FRACTION`, and I proposed doing so. **That conclusion was wrong and is
++withdrawn** — the error was the pulse model, not the thresholds.
++
++`boost` is an **absolute target that persists until replaced**:
++
++```
++sumR_target = C + boost_target − drain_target
++```
++
++- Once a boost command is confirmed at the bottleneck: `pending_generation = none`,
++  `boost_effective = boost_commanded`, and that value **continues to hold**. It does
++  **not** expire with `H_guard` and does **not** revert to `C`.
++- "At most one pending generation" forbids overlapping **unconfirmed** commands
++  only. It places no limit on how long an already-effective boost is held.
++- Recomputing every 5 µs is **not** the same as commanding every 5 µs:
++
++| Situation | Action |
++|---|---|
++| desired target unchanged | **no-op** — no command issued |
++| desired changed, nothing pending | issue the new **absolute** target |
++| a pending transition exists | update prediction only; PFC/RED may preempt |
++
++**Forbidden:** `target += boost`; expiring boost after `H_guard`; reverting to `C`
++on confirmation; lowering `SOFT_FRACTION` to make YELLOW reachable; multiple
++concurrent positive boosts.
++
++### Reachability with the parameters unchanged
++
++With `SOFT_FRACTION = 0.5`, `H_guard = 175 µs`, `MAX_BOOST = 0.30 C` all unchanged,
++and the measured S3 rho=0.90 queue of 56,592 B:
++
++```
++excess      = 0.30 × 10 G = 3 Gbps            -> fill 375 B/µs
++to soft     = (524288 − 56592) / 375e6        = 1.247 ms
++minus brake = 1.247 ms − 175 µs               = 1.072 ms  (YELLOW must engage)
++```
++
++Both figures verified against the specification. 1.072 ms is **1.22 %** of the
++87.9 ms collective, so there is ample time. The unit-test lifecycle reaches YELLOW
++at **1.250 ms**, matching the 1.247 ms prediction.
++
++### Q_stop versus Q_safe — different jobs
++
++```
++Q_stop = max(0, Q_current + max(excess_effective, excess_pending) · H_guard / 8)
++Q_safe = Q_stop + packetization_margin        (applied ONCE, never accumulated)
++```
++
++- **`Q_stop` drives the SOFT/pressure decision.** It is the net backlog accrued
++  until the earliest instant a brake command could take effect, computed from the
++  *effective* rate and the single *pending* target — never from the desired rate.
++  The worse of effective/pending is used so the brake is never under-estimated.
++- **`Q_safe` is used only for hard-bound and PFC safety checks.** It must not
++  substitute for `Q_stop` in the soft decision: the packetization margin is a
++  structural burst allowance, and letting it drive soft pressure would trip YELLOW
++  on a term that is not backlog growth.
++
+ ### Dual time scale
+ 
+ Observation and pressure evaluation run **every 5 µs** (one control epoch), but
+diff --git a/simulation/experiment/scheme1_sba/fct.txt b/simulation/experiment/scheme1_sba/fct.txt
+index dfdad3c..0bbca2e 100644
+--- a/simulation/experiment/scheme1_sba/fct.txt
++++ b/simulation/experiment/scheme1_sba/fct.txt
+@@ -1,65 +1,64 @@
+-0b000001 0b004001 10000 100 1048576 1899999999 156824988 894342
+-0b000301 0b004001 10000 100 1048576 1899999999 156825487 894342
+-0b000501 0b004001 10000 100 1048576 1899999999 156825986 894342
+-0b000801 0b004001 10000 100 1048576 1899999999 156826485 894342
+-0b000401 0b004001 10000 100 1048576 1899999999 156826984 894342
+-0b000901 0b004001 10000 100 1048576 1899999999 156827483 894342
+-0b000c01 0b004001 10000 100 1048576 1899999999 156827982 894342
+-0b000e01 0b004001 10000 100 1048576 1899999999 156828481 894342
+-0b000a01 0b004001 10000 100 1048576 1899999999 156828980 894342
+-0b001601 0b004001 10000 100 1048576 1899999999 156829479 894342
+-0b001201 0b004001 10000 100 1048576 1899999999 156829978 894342
+-0b001001 0b004001 10000 100 1048576 1899999999 156830477 894342
+-0b000d01 0b004001 10000 100 1048576 1899999999 156830976 894342
+-0b001f01 0b004001 10000 100 1048576 1899999999 156831475 894342
+-0b001901 0b004001 10000 100 1048576 1899999999 156831974 894342
+-0b001801 0b004001 10000 100 1048576 1899999999 156832473 894342
+-0b001401 0b004001 10000 100 1048576 1899999999 156832972 894342
+-0b002101 0b004001 10000 100 1048576 1899999999 156833471 894342
+-0b001e01 0b004001 10000 100 1048576 1899999999 156833970 894342
+-0b001c01 0b004001 10000 100 1048576 1899999999 156834469 894342
+-0b001d01 0b004001 10000 100 1048576 1899999999 156834968 894342
+-0b002401 0b004001 10000 100 1048576 1899999999 156835467 894342
+-0b002201 0b004001 10000 100 1048576 1899999999 156835966 894342
+-0b002001 0b004001 10000 100 1048576 1899999999 156836465 894342
+-0b002d01 0b004001 10000 100 1048576 1899999999 156836964 894342
+-0b002801 0b004001 10000 100 1048576 1899999999 156837463 894342
+-0b002501 0b004001 10000 100 1048576 1899999999 156837962 894342
+-0b002601 0b004001 10000 100 1048576 1899999999 156838461 894342
+-0b003501 0b004001 10000 100 1048576 1899999999 156838960 894342
+-0b002c01 0b004001 10000 100 1048576 1899999999 156839459 894342
+-0b002a01 0b004001 10000 100 1048576 1899999999 156839958 894342
+-0b003001 0b004001 10000 100 1048576 1899999999 156840457 894342
+-0b003b01 0b004001 10000 100 1048576 1899999999 156840956 894342
+-0b003301 0b004001 10000 100 1048576 1899999999 156841455 894342
+-0b003801 0b004001 10000 100 1048576 1899999999 156841954 894342
+-0b003401 0b004001 10000 100 1048576 1899999999 156842453 894342
+-0b003c01 0b004001 10000 100 1048576 1899999999 156842952 894342
+-0b003a01 0b004001 10000 100 1048576 1899999999 156843451 894342
+-0b003e01 0b004001 10000 100 1048576 1899999999 156843950 894342
+-0b003901 0b004001 10000 100 1048576 1899999999 156844449 894342
+-0b000101 0b004001 10000 100 1048576 1899999999 156844948 894342
+-0b002901 0b004001 10000 100 1048576 1899999999 156845447 894342
+-0b000601 0b004001 10000 100 1048576 1899999999 156845946 894342
+-0b003f01 0b004001 10000 100 1048576 1899999999 156846445 894342
+-0b000701 0b004001 10000 100 1048576 1899999999 156846944 894342
+-0b002f01 0b004001 10000 100 1048576 1899999999 156847443 894342
+-0b001301 0b004001 10000 100 1048576 1899999999 156847942 894342
+-0b001101 0b004001 10000 100 1048576 1899999999 156848441 894342
+-0b000b01 0b004001 10000 100 1048576 1899999999 156848940 894342
+-0b002b01 0b004001 10000 100 1048576 1899999999 156849439 894342
+-0b001b01 0b004001 10000 100 1048576 1899999999 156849938 894342
+-0b001a01 0b004001 10000 100 1048576 1899999999 156850437 894342
+-0b000f01 0b004001 10000 100 1048576 1899999999 156850936 894342
+-0b002301 0b004001 10000 100 1048576 1899999999 156851435 894342
+-0b003101 0b004001 10000 100 1048576 1899999999 156851934 894342
+-0b001501 0b004001 10000 100 1048576 1899999999 156852433 894342
+-0b002701 0b004001 10000 100 1048576 1899999999 156852932 894342
+-0b003701 0b004001 10000 100 1048576 1899999999 156853431 894342
+-0b002e01 0b004001 10000 100 1048576 1899999999 156853930 894342
+-0b003201 0b004001 10000 100 1048576 1899999999 156854429 894342
+-0b003601 0b004001 10000 100 1048576 1899999999 156854928 894342
+-0b003d01 0b004001 10000 100 1048576 1899999999 156855427 894342
+-0b000201 0b004001 10000 100 1048576 1899999999 156855926 894342
+-0b001701 0b004001 10000 100 1048576 1899999999 156856425 894342
+-0b004101 0b004001 10000 100 4000000000 500000000 4107169966 1508931192
++0b000001 0b004001 10000 100 1048576 1899999999 159324714 894342
++0b000301 0b004001 10000 100 1048576 1899999999 159325213 894342
++0b000501 0b004001 10000 100 1048576 1899999999 159325712 894342
++0b000801 0b004001 10000 100 1048576 1899999999 159326211 894342
++0b000401 0b004001 10000 100 1048576 1899999999 159326710 894342
++0b000901 0b004001 10000 100 1048576 1899999999 159327209 894342
++0b000c01 0b004001 10000 100 1048576 1899999999 159327708 894342
++0b000e01 0b004001 10000 100 1048576 1899999999 159328207 894342
++0b000a01 0b004001 10000 100 1048576 1899999999 159328706 894342
++0b001601 0b004001 10000 100 1048576 1899999999 159329205 894342
++0b001201 0b004001 10000 100 1048576 1899999999 159329704 894342
++0b001001 0b004001 10000 100 1048576 1899999999 159330203 894342
++0b000d01 0b004001 10000 100 1048576 1899999999 159330702 894342
++0b001f01 0b004001 10000 100 1048576 1899999999 159331201 894342
++0b001901 0b004001 10000 100 1048576 1899999999 159331700 894342
++0b001801 0b004001 10000 100 1048576 1899999999 159332199 894342
++0b001401 0b004001 10000 100 1048576 1899999999 159332698 894342
++0b002101 0b004001 10000 100 1048576 1899999999 159333197 894342
++0b001e01 0b004001 10000 100 1048576 1899999999 159333696 894342
++0b001c01 0b004001 10000 100 1048576 1899999999 159334195 894342
++0b001d01 0b004001 10000 100 1048576 1899999999 159334694 894342
++0b002401 0b004001 10000 100 1048576 1899999999 159335193 894342
++0b002201 0b004001 10000 100 1048576 1899999999 159335692 894342
++0b002001 0b004001 10000 100 1048576 1899999999 159336191 894342
++0b002d01 0b004001 10000 100 1048576 1899999999 159336690 894342
++0b002801 0b004001 10000 100 1048576 1899999999 159337189 894342
++0b002501 0b004001 10000 100 1048576 1899999999 159337688 894342
++0b002601 0b004001 10000 100 1048576 1899999999 159338187 894342
++0b003501 0b004001 10000 100 1048576 1899999999 159338686 894342
++0b002c01 0b004001 10000 100 1048576 1899999999 159339185 894342
++0b002a01 0b004001 10000 100 1048576 1899999999 159339684 894342
++0b003001 0b004001 10000 100 1048576 1899999999 159340183 894342
++0b003b01 0b004001 10000 100 1048576 1899999999 159340682 894342
++0b003301 0b004001 10000 100 1048576 1899999999 159341181 894342
++0b003801 0b004001 10000 100 1048576 1899999999 159341680 894342
++0b003401 0b004001 10000 100 1048576 1899999999 159342179 894342
++0b003c01 0b004001 10000 100 1048576 1899999999 159342678 894342
++0b003a01 0b004001 10000 100 1048576 1899999999 159343177 894342
++0b003e01 0b004001 10000 100 1048576 1899999999 159343676 894342
++0b003901 0b004001 10000 100 1048576 1899999999 159344175 894342
++0b000101 0b004001 10000 100 1048576 1899999999 159344674 894342
++0b002901 0b004001 10000 100 1048576 1899999999 159345173 894342
++0b000601 0b004001 10000 100 1048576 1899999999 159345672 894342
++0b003f01 0b004001 10000 100 1048576 1899999999 159346171 894342
++0b000701 0b004001 10000 100 1048576 1899999999 159346670 894342
++0b002f01 0b004001 10000 100 1048576 1899999999 159347169 894342
++0b001301 0b004001 10000 100 1048576 1899999999 159347668 894342
++0b001101 0b004001 10000 100 1048576 1899999999 159348167 894342
++0b000b01 0b004001 10000 100 1048576 1899999999 159348666 894342
++0b002b01 0b004001 10000 100 1048576 1899999999 159349165 894342
++0b001b01 0b004001 10000 100 1048576 1899999999 159349664 894342
++0b001a01 0b004001 10000 100 1048576 1899999999 159350163 894342
++0b000f01 0b004001 10000 100 1048576 1899999999 159350662 894342
++0b002301 0b004001 10000 100 1048576 1899999999 159351161 894342
++0b003101 0b004001 10000 100 1048576 1899999999 159351660 894342
++0b001501 0b004001 10000 100 1048576 1899999999 159352159 894342
++0b002701 0b004001 10000 100 1048576 1899999999 159352658 894342
++0b003701 0b004001 10000 100 1048576 1899999999 159353157 894342
++0b002e01 0b004001 10000 100 1048576 1899999999 159353656 894342
++0b003201 0b004001 10000 100 1048576 1899999999 159354155 894342
++0b003601 0b004001 10000 100 1048576 1899999999 159354654 894342
++0b003d01 0b004001 10000 100 1048576 1899999999 159355153 894342
++0b000201 0b004001 10000 100 1048576 1899999999 159355652 894342
++0b001701 0b004001 10000 100 1048576 1899999999 159356151 894342
+diff --git a/simulation/scratch/third.cc b/simulation/scratch/third.cc
+index 760b72d..1fbb835 100644
+--- a/simulation/scratch/third.cc
++++ b/simulation/scratch/third.cc
+@@ -136,6 +136,17 @@ string cbap_port_summary_file, cbap_admission_file;
+ // can be compared without assuming they are the same quantity.  They are not:
+ // PFC is evaluated per INGRESS port on ingress_bytes[], while CBAP samples the
+ // EGRESS BEgressQueue of the bottleneck port.
++// --- queue-bounded controller (method D).  All default OFF/zero. -----------
++uint32_t cbap_queue_controller_enable = 0;
++double cbap_qc_soft_fraction = 0.5;      // preflight value, not a paper param
++// M_safe: measured prediction uncertainty + uncovered packet
++// granularity. Set from the measured residual, not guessed.
++uint64_t cbap_qc_safety_margin_bytes = 0;
++double cbap_qc_max_boost_ratio = 0.30;
++double cbap_qc_h_guard_us = 175.0;       // measured worst case, quantised
++double cbap_qc_app_hard_delay_us = 838.86;
++string cbap_qc_trace_file;
++static FILE *cbap_qc_trace_csv = NULL;
+ string cbap_pfc_audit_file;
+ static FILE *cbap_pfc_audit_csv = NULL;
+ // Per-ingress-port PFC detail: every port that actually feeds the bottleneck
+@@ -692,6 +703,20 @@ void ReadCbapInputs(){
+ 	config.initialReleaseRatio = cbap_initial_release_ratio;
+ 	// Microseconds in the config file, seconds in the model: convert once here
+ 	// so the control formulas never mix units.
++	config.queueControllerEnable = (cbap_queue_controller_enable != 0);
++	config.qcSoftFraction = cbap_qc_soft_fraction;
++	config.qcMaxBoostRatio = cbap_qc_max_boost_ratio;
++	config.qcHGuardS = cbap_qc_h_guard_us * 1e-6;
++	config.qcAppHardDelayS = cbap_qc_app_hard_delay_us * 1e-6;
++	config.qcOnWirePacketBytes = cbap_max_wire_packet_bytes;
++	config.qcPayloadPacketBytes = packet_payload_size;
++	config.qcSafetyMarginBytes = cbap_qc_safety_margin_bytes;
++	// Mutually exclusive: both scale the same capacity, so running them
++	// together would double-count the congestion response.  The credit path is
++	// EXPERIMENTAL/NOT VALID and must not be revived alongside the controller.
++	if (cbap_queue_controller_enable != 0 && cbap_delay_credit_enable != 0)
++		ConfigError("CBAP_QUEUE_CONTROLLER_ENABLE and "
++			"CBAP_DELAY_CREDIT_ENABLE are mutually exclusive");
+ 	config.delayCreditEnable = (cbap_delay_credit_enable != 0);
+ 	config.queueDelayTargetS = cbap_queue_delay_target_us * 1e-6;
+ 	config.queueDelayHardLimitS = cbap_queue_delay_hard_limit_us * 1e-6;
+@@ -960,6 +985,60 @@ static void CbapActuationAtBottleneck(Ptr<const Packet> original,
+ 		(unsigned long)(now - pend.commandNs), (unsigned long)ch.udp.seq);
+ }
+ 
++// Queue-controller trace.  Records every field item 9 requires so the two
++// preflight runs can be audited without re-deriving anything.
++static void SampleCbapQcTrace(uint32_t linkId, uint64_t queueBytes,
++		uint64_t capacityBps){
++	if (!cbap_qc_trace_csv)
++		return;
++	RdmaHw::CbapQcSnapshot qc;
++	if (!RdmaHw::GetCbapQcStateForAudit(linkId, &qc))
++		return;
++	const char *zone = qc.zone == 3 ? "RED" :
++		(qc.zone == 2 ? "YELLOW-DRAIN" :
++		 (qc.zone == 1 ? "YELLOW-HOLD" : "GREEN"));
++	const double sumR = (double)capacityBps + (double)qc.boostEffectiveBps -
++		(double)qc.drainTargetBps;
++	// q0 is the controller's OWN epoch sample; queueBytes read here is the
++	// NEXT sample and is reported separately as q_next. Pairing this row's
++	// Q_stop with q_next is what produced 3968 phantom "Q_stop < Q_current".
++	fprintf(cbap_qc_trace_csv,
++		"%lu,%u,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%lu,%.0f,%s,%lu,%lu,%lu,%lu,%lu,"
++		"%lu,%lu,%lu,%lu,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u\n",
++		(unsigned long)Simulator::Now().GetTimeStep(), linkId,
++		(unsigned long)qc.epochId,
++		(unsigned long)qc.q0Bytes,
++		(unsigned long)queueBytes,
++		(unsigned long)qc.qStopBytes,
++		(unsigned long)qc.qSafeBytes,
++		(unsigned long)qc.boostCommandedBps,
++		(unsigned long)qc.boostEffectiveBps,
++		(unsigned long)qc.drainTargetBps,
++		sumR, zone,
++		(unsigned long)qc.pendingGeneration,
++		(unsigned long)qc.floorWireBps,
++		(unsigned long)qc.floorPayloadBps,
++		(unsigned long)qc.drainMaxWireBps,
++		(unsigned long)qc.arrivalSafeWireBps,
++		(unsigned long)qc.senderEffectiveWireBps,
++		(unsigned long)qc.duplicateQpCount,
++		(unsigned long)qc.invariantViolations,
++		(unsigned long)qc.prefixMaxIndex,
++		qc.protectedCount,
++		qc.ownsRates ? 1u : 0u,
++		qc.exitRecoveryPending ? 1u : 0u,
++		// defect C: the three sets, reported separately so the assertion
++		// floor=65 / newgen=64 / oldside=1 is checkable per epoch.
++		qc.floorCount,
++		qc.newGenCount,
++		qc.oldSideCount,
++		qc.ledgerCount,
++		// defect B lifecycle counters
++		qc.ownershipTransitions,
++		qc.scopeViolations,
++		qc.pathMetadataMissing);
++}
++
+ // Sample every input of the real PFC predicate on the bottleneck switch.
+ // Read-only: uses the same accessors CheckShouldPause uses, changes nothing.
+ static void SampleCbapPfcAudit(uint32_t linkId, uint64_t egressQueueBytes){
+@@ -1078,6 +1157,7 @@ RdmaHw::CbapPortSnapshot ReadCbapPort(uint32_t linkId){
+ 	snapshot.queueBytes =
+ 		sw->GetEgressQueueBytes(definition->second.ifIndex);
+ 	SampleCbapPfcAudit(linkId, snapshot.queueBytes);
++	SampleCbapQcTrace(linkId, snapshot.queueBytes, snapshot.capacityBps);
+ 	snapshot.ingressBytes =
+ 		sw->GetRxBytes(definition->second.ifIndex);
+ 	snapshot.txBytes = sw->GetTxBytes(definition->second.ifIndex);
+@@ -3154,6 +3234,20 @@ int main(int argc, char *argv[])
+ 				conf>>cbap_port_summary_file;
+ 			else if(key.compare("CBAP_PFC_AUDIT_FILE")==0)
+ 				conf>>cbap_pfc_audit_file;
++			else if(key.compare("CBAP_QUEUE_CONTROLLER_ENABLE")==0)
++				conf>>cbap_queue_controller_enable;
++			else if(key.compare("CBAP_QC_SOFT_FRACTION")==0)
++				conf>>cbap_qc_soft_fraction;
++			else if(key.compare("CBAP_QC_SAFETY_MARGIN_BYTES")==0)
++				conf>>cbap_qc_safety_margin_bytes;
++			else if(key.compare("CBAP_QC_MAX_BOOST_RATIO")==0)
++				conf>>cbap_qc_max_boost_ratio;
++			else if(key.compare("CBAP_QC_H_GUARD_US")==0)
++				conf>>cbap_qc_h_guard_us;
++			else if(key.compare("CBAP_QC_APP_HARD_DELAY_US")==0)
++				conf>>cbap_qc_app_hard_delay_us;
++			else if(key.compare("CBAP_QC_TRACE_FILE")==0)
++				conf>>cbap_qc_trace_file;
+ 			else if(key.compare("CBAP_PFC_PORTS_FILE")==0)
+ 				conf>>cbap_pfc_ports_file;
+ 			else if(key.compare("CBAP_ACTUATION_FILE")==0)
+@@ -4602,6 +4696,21 @@ int main(int argc, char *argv[])
+ 	//
+ 	// Now, do the actual simulation.
+ 	//启动仿真
++	if (!cbap_qc_trace_file.empty()){
++		cbap_qc_trace_csv = fopen(cbap_qc_trace_file.c_str(), "w");
++		if (cbap_qc_trace_csv)
++			fprintf(cbap_qc_trace_csv,
++				"time_ns,link_id,epoch_id,q0,q_next,q_stop,q_safe,"
++				"boost_commanded,boost_effective,drain,sumR_effective,"
++				"zone,pending_generation,floor_wire_bps,floor_payload_bps,"
++				"drain_max_wire_bps,arrival_safe_wire_bps,"
++				"sender_effective_wire_bps,duplicate_qp_count,"
++				"invariant_violations,prefix_max_index,protected_count,"
++				"owns_rates,exit_recovery_pending,"
++				"floor_count,new_gen_count,old_side_count,ledger_count,"
++				"ownership_transitions,scope_violations,"
++				"path_metadata_missing\n");
++	}
+ 	if (!cbap_pfc_ports_file.empty()){
+ 		cbap_pfc_ports_csv = fopen(cbap_pfc_ports_file.c_str(), "w");
+ 		if (cbap_pfc_ports_csv)
+diff --git a/simulation/src/point-to-point/model/rdma-hw.cc b/simulation/src/point-to-point/model/rdma-hw.cc
+index 3b318bc..6e2814a 100644
+--- a/simulation/src/point-to-point/model/rdma-hw.cc
++++ b/simulation/src/point-to-point/model/rdma-hw.cc
+@@ -49,6 +49,53 @@ std::map<uint32_t, RdmaHw::CbapLinkRuntime> RdmaHw::s_cbapLinks;
+ std::map<uint32_t, std::vector<uint32_t> > RdmaHw::s_cbapFlowPaths;
+ void (*RdmaHw::s_cbapActuationHook)(uint32_t, uint64_t, uint64_t) = NULL;
+ 
++bool RdmaHw::GetCbapQcStateForAudit(uint32_t linkId, CbapQcSnapshot *out)
++{
++	std::map<uint32_t, CbapLinkRuntime>::const_iterator it =
++		s_cbapLinks.find(linkId);
++	if (it == s_cbapLinks.end() || !out)
++		return false;
++	out->boostEffectiveBps = it->second.qcBoostEffectiveBps;
++	out->boostCommandedBps = it->second.qcBoostCommandedBps;
++	out->pendingGeneration = it->second.qcPendingGeneration;
++	out->drainTargetBps = it->second.qcDrainTargetBps;
++	out->guardExceeded = it->second.qcGuardExceeded;
++	out->queueBytes = it->second.latest.queueBytes;
++	out->zone = it->second.qcZone;
++	out->activeSenders = it->second.qcActiveSenders;
++	out->qStopBytes = it->second.qcQStopBytes;
++	out->qSafeBytes = it->second.qcQSafeBytes;
++	out->floorBps = it->second.qcFloorBps;
++	out->drainMaxBps = it->second.qcDrainMaxBps;
++	out->pendingExcessBytes = it->second.qcPendingExcessBytes;
++	out->invariantViolations = it->second.qcInvariantViolations;
++	out->protectedCount =
++		(uint32_t)it->second.qcProtectedQps.size();
++	out->q0Bytes = it->second.qcQ0Bytes;
++	out->epochId = it->second.qcEpochId;
++	out->prefixMaxIndex = it->second.qcPrefixMaxIndex;
++	out->floorWireBps = it->second.qcFloorWireBps;
++	out->floorPayloadBps = it->second.qcFloorPayloadBps;
++	out->drainMaxWireBps = it->second.qcDrainMaxWireBps;
++	out->arrivalSafeWireBps = it->second.qcArrivalSafeWireBps;
++	out->senderEffectiveWireBps = it->second.qcSenderEffectiveWireBps;
++	out->duplicateQpCount = it->second.qcDuplicateQpCount;
++	out->ownsRates = it->second.qcOwnsRates;
++	out->activeGenerationId = it->second.qcActiveGenerationId;
++	out->ownedMemberCount = it->second.qcOwnedMemberCount;
++	out->ledgerCount = (uint32_t)it->second.qcLedger.size();
++	out->floorCount = (uint32_t)it->second.qcFloorProtectedQps.size();
++	out->newGenCount = (uint32_t)it->second.qcNewGenerationQps.size();
++	out->oldSideCount = (uint32_t)it->second.qcOldSideQps.size();
++	out->ownershipTransitions = it->second.qcOwnershipTransitions;
++	out->scopeViolations = it->second.qcScopeViolations;
++	out->pathMetadataMissing = it->second.qcPathMetadataMissing;
++	out->handoffPending = it->second.qcHandoffPending;
++	out->exitRecoveryPending = it->second.qcExitRecoveryPending;
++	out->inRed = it->second.qcInRed;
++	return true;
++}
++
+ Ptr<RdmaQueuePair> RdmaHw::GetCbapQpForAudit(uint32_t flowId)
+ {
+ 	std::map<uint32_t, CbapFlowRuntime>::const_iterator it =
+@@ -180,6 +227,45 @@ bool RdmaHw::UsesBopQbCredit(uint32_t mode)
+ 	return IsBopQbMode(mode) || mode == CC_MODE_BOP_QB_PRT;
+ }
+ 
++uint64_t RdmaHw::CbapPayloadBytesPerPacket(void)
++{
++	return s_cbapConfig.qcPayloadPacketBytes > 0 ?
++		s_cbapConfig.qcPayloadPacketBytes : 1000;
++}
++
++uint64_t RdmaHw::CbapLinkBytesPerPacket(void)
++{
++	// What the link serializes and what the queue counts: a full-payload DATA
++	// packet's packet->GetSize().  CustomHeader::GetStaticWholeHeaderSize() is
++	// eth(14) + ipv4(20) + udp(8 + pg + seq + IntHeader::GetStaticSize()), and
++	// IntHeader::mode is NONE for CC_MODE 30, giving 1048 B.  Deriving it here
++	// means it tracks the header layout automatically instead of being a second
++	// hand-maintained constant.
++	if (s_cbapConfig.qcLinkBytesPerPacket > 0)
++		return s_cbapConfig.qcLinkBytesPerPacket;
++	return CbapPayloadBytesPerPacket() +
++		CustomHeader::GetStaticWholeHeaderSize();
++}
++
++long double RdmaHw::CbapPayloadToLinkRatio(void)
++{
++	const uint64_t pay = CbapPayloadBytesPerPacket();
++	if (pay == 0)
++		return 1.0L;
++	return (long double)CbapLinkBytesPerPacket() / (long double)pay;
++}
++
++uint64_t RdmaHw::PayloadRateToLinkRate(uint64_t payloadBps)
++{
++	return (uint64_t)((long double)payloadBps * CbapPayloadToLinkRatio());
++}
++
++uint64_t RdmaHw::LinkRateToPayloadRate(uint64_t linkBps)
++{
++	const long double r = CbapPayloadToLinkRatio();
++	return r > 0.0L ? (uint64_t)((long double)linkBps / r) : linkBps;
++}
++
+ bool RdmaHw::UsesHpccTelemetryMode(uint32_t mode)
+ {
+ 	return mode == 3 ||
+@@ -440,6 +526,333 @@ RdmaHw::GetCbapDelayCreditRecords()
+ // the queue implied by sending at the granted budget for one horizon must not
+ // cross the hard bound.  The credit is truncated to satisfy that, rather than
+ // warned about afterwards.
++// Queue-bounded boost/drain controller, one control epoch.  Method D:
++// boost is a PERSISTENT ABSOLUTE TARGET with a single pending transition.
++//
++// Mirrors controller_state_machine_test.py (31/31).  A disagreement between the
++// two is itself a finding.
++//
++//   sumR_target = C + boost_target - drain_target,   both >= 0, never both > 0
++//
++//   Q_stop = max(0, Q + max(excess_effective, excess_pending) * H_guard / 8)
++//            -> drives the SOFT/pressure decision
++//   Q_safe = Q_stop + packetization_margin   (applied once, never accumulated)
++//            -> hard-bound and PFC safety only
++//
++// boost_effective persists until a new absolute target replaces it: it does NOT
++// expire with H_guard and never reverts to C.  "One pending generation" forbids
++// overlapping UNCONFIRMED commands only, not the holding of an effective boost.
++//
++// This function shares NOTHING with the EXPERIMENTAL/NOT VALID delay-credit
++// path below: separate config fields, separate state, separate call site.
++void RdmaHw::QueueControllerEpoch(CbapLinkRuntime &runtime, uint64_t nowNs,
++		uint64_t queueBytes, uint64_t rEffectiveBps,
++		uint64_t pendingExcessBytes, uint32_t activeSenders, bool pfcSafe,
++		uint64_t inFlightArrivalBytes, uint64_t minRateBps)
++{
++	// Gate 1: provably inert when disabled -- returns before touching state.
++	if (!s_cbapConfig.queueControllerEnable)
++		return;
++	(void)rEffectiveBps;
++	(void)pendingExcessBytes;
++	(void)inFlightArrivalBytes;
++	(void)minRateBps;
++	// EVERYTHING below is in the WIRE domain: the queue, the link capacity and
++	// the arrival rate all count wire bytes.  MIN_RATE is configured in the
++	// PAYLOAD domain, so it is converted per QP before being summed.  Mixing
++	// the two is what made a "6.5 G floor" never reconcile with a 10 G link.
++	const long double cWire = (long double)runtime.config.capacityBps;
++	if (cWire <= 0.0L || s_cbapConfig.qcHGuardS <= 0.0)
++		return;
++
++	// --- one queue sample per epoch, used for control AND for the trace ----
++	runtime.qcQ0Bytes = queueBytes;
++	runtime.qcEpochId++;
++	const long double q0 = (long double)queueBytes;
++
++	const long double hGuard = (long double)s_cbapConfig.qcHGuardS;
++	const long double qAbs =
++		(long double)s_cbapConfig.qcAppHardDelayS * cWire / 8.0L;
++	const long double maxBoost =
++		(long double)s_cbapConfig.qcMaxBoostRatio * cWire;
++	const long double mAct = maxBoost * hGuard / 8.0L;
++	const long double mSafe = (long double)s_cbapConfig.qcSafetyMarginBytes;
++	const long double qRed = qAbs - mSafe;
++	const long double qHigh = qRed - mAct;
++	const long double qLow = (long double)s_cbapConfig.qcSoftFraction * qAbs;
++	if (!(qLow > 0.0L && qLow < qHigh && qHigh < qRed && qRed < qAbs)) {
++		runtime.qcBandInvalid = 1;
++		return;
++	}
++
++	// --- ownership: no rates owned means no boost, no drain, DRAIN_MAX = 0 --
++	// Previously, once the protected set emptied after the batch, the floor
++	// collapsed and DRAIN_MAX approached C (~9.8 G of illegal drain权).
++	if (!runtime.qcOwnsRates) {
++		runtime.qcBoostEffectiveBps = 0;
++		runtime.qcDrainTargetBps = 0;
++		runtime.qcBoostCommandedBps = 0;
++		runtime.qcDrainCommandedBps = 0;
++		runtime.qcPendingGeneration = 0;
++		runtime.qcDrainMaxWireBps = 0;   // nothing steered => no drain right
++		// The floor SET still exists (the background flow is still live and
++		// still guaranteed MIN_RATE), so report it rather than zeroing it.
++		// DRAIN_MAX stays 0 regardless: no generation, no steering.
++		{
++			long double fp = 0.0L, fw = 0.0L;
++			for (std::map<uint32_t, CbapQpLedger>::const_iterator it =
++					runtime.qcLedger.begin();
++					it != runtime.qcLedger.end(); ++it) {
++				if (!it->second.inFloor)
++					continue;
++				const long double pay =
++					(long double)it->second.minRatePayloadBps;
++				const long double rr = it->second.payloadPacketBytes > 0 ?
++					(long double)it->second.wirePacketBytes /
++					(long double)it->second.payloadPacketBytes : 1.0L;
++				fp += pay;
++				fw += pay * rr;
++			}
++			runtime.qcFloorPayloadBps = (uint64_t)fp;
++			runtime.qcFloorWireBps = (uint64_t)fw;
++		}
++		runtime.qcZone = 0;
++		runtime.qcQStopBytes = queueBytes;
++		runtime.qcQSafeBytes = (uint64_t)(q0 + mSafe);
++		return;
++	}
++
++	// --- floor from the UNIQUE protected set, per QP, converted to wire -----
++	// floor_wire = sum over unique QPs of min_rate_payload * wire/payload.
++	// No separate background term: the background QP is a member like any
++	// other, and adding it twice is exactly what produced 6.600 G.
++	long double floorPayload = 0.0L;
++	long double floorWire = 0.0L;
++	uint64_t dup = 0;
++	std::set<uint32_t> seen;
++	for (std::map<uint32_t, CbapQpLedger>::const_iterator it =
++			runtime.qcLedger.begin(); it != runtime.qcLedger.end(); ++it) {
++		// DEFECT C: the floor covers the FLOOR set, not the steered set.
++		// Summing over ownsRate gave 64 shares (6.7072 G) during overlap and
++		// 0 shares (DRAIN_MAX = 1.0 C) once the batch drained.
++		if (!it->second.inFloor)
++			continue;
++		if (!seen.insert(it->first).second) {
++			dup++;
++			continue;
++		}
++		const long double pay = (long double)it->second.minRatePayloadBps;
++		const long double ratio = it->second.payloadPacketBytes > 0 ?
++			(long double)it->second.wirePacketBytes /
++			(long double)it->second.payloadPacketBytes : 1.0L;
++		floorPayload += pay;
++		floorWire += pay * ratio;
++	}
++	runtime.qcDuplicateQpCount = dup;
++	runtime.qcFloorPayloadBps = (uint64_t)floorPayload;
++	runtime.qcFloorWireBps = (uint64_t)floorWire;
++	long double drainMax = cWire > floorWire ? cWire - floorWire : 0.0L;
++	runtime.qcDrainMaxWireBps = (uint64_t)drainMax;
++
++	const long double deadband =
++		(long double)s_cbapConfig.qcOnWirePacketBytes * 8.0L / hGuard;
++
++	// --- confirmation: a command whose deadline has passed becomes effective
++	for (std::map<uint32_t, CbapQpLedger>::iterator it =
++			runtime.qcLedger.begin(); it != runtime.qcLedger.end(); ++it) {
++		if (it->second.commandedWireBps == 0 && !it->second.pendingUp &&
++				!it->second.pendingDown)
++			continue;
++		if (nowNs >= it->second.effectDeadlineNs) {
++			it->second.oldWireBps = it->second.commandedWireBps;
++			it->second.senderEffectiveWireBps = it->second.commandedWireBps;
++			it->second.predictedArrivalWireBps = it->second.commandedWireBps;
++			it->second.pendingUp = false;
++			it->second.pendingDown = false;
++		}
++	}
++	if (runtime.qcPendingGeneration != 0 && nowNs >= runtime.qcPendingEtaNs) {
++		runtime.qcBoostEffectiveBps = runtime.qcBoostCommandedBps;
++		runtime.qcDrainTargetBps = runtime.qcDrainCommandedBps;
++		runtime.qcActualEffectTimeNs = nowNs;
++		runtime.qcBoostCommandedBps = 0;
++		runtime.qcDrainCommandedBps = 0;
++		runtime.qcPendingGeneration = 0;
++		runtime.qcPendingEtaNs = 0;
++	}
++
++	// --- safe arrival envelope, per QP ------------------------------------
++	// A pending SLOWDOWN may not be believed before its deadline: the
++	// bottleneck is still receiving old-rate packets.  A pending SPEED-UP is
++	// counted immediately, because that is the conservative direction.
++	long double arrivalSafe = 0.0L;
++	long double senderEff = 0.0L;
++	long double arrivalAfterDeadline = 0.0L;
++	uint64_t earliestDeadline = 0;
++	for (std::map<uint32_t, CbapQpLedger>::const_iterator it =
++			runtime.qcLedger.begin(); it != runtime.qcLedger.end(); ++it) {
++		if (!it->second.ownsRate)
++			continue;
++		const long double oldR = (long double)it->second.oldWireBps;
++		const long double cmdR = (long double)it->second.commandedWireBps;
++		senderEff += (long double)it->second.senderEffectiveWireBps;
++		if (it->second.pendingDown && nowNs < it->second.effectDeadlineNs) {
++			// safe upper envelope: keep the OLD (higher) rate until deadline
++			arrivalSafe += oldR > cmdR ? oldR : cmdR;
++			arrivalAfterDeadline += cmdR;
++			if (earliestDeadline == 0 ||
++					it->second.effectDeadlineNs < earliestDeadline)
++				earliestDeadline = it->second.effectDeadlineNs;
++		} else if (it->second.pendingUp) {
++			arrivalSafe += cmdR > oldR ? cmdR : oldR;
++			arrivalAfterDeadline += cmdR > oldR ? cmdR : oldR;
++		} else {
++			arrivalSafe += it->second.predictedArrivalWireBps;
++			arrivalAfterDeadline += it->second.predictedArrivalWireBps;
++		}
++	}
++	runtime.qcArrivalSafeWireBps = (uint64_t)arrivalSafe;
++	runtime.qcSenderEffectiveWireBps = (uint64_t)senderEff;
++
++	// --- Q_stop as max prefix, starting AT tau = 0 (so Q_stop >= q0) -------
++	long double tau = hGuard;
++	if (earliestDeadline > nowNs) {
++		tau = (long double)(earliestDeadline - nowNs) / 1e9L;
++		if (tau > hGuard)
++			tau = hGuard;
++	}
++	const long double q1 = q0 + (arrivalSafe - cWire) * tau / 8.0L;
++	const long double q2 = q1 +
++		(arrivalAfterDeadline - cWire) * (hGuard - tau) / 8.0L;
++	long double qStop = q0;
++	runtime.qcPrefixMaxIndex = 0;
++	if (q1 > qStop) {
++		qStop = q1;
++		runtime.qcPrefixMaxIndex = 1;
++	}
++	if (q2 > qStop) {
++		qStop = q2;
++		runtime.qcPrefixMaxIndex = 2;
++	}
++	if (qStop < q0)
++		runtime.qcInvariantViolations++;   // impossible by construction
++
++	const long double qSafe = qStop + mSafe;
++	runtime.qcQStopBytes = (uint64_t)qStop;
++	runtime.qcQSafeBytes = (uint64_t)qSafe;
++	if (qSafe > qAbs)
++		runtime.qcQSafeOverAbs++;
++
++	// --- zones, with the corrected RED hysteresis -------------------------
++	bool pendingUpAny = false;
++	for (std::map<uint32_t, CbapQpLedger>::const_iterator it =
++			runtime.qcLedger.begin(); it != runtime.qcLedger.end(); ++it)
++		if (it->second.ownsRate && it->second.pendingUp)
++			pendingUpAny = true;
++	const bool redEnter = (qSafe >= qAbs) || (q0 >= qAbs) || !pfcSafe;
++	// Exit uses Q_stop and Q_current against Q_high directly.  Using
++	// Q_safe < Q_high would subtract M_safe a SECOND time and held RED for
++	// ~40 ms after the queue had already fallen below Q_high.
++	const bool redExit = (qStop <= qHigh) && (q0 <= qHigh) && pfcSafe &&
++		!pendingUpAny;
++	uint32_t zone;
++	if (redEnter || (runtime.qcInRed && !redExit))
++		zone = 3;
++	else if (qStop > qHigh)
++		zone = 2;
++	else if (qStop >= qLow)
++		zone = 1;
++	else
++		zone = 0;
++	runtime.qcInRed = (zone == 3);
++	runtime.qcZone = zone;
++	runtime.qcActiveSenders = activeSenders;
++
++	if (zone == 3) {
++		runtime.qcBoostCommandedBps = 0;
++		runtime.qcDrainCommandedBps = (uint64_t)drainMax;
++		runtime.qcBoostEffectiveBps = 0;
++		runtime.qcDrainTargetBps = (uint64_t)drainMax;
++		runtime.qcPendingGeneration = 0;
++		runtime.qcPendingEtaNs = 0;
++		return;
++	}
++	// After leaving RED, never jump straight back to BOOST while the batch is
++	// still draining: zone 2/1 handle that, and exit recovery forbids upward.
++	if (runtime.qcExitRecoveryPending && zone == 0)
++		zone = 1;
++
++	long double desired;
++	if (zone == 2) {
++		const long double span = qRed - qHigh;
++		long double x = span > 0.0L ? (qStop - qHigh) / span : 1.0L;
++		if (x < 0.0L)
++			x = 0.0L;
++		if (x > 1.0L)
++			x = 1.0L;
++		desired = -drainMax * x;
++	} else if (zone == 1) {
++		desired = 0.0L;
++	} else {
++		long double x = qLow > 0.0L ? (qLow - qStop) / qLow : 1.0L;
++		if (x < 0.0L)
++			x = 0.0L;
++		if (x > 1.0L)
++			x = 1.0L;
++		desired = maxBoost * x;
++	}
++	if (runtime.qcExitRecoveryPending && desired > 0.0L)
++		desired = 0.0L;               // no upward command during recovery
++	// Handoff in progress: the batch is done and the current effective rate is
++	// being handed back.  Close out, do not steer.
++	if (runtime.qcHandoffPending)
++		desired = 0.0L;
++	if (desired < -drainMax)
++		desired = -drainMax;
++	// The total target may never fall below the floor of the FLOOR set.  With
++	// the background flow included this is 6.812 G, so DRAIN_MAX is bounded by
++	// C - 6.812 G = 3.188 G and can no longer approach C.
++	if (cWire + desired < floorWire)
++		desired = floorWire - cWire;
++
++	const long double curU = (long double)runtime.qcBoostEffectiveBps -
++		(long double)runtime.qcDrainTargetBps;
++	if (runtime.qcPendingGeneration != 0) {
++		const long double pend =
++			(long double)runtime.qcBoostCommandedBps -
++			(long double)runtime.qcDrainCommandedBps;
++		if (desired < pend - deadband) {
++			runtime.qcGenerationCounter++;
++			runtime.qcRBeforeCommandBps = (uint64_t)(cWire + curU);
++			runtime.qcBoostCommandedBps =
++				(uint64_t)(desired > 0.0L ? desired : 0.0L);
++			runtime.qcDrainCommandedBps =
++				(uint64_t)(desired < 0.0L ? -desired : 0.0L);
++			runtime.qcRCommandedBps = (uint64_t)(cWire + desired);
++			runtime.qcPendingGeneration = runtime.qcGenerationCounter;
++			runtime.qcCommandTimeNs = nowNs;
++			runtime.qcPendingEtaNs = nowNs + (uint64_t)(hGuard * 1e9L);
++			runtime.qcExpectedEffectTimeNs = runtime.qcPendingEtaNs;
++		}
++		return;
++	}
++	long double delta = desired - curU;
++	if (delta < 0.0L)
++		delta = -delta;
++	if (delta < deadband)
++		return;
++	runtime.qcGenerationCounter++;
++	runtime.qcRBeforeCommandBps = (uint64_t)(cWire + curU);
++	runtime.qcBoostCommandedBps = (uint64_t)(desired > 0.0L ? desired : 0.0L);
++	runtime.qcDrainCommandedBps = (uint64_t)(desired < 0.0L ? -desired : 0.0L);
++	runtime.qcRCommandedBps = (uint64_t)(cWire + desired);
++	runtime.qcPendingGeneration = runtime.qcGenerationCounter;
++	runtime.qcCommandTimeNs = nowNs;
++	runtime.qcPendingEtaNs = nowNs + (uint64_t)(hGuard * 1e9L);
++	runtime.qcExpectedEffectTimeNs = runtime.qcPendingEtaNs;
++}
++
++
+ uint64_t RdmaHw::ComputeDelayCreditBudget(CbapLinkRuntime &runtime,
+ 	uint64_t queueBytes, uint32_t newFlowCount, uint64_t nowNs,
+ 	uint32_t epoch, CbapDelayCreditRecord *out)
+@@ -1222,6 +1635,299 @@ void RdmaHw::DeliverCbapPortSummary(uint32_t linkId,
+ 		crec.oversubscribed = crec.sumTargetBps > snapshot.capacityBps;
+ 		s_cbapDelayCreditRecords.push_back(crec);
+ 	}
++	// Queue-bounded boost/drain controller (method D).  Separate from the
++	// EXPERIMENTAL credit path above: its own flag, its own state, and it never
++	// runs together with it -- delayCreditEnable and queueControllerEnable are
++	// mutually exclusive by preflight assertion in third.cc.
++	//
++	// Ordered after the flow census for the same reason the credit call is: the
++	// packetization margin scales with the active sender count.
++	if (s_cbapConfig.queueControllerEnable) {
++		uint32_t nActive = record.activeControlledFlows +
++			record.pendingControlledFlows;
++		// --- per-QP ledger, keyed by QP identity so the set is UNIQUE -------
++		// The background flow is a member like any other: counting it again
++		// through a separate term is what produced a 6.600 G floor where 65
++		// unique QPs give 6.500 G payload / 6.812 G wire.
++		// DEFECT A: this used qcOnWirePacketBytes (= 1064, a hand-set
++		// SAFETY MARGIN) as the conversion numerator, inflating the floor by
++		// one 104.8 Mbps share (6.916 G observed vs 6.812 G correct).  The
++		// link serializes 1048 B, so that is the only legal numerator.
++		const uint64_t payloadBytes = CbapPayloadBytesPerPacket();
++		const uint64_t wireBytes = CbapLinkBytesPerPacket();
++		// --- (0) which batch, if any, does the controller own? -------------
++		// A controlled generation exists only while the NEWEST admitted CBAP
++		// batch still has a live member on this link.  "The ledger is
++		// non-empty" is not evidence of ownership -- that equivalence is
++		// defect B, and it kept the controller running for the whole 3 s run.
++		//
++		// The discriminator is the batch, NOT the flow's identity: in S3 the
++		// background flow (src host 65, pg=0, t=0.5 s) is a first-class member
++		// of s_cbapFlows with its own path row, admitted in its own earlier
++		// batch, and the 64 incast flows (pg=3, t=1.9 s) arrive later as a
++		// separate batch.  Selecting the newest live batch therefore excludes
++		// the background flow while the incast batch is running, and excludes
++		// EVERYTHING once the incast batch has drained -- which is precisely
++		// the 384,944 single-member epochs that produced DRAIN_MAX = 0.9894 C.
++		//
++		// Deliberately NOT special-cased on flow id, host 65, or a hardcoded
++		// member count: the rule is structural.
++		uint32_t ownedBatch = 0;
++		bool ownedBatchFound = false;
++		for (std::map<uint32_t, CbapFlowRuntime>::const_iterator flow =
++				s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow) {
++			if (!flow->second.active || flow->second.finished ||
++					!flow->second.qp || !flow->second.hw)
++				continue;
++			std::map<uint32_t, std::vector<uint32_t> >::const_iterator pit =
++				s_cbapFlowPaths.find(flow->first);
++			if (pit == s_cbapFlowPaths.end())
++				continue;
++			if (std::find(pit->second.begin(), pit->second.end(), linkId) ==
++					pit->second.end())
++				continue;
++			if (!ownedBatchFound || flow->second.batchId > ownedBatch) {
++				ownedBatch = flow->second.batchId;
++				ownedBatchFound = true;
++			}
++		}
++		// A generation must be a genuine controlled batch: the SBA allocator
++		// only grants to batches it admitted, so a batch id of 0 means "no
++		// controlled admission happened", and the controller owns nothing.
++		if (ownedBatch == 0)
++			ownedBatchFound = false;
++
++		// --- defect C: build the THREE sets in one scan --------------------
++		// floorProtectedQps is every live CBAP flow on this link, so the
++		// background flow keeps its MIN_RATE guarantee for the whole run and
++		// DRAIN_MAX can never reach C.  newGenerationQps is the newest batch
++		// only.  oldSideQps is the remainder -- the same discriminator
++		// ReplanCbapSbaMigrationTargets uses (batchId == newestBatch), so the
++		// two never disagree about which side a flow is on.
++		runtime.qcFloorProtectedQps.clear();
++		runtime.qcNewGenerationQps.clear();
++		runtime.qcOldSideQps.clear();
++		for (std::map<uint32_t, CbapFlowRuntime>::const_iterator flow =
++				s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow) {
++			if (!flow->second.active || flow->second.finished ||
++					!flow->second.qp || !flow->second.hw)
++				continue;
++			std::map<uint32_t, std::vector<uint32_t> >::const_iterator fpit =
++				s_cbapFlowPaths.find(flow->first);
++			if (fpit == s_cbapFlowPaths.end())
++				continue;
++			if (std::find(fpit->second.begin(), fpit->second.end(), linkId) ==
++					fpit->second.end())
++				continue;
++			// Membership is driven by the authoritative lifecycle flags
++			// (active set at admission, finished set only by
++			// FinishCbapFlow()), never by this epoch's packet activity.
++			runtime.qcFloorProtectedQps.insert(flow->first);
++			if (ownedBatchFound && flow->second.batchId == ownedBatch)
++				runtime.qcNewGenerationQps.insert(flow->first);
++			else
++				runtime.qcOldSideQps.insert(flow->first);
++		}
++		runtime.qcFloorCount = (uint32_t)runtime.qcFloorProtectedQps.size();
++		runtime.qcNewGenCount = (uint32_t)runtime.qcNewGenerationQps.size();
++		runtime.qcOldSideCount = (uint32_t)runtime.qcOldSideQps.size();
++
++		std::set<uint32_t> live;
++		for (std::map<uint32_t, CbapFlowRuntime>::const_iterator flow =
++				s_cbapFlows.begin(); flow != s_cbapFlows.end(); ++flow) {
++			if (!flow->second.active || flow->second.finished ||
++					!flow->second.qp || !flow->second.hw)
++				continue;
++			// (5) Read-only path lookup: find(), never operator[].  An
++			// implicit empty insert would corrupt the
++			// s_cbapFlows.size() == s_cbapFlowPaths.size() consistency check.
++			std::map<uint32_t, std::vector<uint32_t> >::const_iterator pit =
++				s_cbapFlowPaths.find(flow->first);
++			if (pit == s_cbapFlowPaths.end()) {
++				// PATH_METADATA_MISSING_AFTER_OWNERSHIP: only meaningful for a
++				// QP we already own; a missing path can only ever explain
++				// membership REDUCTION, never an extra member.
++				if (runtime.qcLedger.count(flow->first))
++					runtime.qcPathMetadataMissing++;
++				continue;
++			}
++			const std::vector<uint32_t> &path = pit->second;
++			if (std::find(path.begin(), path.end(), linkId) == path.end())
++				continue;
++			// DEFECT C: the ledger holds every FLOOR member, because the
++			// floor must cover the background flow too.  ownsRate marks the
++			// narrower set that is actually STEERED (the newest batch).  The
++			// background flow therefore contributes 100 Mbps to the floor and
++			// is never boosted or drained -- it keeps baseline DCQCN
++			// behaviour and its old-side release semantics.
++			const bool inGeneration = ownedBatchFound &&
++				flow->second.batchId == ownedBatch;
++			CbapQpLedger &led = runtime.qcLedger[flow->first];
++			led.inFloor = true;
++			led.ownsRate = inGeneration;
++			led.generationId = inGeneration ? ownedBatch : 0;
++			led.linkId = linkId;
++			if (inGeneration)
++				live.insert(flow->first);
++			led.minRatePayloadBps = flow->second.hw->m_minRate.GetBitRate();
++			led.payloadPacketBytes = payloadBytes;
++			led.wirePacketBytes = wireBytes;
++			// Sender-effective, converted PAYLOAD -> LINK once, here,
++			// through the single authoritative function.
++			const uint64_t senderWire = PayloadRateToLinkRate(
++				flow->second.qp->m_rate.GetBitRate());
++			led.senderEffectiveWireBps = senderWire;
++			if (led.oldWireBps == 0)
++				led.oldWireBps = senderWire;
++			if (!led.pendingUp && !led.pendingDown)
++				led.predictedArrivalWireBps = senderWire;
++		}
++		// --- (1) completion -> (2) ownership exit -> (3) GC ---------------
++		// Three DISTINCT steps.  A QP that finished loses ownsRate immediately
++		// (so it stops contributing to the floor and to protected_count), but
++		// its ledger entry survives until any in-flight command has closed, and
++		// only then is it garbage-collected.  65 -> 64 -> 63 is a legal
++		// sequence; each step is driven by FinishCbapFlow()'s finished flag,
++		// which is the sole authoritative completion event.
++		for (std::map<uint32_t, CbapQpLedger>::iterator it =
++				runtime.qcLedger.begin(); it != runtime.qcLedger.end(); ) {
++			// (2) ownership exit: idempotent, affects THIS QP only and never
++			// terminates the generation for its peers.  Losing ownsRate is
++			// NOT losing the floor: the background old-side flow is never
++			// steered yet must stay floored for the whole run.
++			const bool stillFloored =
++				runtime.qcFloorProtectedQps.count(it->first) != 0;
++			it->second.inFloor = stillFloored;
++			it->second.ownsRate = live.count(it->first) != 0;
++			// (3) GC keys on FLOOR membership, not on steering membership.
++			// Keying it on `live` -- which holds only generation members --
++			// erased the background flow's entry on the same epoch it was
++			// created, so the floor sum found nothing and returned 0 while
++			// floor_count still reported 1.  That is what made DRAIN_MAX
++			// reach 1.0 C for the last 30 epochs of the batch.
++			if (stillFloored || it->second.ownsRate) {
++				++it;
++				continue;
++			}
++			const bool cmdInFlight =
++				(it->second.pendingUp || it->second.pendingDown) &&
++				record.deliveryTimeNs < it->second.effectDeadlineNs;
++			if (cmdInFlight) {
++				it->second.exitRecoveryPending = true;
++				++it;              // (4) retire deferred: command in flight
++				continue;
++			}
++			runtime.qcLedger.erase(it++);
++		}
++		// protected_count reports the FLOOR set: that is the quantity which
++		// bounds DRAIN_MAX.  The steered set is reported as new_gen_count.
++		runtime.qcProtectedQps = runtime.qcFloorProtectedQps;
++		runtime.qcLedgerCount = (uint32_t)runtime.qcLedger.size();
++		runtime.qcOwnedMemberCount = (uint32_t)live.size();
++
++		// --- (4) ownership / retire ---------------------------------------
++		// DEFECT B was: qcOwnsRates = !qcLedger.empty().  Ownership now
++		// requires a live controlled generation.  Any pending command must
++		// still close before the controller stops, so the batch's last
++		// slowdown is not abandoned mid-flight.
++		bool anyPending = false;
++		for (std::map<uint32_t, CbapQpLedger>::const_iterator it =
++				runtime.qcLedger.begin(); it != runtime.qcLedger.end(); ++it)
++			if (it->second.pendingUp || it->second.pendingDown)
++				anyPending = true;
++		if (runtime.qcPendingGeneration != 0)
++			anyPending = true;
++
++		const bool wasOwning = runtime.qcOwnsRates;
++		if (ownedBatchFound && !live.empty()) {
++			if (!wasOwning) {
++				runtime.qcActiveGenerationId = ownedBatch;
++				runtime.qcOwnershipEnterNs = record.deliveryTimeNs;
++				runtime.qcOwnershipTransitions++;
++			}
++			runtime.qcOwnsRates = true;
++			runtime.qcHandoffPending = false;
++		} else if (wasOwning && anyPending) {
++			// Batch drained or handed off, but commands are still in flight:
++			// stop producing NEW boost/drain, let the ledger close, keep the
++			// current effective rate.  Ownership has not yet been released.
++			runtime.qcHandoffPending = true;
++			runtime.qcOwnsRates = true;
++		} else if (wasOwning) {
++			runtime.qcOwnsRates = false;
++			runtime.qcHandoffPending = false;
++			runtime.qcActiveGenerationId = 0;
++			runtime.qcOwnershipExitNs = record.deliveryTimeNs;
++		} else {
++			runtime.qcOwnsRates = false;
++			runtime.qcHandoffPending = false;
++			runtime.qcActiveGenerationId = 0;
++		}
++		runtime.qcExitRecoveryPending = false;
++		for (std::map<uint32_t, CbapQpLedger>::const_iterator it =
++				runtime.qcLedger.begin(); it != runtime.qcLedger.end(); ++it)
++			if (it->second.exitRecoveryPending)
++				runtime.qcExitRecoveryPending = true;
++
++		const bool pfcSafe = !snapshot.localPaused &&
++			!snapshot.downstreamPaused;
++		QueueControllerEpoch(runtime, record.deliveryTimeNs,
++			record.queueBytes, 0, 0, nActive, pfcSafe, 0, 0);
++
++		// Propagate the aggregate absolute target into per-QP pending state so
++		// the arrival envelope knows which direction each QP is moving.
++		if (runtime.qcPendingGeneration != 0 &&
++				!runtime.qcHandoffPending &&
++				runtime.qcCommandTimeNs == record.deliveryTimeNs) {
++			// DEFECT C: the denominator is the GENERATION size (64), not the
++			// ledger/floor size (65).  Dividing by 65 would hand a share to
++			// the background flow, which must not be steered.
++			const uint32_t genSize = runtime.qcNewGenCount;
++			const long double share = genSize == 0 ? 0.0L :
++				(long double)(runtime.qcBoostCommandedBps -
++					runtime.qcDrainCommandedBps) /
++				(long double)genSize;
++			for (std::map<uint32_t, CbapQpLedger>::iterator it =
++					runtime.qcLedger.begin();
++					it != runtime.qcLedger.end(); ++it) {
++				if (!it->second.ownsRate)
++					continue;
++				// A pending SLOWDOWN must not be superseded by an upward
++				// command: the old high rate is still arriving.
++				if (it->second.pendingDown && share > 0.0L)
++					continue;
++				const long double target =
++					(long double)it->second.senderEffectiveWireBps + share;
++				it->second.generation = (uint32_t)runtime.qcPendingGeneration;
++				it->second.commandTimeNs = runtime.qcCommandTimeNs;
++				it->second.effectDeadlineNs = runtime.qcPendingEtaNs;
++				it->second.commandedWireBps =
++					(uint64_t)(target > 0.0L ? target : 0.0L);
++				it->second.pendingUp = share > 0.0L;
++				it->second.pendingDown = share < 0.0L;
++			}
++		}
++		// HARD INVARIANT (item 4): not owning => no boost, no drain, no rate
++		// command.  Counted rather than asserted so a violation is visible in
++		// the trace instead of aborting a 3 s run.
++		if (!runtime.qcOwnsRates &&
++				(runtime.qcBoostEffectiveBps != 0 ||
++				 runtime.qcDrainTargetBps != 0 ||
++				 runtime.qcBoostCommandedBps != 0 ||
++				 runtime.qcDrainCommandedBps != 0 ||
++				 runtime.qcPendingGeneration != 0))
++			runtime.qcScopeViolations++;
++		long double target = (long double)snapshot.capacityBps +
++			(long double)runtime.qcBoostEffectiveBps -
++			(long double)runtime.qcDrainTargetBps;
++		// Convert the LINK target back to the PAYLOAD domain exactly once,
++		// at the boundary where it is handed to the senders.
++		long double targetPayload = target > 0.0L ?
++			(long double)LinkRateToPayloadRate((uint64_t)target) : 0.0L;
++		long double credited = targetPayload -
++			(long double)runtime.config.backgroundBps;
++		effective = std::max(0.0L, credited);
++	}
+ 	record.effectiveCapacityBps =
+ 		(uint64_t)std::floor(effective);
+ 	runtime.previousEffectiveCapacityBps =
+diff --git a/simulation/src/point-to-point/model/rdma-hw.h b/simulation/src/point-to-point/model/rdma-hw.h
+index f4ef23b..21e32b5 100644
+--- a/simulation/src/point-to-point/model/rdma-hw.h
++++ b/simulation/src/point-to-point/model/rdma-hw.h
+@@ -95,6 +95,17 @@ public:
+ 	static bool IsBopQbMode(uint32_t mode);
+ 	static bool UsesBopQbCredit(uint32_t mode);
+ 	static bool UsesHpccTelemetryMode(uint32_t mode);
++
++	// --- the ONLY sanctioned payload<->link rate conversion (defect A) -----
++	// Derived from the real per-packet link size (1048 B for CC_MODE 30), NOT
++	// from CBAP_MAX_WIRE_PACKET_BYTES.  Every floor, sumR, boost, drain,
++	// arrival rate, served rate and Q_stop uses the LINK domain; conversion to
++	// the payload domain happens only when handing a rate to a sender.
++	static uint64_t CbapLinkBytesPerPacket(void);
++	static uint64_t CbapPayloadBytesPerPacket(void);
++	static long double CbapPayloadToLinkRatio(void);
++	static uint64_t PayloadRateToLinkRate(uint64_t payloadBps);
++	static uint64_t LinkRateToPayloadRate(uint64_t linkBps);
+ 	// True for both SBA variants (DCQCN- and HPCC-based post-handoff).
+ 	static bool IsCbapSbaMode(uint32_t mode);
+ 	static bool IsCbapMode(uint32_t mode);
+@@ -257,6 +268,30 @@ public:
+ 		// and the planner may hand out short-lived credit while the measured
+ 		// queue sits below its target, bounded so the predicted queue after
+ 		// one horizon cannot cross the hard limit.
++		// --- queue-bounded boost/drain controller (method D) ----------------
++		// Deliberately SEPARATE fields from the EXPERIMENTAL/NOT VALID
++		// delay-credit block below.  Nothing here reuses delayCreditEnable,
++		// maxOversubRatio, creditMaxDrainRatio or the queueDelay* fields; that
++		// path stays dead.  All default to off/zero.
++		bool queueControllerEnable;   // CBAP_QUEUE_CONTROLLER_ENABLE, default 0
++		double qcSoftFraction;        // soft = this * app_hard_delay
++		double qcMaxBoostRatio;       // boost_target <= this * C
++		double qcHGuardS;             // H_guard, seconds (measured 175 us)
++		double qcAppHardDelayS;       // message_size * 8 / C
++		uint64_t qcOnWirePacketBytes; // for the packetization margin
++		uint64_t qcSafetyMarginBytes; // M_safe, from the measured residual
++		// PACKET_PAYLOAD_SIZE. Paired with qcOnWirePacketBytes to
++		// convert between the payload domain (MIN_RATE, sender
++		// pacing) and the wire domain (queue bytes, link rate).
++		uint64_t qcPayloadPacketBytes;
++
++		// --- authoritative wire accounting (defect A) -------------------
++		// The controller lives entirely in the LINK byte domain, because
++		// serialization, queue occupancy and served rate all count
++		// packet->GetSize().  MIN_RATE is the only payload-domain input.
++		// qcLinkBytesPerPacket is DERIVED from the header sizes, never from
++		// CBAP_MAX_WIRE_PACKET_BYTES (a safety margin, not a ratio).
++		uint64_t qcLinkBytesPerPacket;
+ 		bool delayCreditEnable;
+ 		double queueDelayTargetS;     // q_target  = C * this / 8
+ 		double queueDelayHardLimitS;  // hard delay budget above q_sync_floor
+@@ -296,6 +331,10 @@ public:
+ 			  migrationRiseSkew(0.35), migrationMaxRtt(5),
+ 			  migrationTrace(false), initialReleaseRatio(0.0),
+ 			  coreInitialRelease(false), etaFeasibilityTrace(false),
++			  queueControllerEnable(false), qcSoftFraction(0.0),
++			  qcMaxBoostRatio(0.0), qcHGuardS(0.0), qcAppHardDelayS(0.0),
++			  qcOnWirePacketBytes(0), qcSafetyMarginBytes(0),
++			  qcPayloadPacketBytes(0), qcLinkBytesPerPacket(0),
+ 			  delayCreditEnable(false), queueDelayTargetS(0.0),
+ 			  queueDelayHardLimitS(0.0), creditHorizonS(0.0),
+ 			  maxOversubRatio(0.0), creditMaxDrainRatio(0.0),
+@@ -762,6 +801,35 @@ public:
+ 	// Returns NULL if the flow is unknown.  Const-correct by contract: callers
+ 	// must not mutate through it, and no control path uses this accessor.
+ 	static Ptr<RdmaQueuePair> GetCbapQpForAudit(uint32_t flowId);
++	// Read-only snapshot of the queue-controller state for one link, for the
++	// trace only.  Returns false if the link is unknown.
++	struct CbapQcSnapshot {
++		uint64_t boostEffectiveBps, boostCommandedBps, pendingGeneration;
++		uint64_t drainTargetBps, guardExceeded, queueBytes;
++		uint32_t zone;
++		uint32_t activeSenders;   // census the controller used
++		// Reported so the trace never recomputes what the controller
++		// already decided -- an earlier trace recomputed q_stop with
++		// the old endpoint formula and reported phantom violations.
++		uint64_t qStopBytes, qSafeBytes;
++		uint64_t floorBps, drainMaxBps;
++		uint64_t pendingExcessBytes;
++		uint64_t invariantViolations;
++		uint32_t protectedCount;
++		// Same-epoch accounting: q0 is THE sample used for control and for
++		// this trace row. q_next belongs to the next epoch and must not be
++		// paired with this row's Q_stop.
++		uint64_t q0Bytes, epochId, prefixMaxIndex;
++		uint64_t floorWireBps, floorPayloadBps, drainMaxWireBps;
++		uint64_t arrivalSafeWireBps, senderEffectiveWireBps;
++		uint64_t duplicateQpCount;
++		bool ownsRates, exitRecoveryPending, inRed;
++		uint32_t activeGenerationId, ownedMemberCount, ledgerCount;
++		uint32_t floorCount, newGenCount, oldSideCount;
++		uint32_t ownershipTransitions, scopeViolations, pathMetadataMissing;
++		bool handoffPending;
++	};
++	static bool GetCbapQcStateForAudit(uint32_t linkId, CbapQcSnapshot *out);
+ 	static void ConfigureCbap(const CbapConfig &config,
+ 			const std::vector<BopMultilinkLink> &links,
+ 			const std::map<uint32_t, std::vector<uint32_t> > &flowPaths);
+@@ -1077,6 +1145,44 @@ public:
+ 		CBAP_QPHASE_SYNC_BURST = 0,
+ 		CBAP_QPHASE_NORMAL = 1
+ 	};
++	// Per-QP pending actuation ledger.  The controller previously used the
++	// SENDER pacing sum as if it were the bottleneck ARRIVAL rate; measured
++	// consequence was a 3.97 G gap (sender 6.6 G while the bottleneck still
++	// received 10.57 G of old-rate packets), which is what drove the queue
++	// 128,329 B past Q_abs.  Arrival must be predicted with a safe envelope
++	// until a command can possibly have taken effect.
++	struct CbapQpLedger {
++		uint32_t generation;
++		uint64_t commandTimeNs;
++		uint64_t effectDeadlineNs;      // commandTimeNs + H_guard
++		uint64_t oldWireBps;            // arrival rate before the command
++		uint64_t commandedWireBps;      // absolute target, never a delta
++		uint64_t senderEffectiveWireBps;
++		uint64_t predictedArrivalWireBps;
++		uint64_t minRatePayloadBps;
++		uint64_t wirePacketBytes;
++		uint64_t payloadPacketBytes;
++		bool pendingUp;
++		bool pendingDown;
++		bool ownsRate;                  // steered by the controller
++		// inFloor: must be guaranteed MIN_RATE.  A superset of ownsRate --
++		// the background old-side flow is inFloor but never steered.
++		bool inFloor;
++		bool exitRecoveryPending;
++		// Link membership and generation captured AT ownership acquisition, so
++		// a later path-metadata loss cannot silently change who is owned.
++		uint32_t generationId;
++		uint32_t linkId;
++		CbapQpLedger()
++			: generation(0), commandTimeNs(0), effectDeadlineNs(0),
++			  oldWireBps(0), commandedWireBps(0),
++			  senderEffectiveWireBps(0), predictedArrivalWireBps(0),
++			  minRatePayloadBps(0), wirePacketBytes(0),
++			  payloadPacketBytes(0), pendingUp(false), pendingDown(false),
++			  ownsRate(false), inFloor(false),
++			  exitRecoveryPending(false),
++			  generationId(0), linkId(0) {}
++	};
+ 	struct CbapLinkRuntime {
+ 		BopMultilinkLink config;
+ 		bool initialized;
+@@ -1089,6 +1195,89 @@ public:
+ 		uint64_t plannerCapacityBps;
+ 		uint64_t rootDetectTimeNs;
+ 		// --- queueing-delay credit state (diagnostic + phase latch) --------
++		// Queue-controller state, per link.  boost_effective PERSISTS until a
++		// new absolute target replaces it: it does not expire with H_guard and
++		// never reverts to C.
++		uint64_t qcBoostEffectiveBps;
++		uint64_t qcBoostCommandedBps;   // the single pending absolute target
++		uint64_t qcPendingGeneration;   // 0 = none pending
++		uint64_t qcDrainTargetBps;
++		uint64_t qcGenerationCounter;
++		uint64_t qcCommandTimeNs;       // when the pending target was issued
++		uint32_t qcZone;                // 0 GREEN, 1 YELLOW, 2 RED
++		uint64_t qcGuardExceeded;       // observed H_eff > H_guard, must stay 0
++		uint32_t qcActiveSenders;       // census used for the margin
++		// Protected QP set for this controller generation: every QP
++		// still present in the rate target/effective vector, i.e. one
++		// that would actually receive this command.  Membership is NOT
++		// "did it happen to send this epoch" -- a paced flow between
++		// packets is still protected.  Removed only on completion,
++		// reclaim or handoff; cleared when the generation ends.
++		std::set<uint32_t> qcProtectedQps;
++		uint64_t qcFloorBps;            // sum of protected minimum rates
++		uint64_t qcDrainMaxBps;         // C - floorBps
++		// Actuation ledger, per item 4.
++		uint64_t qcExpectedEffectTimeNs;
++		uint64_t qcActualEffectTimeNs;
++		uint64_t qcRBeforeCommandBps;
++		uint64_t qcRCommandedBps;
++		uint64_t qcREffectiveBps;
++		uint64_t qcRPendingBps;
++		uint64_t qcPendingExcessBytes;
++		uint64_t qcInFlightArrivalBytes;
++		uint64_t qcInvariantViolations;
++		uint64_t qcExclInactive, qcExclNoQp, qcExclOffPath;
++		// REMOVED: qcBackgroundFloorBps.  It double-counted the background
++		// flow, which is already a member of qcProtectedQps -- 65 members
++		// plus one extra gave 6.600 G where 65 unique QPs give 6.500 G
++		// payload.  The floor is now computed only from the unique set.
++		std::map<uint32_t, CbapQpLedger> qcLedger;
++		// --- explicit ownership lifecycle (defect B) --------------------
++		// controllerOwnsRates is NOT "the ledger is non-empty".  It is true
++		// only between the admission of a controlled batch and that batch's
++		// authoritative drain/handoff, with all pending commands closed.
++		uint32_t qcActiveGenerationId;   // batchId of the owned batch, 0 = none
++		bool qcOwnsRates;                // controllerOwnsRates
++		bool qcHandoffPending;           // batch done, pending commands closing
++		uint32_t qcOwnedMemberCount;     // owned QPs in the active generation
++		// --- defect C: THREE distinct sets, never conflated ---------------
++		// floorProtectedQps: every live CBAP flow on this link that must be
++		// guaranteed MIN_RATE -- the background old-side flow included.  It
++		// bounds DRAIN_MAX and is independent of who is being steered.
++		// newGenerationQps: the newest batch only; the boost denominator.
++		// oldSideQps: live flows outside the newest batch (the background
++		// flow), whose release semantics stay in
++		// ReplanCbapSbaMigrationTargets.
++		std::set<uint32_t> qcFloorProtectedQps;
++		std::set<uint32_t> qcNewGenerationQps;
++		std::set<uint32_t> qcOldSideQps;
++		uint32_t qcFloorCount, qcNewGenCount, qcOldSideCount;
++		uint32_t qcLedgerCount;          // ledger size, for GC/audit only
++		uint64_t qcOwnershipEnterNs, qcOwnershipExitNs;
++		uint32_t qcOwnershipTransitions; // must be exactly 1 per batch
++		uint32_t qcScopeViolations;      // command emitted while !ownsRates
++		uint32_t qcPathMetadataMissing;  // PATH_METADATA_MISSING_AFTER_OWNERSHIP
++		bool qcExitRecoveryPending;
++		uint64_t qcFloorWireBps;
++		uint64_t qcFloorPayloadBps;
++		uint64_t qcDrainMaxWireBps;
++		uint64_t qcArrivalSafeWireBps;
++		uint64_t qcSenderEffectiveWireBps;
++		uint64_t qcServedWireBps;
++		uint64_t qcQ0Bytes;             // the ONE queue sample for this epoch
++		uint64_t qcEpochId;
++		uint64_t qcDuplicateQpCount;
++		uint64_t qcPrefixMaxIndex;
++		uint32_t qcPeakActiveSenders;   // high-water mark for the drain floor   // DIAGNOSTIC ONLY, not the floor
++		uint64_t qcQStopBytes;          // last Q_stop
++		uint64_t qcQSafeBytes;          // last Q_safe
++		uint64_t qcQSafeOverAbs;        // times Q_safe exceeded Q_abs
++		uint32_t qcBandInvalid;         // boundary ordering check failed
++		bool qcInRed;                   // RED latch, exits below Q_high
++		uint64_t qcPendingEtaNs;        // when the pending command takes effect
++		uint64_t qcDrainCommandedBps;   // pending drain half of the signed target
++		bool qcDescending;              // a lowering command is in flight
++		bool qcRearmRequired;           // positive boost locked out until rearm
+ 		CbapQueuePhase queuePhase;
+ 		// True once the queue has actually risen above the normal bound, i.e.
+ 		// the synchronous startup burst has been observed.  Without this the
+@@ -1105,6 +1294,34 @@ public:
+ 			: initialized(false), overloadEpochs(0), growthEpochs(0),
+ 			  clearStableEpochs(0), previousEffectiveCapacityBps(0),
+ 			  plannerCapacityBps(0), rootDetectTimeNs(0),
++			  qcBoostEffectiveBps(0), qcBoostCommandedBps(0),
++			  qcPendingGeneration(0), qcDrainTargetBps(0),
++			  qcGenerationCounter(0), qcCommandTimeNs(0), qcZone(0),
++			  qcGuardExceeded(0), qcActiveSenders(0),
++			  qcFloorBps(0), qcDrainMaxBps(0),
++			  qcExpectedEffectTimeNs(0), qcActualEffectTimeNs(0),
++			  qcRBeforeCommandBps(0), qcRCommandedBps(0),
++			  qcREffectiveBps(0), qcRPendingBps(0),
++			  qcPendingExcessBytes(0), qcInFlightArrivalBytes(0),
++			  qcInvariantViolations(0), qcExclInactive(0),
++			  qcExclNoQp(0), qcExclOffPath(0),
++			  qcActiveGenerationId(0), qcOwnsRates(false),
++			  qcHandoffPending(false), qcOwnedMemberCount(0),
++			  qcFloorCount(0), qcNewGenCount(0), qcOldSideCount(0),
++			  qcLedgerCount(0), qcOwnershipEnterNs(0),
++			  qcOwnershipExitNs(0), qcOwnershipTransitions(0),
++			  qcScopeViolations(0), qcPathMetadataMissing(0),
++			  qcExitRecoveryPending(false),
++			  qcFloorWireBps(0), qcFloorPayloadBps(0),
++			  qcDrainMaxWireBps(0), qcArrivalSafeWireBps(0),
++			  qcSenderEffectiveWireBps(0), qcServedWireBps(0),
++			  qcQ0Bytes(0), qcEpochId(0), qcDuplicateQpCount(0),
++			  qcPrefixMaxIndex(0),
++			  qcPeakActiveSenders(0), qcQStopBytes(0),
++			  qcQSafeBytes(0), qcQSafeOverAbs(0),
++			  qcBandInvalid(0), qcInRed(false),
++			  qcPendingEtaNs(0), qcDrainCommandedBps(0),
++			  qcDescending(false), qcRearmRequired(false),
+ 			  queuePhase(CBAP_QPHASE_SYNC_BURST), syncBurstObserved(false),
+ 			  qSyncFloorBytes(0),
+ 			  qHardStartupBytes(0), qHardNormalBytes(0),
+@@ -1117,6 +1334,14 @@ public:
+ 	static uint64_t ComputeDelayCreditBudget(CbapLinkRuntime &runtime,
+ 		uint64_t queueBytes, uint32_t newFlowCount, uint64_t nowNs,
+ 		uint32_t epoch, CbapDelayCreditRecord *out);
++	// One control epoch of the queue-bounded controller.  Provably inert when
++	// queueControllerEnable is false (early return before any state change).
++	static void QueueControllerEpoch(CbapLinkRuntime &runtime,
++		uint64_t nowNs, uint64_t queueBytes, uint64_t rEffectiveBps,
++		uint64_t pendingExcessBytes, uint32_t activeSenders,
++		bool pfcSafe, uint64_t inFlightArrivalBytes,
++		uint64_t minRateBps);
++
+ 	struct CbapScopeBaseFlowRuntime {
+ 		Ptr<RdmaQueuePair> qp;
+ 		uint32_t flowId;

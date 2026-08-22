@@ -1,0 +1,181 @@
+==============================================================================
+R-1a/b/c MULTI-LINK v2 -- S6 CBAP dual-link v2
+==============================================================================
+  per-link formulas : frozen r1_gates_v4.py
+  C (per link)      : 10.0000 Gbps
+  T_qlen (QLEN_MON_END) : 2500000000 ns
+  T_stop (SIM stop)     : 2500000000 ns
+  tick                  : 1 ns (ns-3 Time::NS, truncating)
+  core_lo               : 1990000000 ns
+
+  expected links : ['0:84:1', '1:83:1']
+  observed links : ['0:84:1', '1:83:1']
+  set match      : YES
+
+------------------------------------------------------------------------------
+PER-LINK BOUNDARY MODEL (Dmax derived from real packet_bytes)
+------------------------------------------------------------------------------
+  link 0 (node=84 if=1)
+    C_l                = 10.0000 Gbps  <- argv capacity
+    max packet_bytes   = 1048 B        <- max over this link's TX_BEGIN rows
+    tick               = 1 ns
+    exact  1048*8/C      = 838.4000 ns
+    Dmax_l (truncated) = 838 ns
+    core_hi_l = min(T_qlen, T_stop - Dmax_l) = min(2500000000, 2499999162) = 2499999162
+      (T_stop - Dmax is binding; T_qlen was at/after stop)
+  link 1 (node=83 if=1)
+    C_l                = 10.0000 Gbps  <- argv capacity
+    max packet_bytes   = 1048 B        <- max over this link's TX_BEGIN rows
+    tick               = 1 ns
+    exact  1048*8/C      = 838.4000 ns
+    Dmax_l (truncated) = 838 ns
+    core_hi_l = min(T_qlen, T_stop - Dmax_l) = min(2500000000, 2499999162) = 2499999162
+      (T_stop - Dmax is binding; T_qlen was at/after stop)
+
+------------------------------------------------------------------------------
+SIMULATION_END_CLIPPED LEDGER
+------------------------------------------------------------------------------
+  link 0 (node=84 if=1): SIMULATION_END_CLIPPED
+    uid            = 5752983
+    packet_bytes   = 1048 B
+    TX_BEGIN       = 2499999510 ns
+    expected END   = 2500000348 ns  (= BEGIN + D(1048,C)=838)
+    T_stop         = 2500000000 ns
+    overshoot      = 348 ns past stop
+    core_hi_l      = 2499999162 ns  (BEGIN is at/after it: yes)
+    excluded from  : core pairing, work/span, service curve, busy-period utilisation, capacity verdict
+    reason         : TX_END cannot occur -- simulator stopped before serialization completes
+  link 0: 1 leading unmatched END (BOUNDARY_CLIPPED, pre-trace)
+  link 1 (node=83 if=1): SIMULATION_END_CLIPPED
+    uid            = 5752982
+    packet_bytes   = 1048 B
+    TX_BEGIN       = 2499999450 ns
+    expected END   = 2500000288 ns  (= BEGIN + D(1048,C)=838)
+    T_stop         = 2500000000 ns
+    overshoot      = 288 ns past stop
+    core_hi_l      = 2499999162 ns  (BEGIN is at/after it: yes)
+    excluded from  : core pairing, work/span, service curve, busy-period utilisation, capacity verdict
+    reason         : TX_END cannot occur -- simulator stopped before serialization completes
+  link 1: 1 leading unmatched END (BOUNDARY_CLIPPED, pre-trace)
+
+------------------------------------------------------------------------------
+LINK 0 (node=84 if=1)  rows=985561 (excluded 1 clipped BEGIN)  core=[1990000000, 2499999162]
+------------------------------------------------------------------------------
+
+--- R-1b: packet-aware window service curve (core only) ---
+  window    max_served_B       C*w/8_B  Lmax_B   excess_B   pkts  worst window [t0,t1] ns
+  5us               6288       6250.00    1048      38.00      6  [2000010737, 2000015737]
+  50us             62880      62500.00    1048     380.00     60  [2000350737, 2000400737]
+  500us           546008     625000.00    1048       0.00    521  [2004500737, 2005000737]
+==========================================================================
+R-1a/b/c v4 -- S6 CBAP dual-link v2 -- LINK 0
+==========================================================================
+  C            : 10.0000 Gbps
+  time epsilon : 1 ns (one simulator tick; NO percentage tolerance)
+
+--- measured ---
+  rows                                       985561
+  link identity (node,if,link)               [('84', '1', '0')]
+  core evaluation interval                   [1990000000, 2499999162] ns
+  unmatched END  lead/core/trail             1 / 0 / 0
+  unmatched BEGIN lead/core/trail            0 / 0 / 0
+  BOUNDARY_CLIPPED_PACKET (leading END)      uid=3782178 t=1989995293
+  complete pairs (all zones)                 492780
+  complete pairs fully inside core           492774
+  pairs excluded as boundary/guard           6
+  min inter-packet gap (core)                0 ns
+  max inter-packet gap (core)                209 ns
+  core packet sizes observed                 [192, 1048]
+  core first TX_BEGIN / last TX_END          1990000737 / 2499998254 ns
+  5us worst window first pkt                 uid=3820502 tx_start=2000010057 tx_finish=2000010895 size=1048
+  50us worst window first pkt                uid=3821777 tx_start=2000350051 tx_finish=2000350889 size=1048
+  500us worst window first pkt               uid=3838785 tx_start=2004500018 tx_finish=2004500856 size=1048
+  busy periods (core)                        464631
+  worst busy period (by utilisation)         [1990000737, 1990001575] 1 pkts work=838 ns span=838 ns util=1.000000
+  core evaluation span                       509997517 ns
+  long-run average wire service rate         8.100455 Gbps
+
+--- gates ---
+  [PASS] R-1a.1 every packet_uid has at most one TX_BEGIN and one TX_END duplicate BEGIN=0 duplicate END=0
+  [PASS] R-1a.2a core interval has zero unmatched BEGIN and zero unmatched END core unmatched END=0 BEGIN=0
+  [PASS] R-1a.2b leading guard has at most 1 unmatched END (and no BEGIN) leading unmatched END=1 BEGIN=0
+  [PASS] R-1a.2c trailing guard has at most 1 unmatched BEGIN (and no END) trailing unmatched BEGIN=0 END=0
+  [PASS] R-1a.3 TX_END >= TX_BEGIN for every complete pair            0 pairs with END < BEGIN
+  [PASS] R-1a.4 duration == size_bytes*8/C for every core packet (+/-1 tick) 0 deviate; first: []
+  [PASS] R-1a.5 TX_BEGIN never earlier than the previous TX_END (core) 0 violations; first: []
+  [PASS] R-1a.6 zero overlapping serialization intervals (core)       0 overlaps; first: []
+  [PASS] R-1b.5us served <= C*w/8 + Lmax (Lmax from real GetSize())   excess 38.00 B <= Lmax 1048 B
+  [PASS] R-1b.50us served <= C*w/8 + Lmax (Lmax from real GetSize())  excess 380.00 B <= Lmax 1048 B
+  [PASS] R-1b.500us served <= C*w/8 + Lmax (Lmax from real GetSize()) excess 0.00 B <= Lmax 1048 B
+  [PASS] R-1c.1 every busy period: work_ns <= span_ns + 1 tick        0 periods violate; first: []
+  [PASS] R-1c.1x cross-check |work_ns - sum(size*8/C)| <= npkt * 1 tick 0 periods deviate; first: []
+  [PASS] R-1c.2 long-run average over the core span <= C              8.100455 Gbps <= 10.0000 Gbps
+
+  14/14 gates passed
+
+------------------------------------------------------------------------------
+LINK 1 (node=83 if=1)  rows=985241 (excluded 1 clipped BEGIN)  core=[1990000000, 2499999162]
+------------------------------------------------------------------------------
+
+--- R-1b: packet-aware window service curve (core only) ---
+  window    max_served_B       C*w/8_B  Lmax_B   excess_B   pkts  worst window [t0,t1] ns
+  5us               6880       6250.00    1048     630.00     18  [2085485737, 2085490737]
+  50us             62880      62500.00    1048     380.00     60  [2001000737, 2001050737]
+  500us           544960     625000.00    1048       0.00    520  [2006500737, 2007000737]
+==========================================================================
+R-1a/b/c v4 -- S6 CBAP dual-link v2 -- LINK 1
+==========================================================================
+  C            : 10.0000 Gbps
+  time epsilon : 1 ns (one simulator tick; NO percentage tolerance)
+
+--- measured ---
+  rows                                       985241
+  link identity (node,if,link)               [('83', '1', '1')]
+  core evaluation interval                   [1990000000, 2499999162] ns
+  unmatched END  lead/core/trail             1 / 0 / 0
+  unmatched BEGIN lead/core/trail            0 / 0 / 0
+  BOUNDARY_CLIPPED_PACKET (leading END)      uid=3782179 t=1989995293
+  complete pairs (all zones)                 492620
+  complete pairs fully inside core           492614
+  pairs excluded as boundary/guard           6
+  min inter-packet gap (core)                0 ns
+  max inter-packet gap (core)                209 ns
+  core packet sizes observed                 [192, 1048]
+  core first TX_BEGIN / last TX_END          1990000737 / 2499998194 ns
+  5us worst window first pkt                 uid=4169286 tx_start=2085484966 tx_finish=2085485804 size=1048
+  50us worst window first pkt                uid=3824464 tx_start=2001000419 tx_finish=2001001257 size=1048
+  500us worst window first pkt               uid=3846935 tx_start=2006499953 tx_finish=2006500791 size=1048
+  busy periods (core)                        465315
+  worst busy period (by utilisation)         [1990000737, 1990001575] 1 pkts work=838 ns span=838 ns util=1.000000
+  core evaluation span                       509997457 ns
+  long-run average wire service rate         8.097825 Gbps
+
+--- gates ---
+  [PASS] R-1a.1 every packet_uid has at most one TX_BEGIN and one TX_END duplicate BEGIN=0 duplicate END=0
+  [PASS] R-1a.2a core interval has zero unmatched BEGIN and zero unmatched END core unmatched END=0 BEGIN=0
+  [PASS] R-1a.2b leading guard has at most 1 unmatched END (and no BEGIN) leading unmatched END=1 BEGIN=0
+  [PASS] R-1a.2c trailing guard has at most 1 unmatched BEGIN (and no END) trailing unmatched BEGIN=0 END=0
+  [PASS] R-1a.3 TX_END >= TX_BEGIN for every complete pair            0 pairs with END < BEGIN
+  [PASS] R-1a.4 duration == size_bytes*8/C for every core packet (+/-1 tick) 0 deviate; first: []
+  [PASS] R-1a.5 TX_BEGIN never earlier than the previous TX_END (core) 0 violations; first: []
+  [PASS] R-1a.6 zero overlapping serialization intervals (core)       0 overlaps; first: []
+  [PASS] R-1b.5us served <= C*w/8 + Lmax (Lmax from real GetSize())   excess 630.00 B <= Lmax 1048 B
+  [PASS] R-1b.50us served <= C*w/8 + Lmax (Lmax from real GetSize())  excess 380.00 B <= Lmax 1048 B
+  [PASS] R-1b.500us served <= C*w/8 + Lmax (Lmax from real GetSize()) excess 0.00 B <= Lmax 1048 B
+  [PASS] R-1c.1 every busy period: work_ns <= span_ns + 1 tick        0 periods violate; first: []
+  [PASS] R-1c.1x cross-check |work_ns - sum(size*8/C)| <= npkt * 1 tick 0 periods deviate; first: []
+  [PASS] R-1c.2 long-run average over the core span <= C              8.097825 Gbps <= 10.0000 Gbps
+
+  14/14 gates passed
+
+==============================================================================
+MULTI-LINK v2 VERDICT
+==============================================================================
+  link 0 (node=84 if=1): 14/14 gates, clipped=1
+  link 1 (node=83 if=1): 14/14 gates, clipped=1
+
+  expected links covered : 2/2
+  SIMULATION_END_CLIPPED : {'0': 1, '1': 1}
+  core_hi per link       : {'0': 2499999162, '1': 2499999162}
+  Dmax per link          : {'0': 838, '1': 838}
+  OVERALL R-1a/b/c       : PASS

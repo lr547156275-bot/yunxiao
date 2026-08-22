@@ -1,0 +1,3 @@
+STATUS=SUPERSEDED_EVIDENCE
+REASON=flag0 bit-identity evidence for an earlier binary
+RETAINED=yes

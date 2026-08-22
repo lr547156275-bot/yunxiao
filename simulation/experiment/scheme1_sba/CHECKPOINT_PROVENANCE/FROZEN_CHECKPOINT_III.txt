@@ -1,0 +1,28 @@
+=== FROZEN CHECKPOINT: III.2 / III.4 / III.5 / III.6 ALL PASS ===
+utc=2026-08-15T03:21:55Z
+III.2 = PASS  cbap_s6 attached 2/2, dcqcn_s6 attached 2/2, links recorded separately
+III.4 = PASS  flag=0 vs au_s3_rho090_out: 21/21 byte-identical, recorder OFF
+III.5 = PASS  S3 ON/OFF: 12/12 byte-identical (actuation.csv absent both sides); 64/64 flows; attached 1/1
+III.6 = PASS  S6 ON/OFF: 16/16 byte-identical; 60/60 flows; attached 2/2 on 84:1 and 83:1
+
+physical_link_key is authoritative; local link_id is provenance only
+S6 links: 84:1 and 83:1
+
+265fe2a1a31d5e1809458c9e5b44120b528c2524ae2642cbd7185072a7b68103  ../../build/scratch/third
+c643f5cc332e02763946b01b8aa1cc17c50daf4dda53a371c13e4576525eb122  ../../build/libns3.18-point-to-point-debug.so
+84349f041424506b913072796bf2b224d59c4d82e6db679069c12dbd2f6802cd  ../../scratch/third.cc
+4b9a4098a6d31625e46d24cfd371956cfb1a3bb9c98bbc327a7de332c0ce4b10  ../../scratch/tx-serialization-recorder-ml.h
+924e1594a8df551d699910382f7be9883fa23b730bc2cf70becc5c7dc6c1944b  r1_gates_v4.py
+13f0a98dd4811c432d3e5265356556f683ab34570748fe0b6548a03e78124c3f  r1_gates_ml_v2.py
+59dfdb2786a44fa2818f8d9191bdca3b46afec3f0bd2434cded01044b86fb4f1  independent_acceptance.py
+9a78d7dcd6a50ebeac49c85d1de28f3153fcbfe4b6f9b09d038eaf7ec14ce828  independent_acceptance_v2.py
+1f7a854b445ac76fb2e6924fd3866916c04ff2191745edea024ff8f45890063a  link_identity_validator.py
+
+221M	iii2_cbap_s6_out
+149M	iii2_dcqcn_s6_out
+171M	iii4_flag0_out
+126M	iii5_s3_off_out
+200M	iii5_s3_on_out
+147M	iii6_s6_off_out
+221M	iii6_s6_on_out
+/dev/loop4       32G   25G  5.1G  83% /workspaces

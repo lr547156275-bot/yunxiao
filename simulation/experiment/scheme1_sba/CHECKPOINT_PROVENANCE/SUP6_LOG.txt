@@ -1,0 +1,3 @@
+[16:18:01] sup6 start pid=111
+[16:32:16] relaunch dcqcn
+[16:48:13] both done

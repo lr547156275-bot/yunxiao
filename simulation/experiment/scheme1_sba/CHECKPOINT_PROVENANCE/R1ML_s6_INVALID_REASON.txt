@@ -1,0 +1,9 @@
+STATUS=CHECKER_SIMULATION_END_BOUNDARY_INCOMPLETE
+RESULT=link0 13/14, link1 13/14, OVERALL FAIL
+FAILED_GATE=R-1a.2a core unmatched BEGIN=1 on each link
+ROOT_CAUSE=core_hi taken as QLEN_MON_END which equals SIMULATOR_STOP_TIME for S6, leaving zero trailing guard
+NOT_A_DEFECT_IN=controller, link, recorder, capacity
+REPORT_SHA=71e2a93237badb3ec319beb14c75eedc21870ed7ee2e4b68c6da8b0e5c53e5e2
+ML_CHECKER_SHA=ec374d801add2be773d6a53832b9adccd14a2066cbd2f40a6b3aca96ed68a99b
+SUPERSEDED_BY=r1_gates_ml_v2.py (explicit simulation-end boundary model)
+RETAINED=yes

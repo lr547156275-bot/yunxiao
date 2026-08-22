@@ -1,0 +1,6 @@
+a829d997aae84fa14af118d0a9e815a8e7978baea50b738c643db8c783287f40  r1_serialization_gates.py
+54a11a1d3df4177fc93e72000ba0f6e0276ab58bd72f1e00c94d30bfc95aa73d  ../../scratch/tx-serialization-recorder.h
+FROZEN_AT_UTC=2026-08-14T06:12:56Z
+NOTE=v3: R-1b inner loop bucketed in one pass (was 1.6e5 x 3.1e4 = 5.0e9 ops and could not finish).
+NOTE=Formulas UNCHANGED: served=sum(size_bytes finishing in window), Lmax=max(those size_bytes), excess=max(0,served-C*w/8), gate excess<=Lmax.
+NOTE=No threshold, tolerance or attribution rule was altered. Frozen BEFORE first successful execution against any trace.

@@ -1,0 +1,52 @@
+==========================================================================
+R-1a/b/c PER-PACKET SERIALIZATION GATES -- S3 rho=0.90 recorder ON
+==========================================================================
+  source      : /work/simulation/experiment/scheme1_sba/tx_trace2/s3_rho090_tx.csv
+  C           : 10.0000 Gbps
+  time epsilon: 1 ns (one simulator tick; NO percentage tolerance)
+
+
+--- R-1b: packet-aware window service curve ---
+  window      max_served_B        C*w/8_B   Lmax_B   excess_B    pkts  worst window [t0,t1] ns
+  5us                 6288        6250.00     1048      38.00       6  [2000015502, 2000020502]
+  50us               62880       62500.00     1048     380.00      60  [2000045502, 2000095502]
+  500us             605744      625000.00     1048       0.00     578  [1999995502, 2000495502]
+
+--- R-1c: contiguous busy periods ---
+
+--- measured ---
+  rows                                     321509
+  link identity (node,if,link)             [('84', '1', '0')]
+  distinct packet_uid                      160755
+  clean BEGIN/END pairs                    160754
+  min inter-packet gap (BEGIN_i - END_{i-1}) 0 ns
+  max inter-packet gap                     11601 ns
+  packet size histogram                    [624, 1048]
+  first TX_BEGIN                           1989995502 ns
+  last TX_END                              2147488561 ns
+  5us worst window first pkt               uid=1910223 tx_start=2000015028 tx_finish=2000015866 size=1048
+  50us worst window first pkt              uid=1910267 tx_start=2000045196 tx_finish=2000046034 size=1048
+  500us worst window first pkt             uid=1910193 tx_start=1999995399 tx_finish=1999996237 size=1048
+  busy periods                             93962
+  worst busy period                        [1989995502, 1989996340] 1 pkts rate=10.004773 Gbps
+  evaluation span                          157493059 ns
+  long-run average wire service rate       8.556215 Gbps
+
+--- gates ---
+  [PASS] R-1a.1 exactly one TX_BEGIN and one TX_END per packet_uid  duplicate BEGIN=0 duplicate END=0
+  [FAIL] R-1a.2 zero unmatched BEGIN / END                          unmatched BEGIN=0 unmatched END=1
+  [PASS] R-1a.3 TX_END >= TX_BEGIN for every packet                 0 packets with END < BEGIN
+  [PASS] R-1a.4 duration == size_bytes*8/C for every packet (+/- 1 tick) 0 packets deviate; first: []
+  [PASS] R-1a.5 TX_BEGIN never earlier than the previous TX_END     0 violations; first: []
+  [PASS] R-1a.6 zero overlapping serialization intervals on the link 0 overlaps; first: []
+  [PASS] R-1b.5us served <= C*w/8 + Lmax (Lmax from real p->GetSize()) excess 38.00 B <= Lmax 1048 B
+  [PASS] R-1b.50us served <= C*w/8 + Lmax (Lmax from real p->GetSize()) excess 380.00 B <= Lmax 1048 B
+  [PASS] R-1b.500us served <= C*w/8 + Lmax (Lmax from real p->GetSize()) excess 0.00 B <= Lmax 1048 B
+  [FAIL] R-1c.1 every busy period: sum(size*8) <= C*span (+1 tick)  1046 busy periods exceed C; first: [(2000012514, 2000242126, 274, 10004773269.689737)]
+  [PASS] R-1c.2 long-run average over the evaluation span <= C      8.556215 Gbps <= 10.0000 Gbps
+
+  9/11 gates passed
+
+  If an OVERLAP or duration failure appears, this is a real link or
+  recorder-attachment error and must NOT be explained away as
+  window quantization.  Stop and retain the full trace.

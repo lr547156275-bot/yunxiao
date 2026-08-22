@@ -1,0 +1,46 @@
+=== snapshot inventory ===
+  rows                 : 138580
+  gaps                 : 1066
+  distinct node_id     : 65
+  distinct qp_index    : 65
+  distinct (node,qpi)  : 65
+  gap-start rows       : 69290
+  gap-end rows         : 69290
+  QPs per snapshot     : min=65 p50=65 max=65
+  nodes whose flow_id_ref is non-constant : 0  (identity uses (node_id,qp_index) instead)
+
+=== F3 ACTIVE_SET_TAIL_COLLAPSE: how many QPs still have work? ===
+  QPs with bytes_left>0 per gap : min=1 p05=65 p50=65 p95=65 max=65
+    distribution: [(0, 1, 0), (1, 2, 5), (2, 3, 0), (3, 5, 0), (5, 9, 0), (9, 17, 0), (17, 33, 0), (33, 65, 0), (65, None, 1061)]
+    gaps with <=2 pending QPs : 5 of 1066 (0.47%)
+  QPs with active=1 per gap     : p50=65 max=65
+  QPs with owns_rate=1 per gap  : p50=64 max=64
+
+=== F1 RATE_ALLOCATION_UNDERFEED: applied rate of QPs with work ===
+  per-QP applied_rate (Gbps): p05=0.1480 p50=0.1480 p95=0.1480 max=8.0000
+  sum(applied) over QPs with work, per gap (Gbps):
+    p05=9.5754 p50=9.5754 p95=9.5754 max=16.7420
+  sum(commanded) per gap (Gbps): p50=18.2840 max=18.2840
+    gaps where sum(applied) < 0.9*C : 5 of 1066 (0.47%)
+    (C = 10.0 Gbps)
+
+=== F2 PACER_REARM_OR_NEXTAVAIL_BUG ===
+  next_avail - now, QPs with work (ns):
+    min=100 p05=51280 p50=51280 p95=52118 max=83148
+    <=0 (already eligible, so NOT pacing-blocked) : 0 of 68970 (0.00%)
+    distribution: [(-1000000000, 0, 0), (0, 500, 17), (500, 1000, 6), (1000, 2000, 14), (2000, 3000, 12), (3000, 5000, 25), (5000, 10000, 62), (10000, 50000, 1209), (50000, None, 67625)]
+  (next_avail - last_tx) - legal_interval(applied_rate) (ns):
+    min=-1 p05=0 p50=0 p95=0 max=1
+    > 1000 ns beyond the legal interval (illegal forward jump) : 0 of 68970 (0.00%)
+  longest run of UNCHANGED next_avail while work pending, per QP:
+    p50=7 p95=7 max=7
+
+=== F4 QP_PHASE_CLUSTERING: simultaneous next_avail buckets ===
+  (measured on one instant per gap, so no historical inference)
+  bucket=100   ns : gaps=1061  occupied_buckets p50=2    max_bucket_share p50=0.985 p95=0.985
+  bucket=500   ns : gaps=1061  occupied_buckets p50=2    max_bucket_share p50=0.985 p95=0.985
+  bucket=838   ns : gaps=1061  occupied_buckets p50=2    max_bucket_share p50=0.985 p95=0.985
+  bucket=2162  ns : gaps=1061  occupied_buckets p50=2    max_bucket_share p50=0.985 p95=0.985
+  bucket=3000  ns : gaps=1061  occupied_buckets p50=2    max_bucket_share p50=0.985 p95=1.000
+
+=== written to /work/simulation/experiment/scheme1_sba/analysis/s3_gap_snapshot ===

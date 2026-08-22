@@ -1,0 +1,284 @@
+
+############ CELL cbap_s1   avail=4.71 GB need=3.25 GB ############
+  REUSE existing output (binary matches); re-accepting only
+==============================================================
+ACCEPTANCE  cbap_s1   algo=cbap
+==============================================================
+--- output contract ---
+  [PASS] common output present: flow_summary.csv
+  [PASS] common output present: selected_link_timeseries.csv
+  [PASS] common output present: round_summary.csv
+  [PASS] common output present: pfc_events.csv
+  [PASS] common output present: run.log
+  [PASS] CBAP output present: port_summary.csv
+  [PASS] CBAP output present: admission.csv
+  [PASS] CBAP output present: sba_events.csv
+  [PASS] CBAP output present: applied_rate_audit.csv
+  [PASS] CBAP output present: rate_transition.csv
+  [PASS] CBAP output present: increase_audit.csv
+--- inputs ---
+  [PASS] all input files resolve
+  [PASS] pg=3 for all 17 flows, pg0_count=0
+  [PASS] incast flows complete: 16/16
+  [PASS] zero PFC events
+  [PASS] zero headroom drops
+  [PASS] zero retransmissions
+
+  RESULT: PASS 17/17 applicable, N/A 0, FAIL 0
+
+  --- metrics (cbap_s1) ---
+  incast FCT mean/p95/p99/max = 45.6045 / 45.6056 / 45.6056 / 45.6066 ms
+  CCT (last incast finish)    = 45.6066 ms
+  incast goodput              = 0.7357 Gbps  (16 flows, 4194304 B)
+  background 0: acked=1050610000 B goodput=7.6408 Gbps completed=0
+  queue source                = port_summary.csv:queue_bytes
+  queue mean/p95/p99/max      = 1538 / 11528 / 13624 / 14672 B
+  queue delay mean/max        = 1.231 / 11.738 us
+  queue max vs Q_abs(1048575B)= 1.40%
+  link utilisation            = 0.8338
+  ECN marks / PFC pause ns    = 0 / 0
+  CELL cbap_s1 ACCEPTED  (1/8)
+
+############ CELL dcqcn_s1   avail=4.71 GB need=3.25 GB ############
+  REUSE existing output (binary matches); re-accepting only
+==============================================================
+ACCEPTANCE  dcqcn_s1   algo=dcqcn
+==============================================================
+--- output contract ---
+  [PASS] common output present: flow_summary.csv
+  [PASS] common output present: selected_link_timeseries.csv
+  [PASS] common output present: round_summary.csv
+  [PASS] common output present: pfc_events.csv
+  [PASS] common output present: run.log
+  [N/A ] CBAP-only output: port_summary.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: admission.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: sba_events.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: applied_rate_audit.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: rate_transition.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: increase_audit.csv -- CBAP_ENABLE=0, telemetry path not run
+--- inputs ---
+  [PASS] all input files resolve
+  [PASS] pg=3 for all 17 flows, pg0_count=0
+  [PASS] incast flows complete: 16/16
+  [PASS] zero PFC events
+  [PASS] zero headroom drops
+  [PASS] zero retransmissions
+
+  RESULT: PASS 11/11 applicable, N/A 6, FAIL 0
+
+  --- metrics (dcqcn_s1) ---
+  incast FCT mean/p95/p99/max = 3.7153 / 3.7777 / 3.7777 / 3.7778 ms
+  CCT (last incast finish)    = 3.7778 ms
+  incast goodput              = 8.8819 Gbps  (16 flows, 4194304 B)
+  background 0: acked=1047331000 B goodput=7.6170 Gbps completed=0
+  queue source                = selected_link_timeseries.csv:queue_bytes
+  queue mean/p95/p99/max      = 542 / 0 / 0 / 321736 B
+  queue delay mean/max        = 0.433 / 257.389 us
+  queue max vs Q_abs(1048575B)= 30.68%
+  link utilisation            = 0.4198
+  ECN marks / PFC pause ns    = 0 / 0
+  CELL dcqcn_s1 ACCEPTED  (2/8)
+
+############ CELL cbap_s2   avail=4.71 GB need=3.25 GB ############
+  REUSE existing output (binary matches); re-accepting only
+==============================================================
+ACCEPTANCE  cbap_s2   algo=cbap
+==============================================================
+--- output contract ---
+  [PASS] common output present: flow_summary.csv
+  [PASS] common output present: selected_link_timeseries.csv
+  [PASS] common output present: round_summary.csv
+  [PASS] common output present: pfc_events.csv
+  [PASS] common output present: run.log
+  [PASS] CBAP output present: port_summary.csv
+  [PASS] CBAP output present: admission.csv
+  [PASS] CBAP output present: sba_events.csv
+  [PASS] CBAP output present: applied_rate_audit.csv
+  [PASS] CBAP output present: rate_transition.csv
+  [PASS] CBAP output present: increase_audit.csv
+--- inputs ---
+  [PASS] all input files resolve
+  [PASS] pg=3 for all 65 flows, pg0_count=0
+  [PASS] incast flows complete: 64/64
+  [PASS] zero PFC events
+  [PASS] zero headroom drops
+  [PASS] zero retransmissions
+
+  RESULT: PASS 17/17 applicable, N/A 0, FAIL 0
+
+  --- metrics (cbap_s2) ---
+  incast FCT mean/p95/p99/max = 182.3641 / 182.3688 / 182.3701 / 182.3702 ms
+  CCT (last incast finish)    = 182.3702 ms
+  incast goodput              = 0.7360 Gbps  (64 flows, 16777216 B)
+  background 0: acked=1423611000 B goodput=7.5926 Gbps completed=0
+  queue source                = port_summary.csv:queue_bytes
+  queue mean/p95/p99/max      = 3100 / 25152 / 57640 / 62880 B
+  queue delay mean/max        = 2.480 / 50.304 us
+  queue max vs Q_abs(1048575B)= 6.00%
+  link utilisation            = 0.8185
+  ECN marks / PFC pause ns    = 0 / 0
+  CELL cbap_s2 ACCEPTED  (3/8)
+
+############ CELL dcqcn_s2   avail=4.71 GB need=3.25 GB ############
+  REUSE existing output (binary matches); re-accepting only
+==============================================================
+ACCEPTANCE  dcqcn_s2   algo=dcqcn
+==============================================================
+--- output contract ---
+  [PASS] common output present: flow_summary.csv
+  [PASS] common output present: selected_link_timeseries.csv
+  [PASS] common output present: round_summary.csv
+  [PASS] common output present: pfc_events.csv
+  [PASS] common output present: run.log
+  [N/A ] CBAP-only output: port_summary.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: admission.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: sba_events.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: applied_rate_audit.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: rate_transition.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: increase_audit.csv -- CBAP_ENABLE=0, telemetry path not run
+--- inputs ---
+  [PASS] all input files resolve
+  [PASS] pg=3 for all 65 flows, pg0_count=0
+  [PASS] incast flows complete: 64/64
+  [PASS] zero PFC events
+  [PASS] zero headroom drops
+  [PASS] zero retransmissions
+
+  RESULT: PASS 11/11 applicable, N/A 6, FAIL 0
+
+  --- metrics (dcqcn_s2) ---
+  incast FCT mean/p95/p99/max = 14.1287 / 14.2981 / 15.1338 / 15.6422 ms
+  CCT (last incast finish)    = 15.6422 ms
+  incast goodput              = 8.5805 Gbps  (64 flows, 16777216 B)
+  background 0: acked=1411142000 B goodput=7.5261 Gbps completed=0
+  queue source                = selected_link_timeseries.csv:queue_bytes
+  queue mean/p95/p99/max      = 6798 / 0 / 0 / 1279608 B
+  queue delay mean/max        = 5.438 / 1023.686 us
+  queue max vs Q_abs(1048575B)= 122.03%
+  link utilisation            = 0.4789
+  ECN marks / PFC pause ns    = 2239 / 0
+  CELL dcqcn_s2 ACCEPTED  (4/8)
+
+############ CELL cbap_s3   avail=4.71 GB need=3.25 GB ############
+  REUSE existing output (binary matches); re-accepting only
+==============================================================
+ACCEPTANCE  cbap_s3   algo=cbap
+==============================================================
+--- output contract ---
+  [PASS] common output present: flow_summary.csv
+  [PASS] common output present: selected_link_timeseries.csv
+  [PASS] common output present: round_summary.csv
+  [PASS] common output present: pfc_events.csv
+  [PASS] common output present: run.log
+  [PASS] CBAP output present: port_summary.csv
+  [PASS] CBAP output present: admission.csv
+  [PASS] CBAP output present: sba_events.csv
+  [PASS] CBAP output present: applied_rate_audit.csv
+  [PASS] CBAP output present: rate_transition.csv
+  [PASS] CBAP output present: increase_audit.csv
+--- inputs ---
+  [PASS] all input files resolve
+  [PASS] pg=3 for all 65 flows, pg0_count=0
+  [PASS] incast flows complete: 64/64
+  [PASS] zero PFC events
+  [PASS] zero headroom drops
+  [PASS] zero retransmissions
+
+  RESULT: PASS 17/17 applicable, N/A 0, FAIL 0
+
+  --- metrics (cbap_s3) ---
+  incast FCT mean/p95/p99/max = 729.3991 / 729.4162 / 729.4185 / 729.4190 ms
+  CCT (last incast finish)    = 729.4190 ms
+  incast goodput              = 0.7360 Gbps  (64 flows, 67108864 B)
+  background 0: acked=1874024000 B goodput=7.4961 Gbps completed=0
+  queue source                = port_summary.csv:queue_bytes
+  queue mean/p95/p99/max      = 3100 / 25152 / 57640 / 62880 B
+  queue delay mean/max        = 2.480 / 50.304 us
+  queue max vs Q_abs(1048575B)= 6.00%
+  link utilisation            = 0.8185
+  ECN marks / PFC pause ns    = 0 / 0
+  CELL cbap_s3 ACCEPTED  (5/8)
+
+############ CELL dcqcn_s3   avail=4.71 GB need=3.25 GB ############
+  start=2026-08-15T08:15:22Z binary=265fe2a1a31d5e18
+  exit=0 wall=989s size=134M avail_after=4.58 GB
+==============================================================
+ACCEPTANCE  dcqcn_s3   algo=dcqcn
+==============================================================
+--- output contract ---
+  [PASS] common output present: flow_summary.csv
+  [PASS] common output present: selected_link_timeseries.csv
+  [PASS] common output present: round_summary.csv
+  [PASS] common output present: pfc_events.csv
+  [PASS] common output present: run.log
+  [N/A ] CBAP-only output: port_summary.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: admission.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: sba_events.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: applied_rate_audit.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: rate_transition.csv -- CBAP_ENABLE=0, telemetry path not run
+  [N/A ] CBAP-only output: increase_audit.csv -- CBAP_ENABLE=0, telemetry path not run
+--- inputs ---
+  [PASS] all input files resolve
+  [PASS] pg=3 for all 65 flows, pg0_count=0
+  [PASS] incast flows complete: 64/64
+  [PASS] zero PFC events
+  [PASS] zero headroom drops
+  [PASS] zero retransmissions
+
+  RESULT: PASS 11/11 applicable, N/A 6, FAIL 0
+
+  --- metrics (dcqcn_s3) ---
+  incast FCT mean/p95/p99/max = 54.2785 / 57.6696 / 58.1925 / 58.3730 ms
+  CCT (last incast finish)    = 58.3730 ms
+  incast goodput              = 9.1972 Gbps  (64 flows, 67108864 B)
+  background 0: acked=1849497000 B goodput=7.3980 Gbps completed=0
+  queue source                = selected_link_timeseries.csv:queue_bytes
+  queue mean/p95/p99/max      = 18690 / 0 / 967304 / 1279608 B
+  queue delay mean/max        = 14.952 / 1023.686 us
+  queue max vs Q_abs(1048575B)= 122.03%
+  link utilisation            = 0.5356
+  ECN marks / PFC pause ns    = 6677 / 0
+  CELL dcqcn_s3 ACCEPTED  (6/8)
+
+############ CELL cbap_s6   avail=4.58 GB need=3.25 GB ############
+  start=2026-08-15T08:31:53Z binary=265fe2a1a31d5e18
+  exit=0 wall=663s size=147M avail_after=4.43 GB
+==============================================================
+ACCEPTANCE  cbap_s6   algo=cbap
+==============================================================
+--- output contract ---
+  [PASS] common output present: flow_summary.csv
+  [PASS] common output present: selected_link_timeseries.csv
+  [PASS] common output present: round_summary.csv
+  [PASS] common output present: pfc_events.csv
+  [PASS] common output present: run.log
+  [PASS] CBAP output present: port_summary.csv
+  [PASS] CBAP output present: admission.csv
+  [PASS] CBAP output present: sba_events.csv
+  [PASS] CBAP output present: applied_rate_audit.csv
+  [PASS] CBAP output present: rate_transition.csv
+  [PASS] CBAP output present: increase_audit.csv
+--- inputs ---
+  [PASS] all input files resolve
+  [PASS] pg=3 for all 62 flows, pg0_count=0
+  [FAIL] incast flows complete -- 60 of 61
+  [PASS] zero PFC events
+  [PASS] zero headroom drops
+  [PASS] zero retransmissions
+
+  RESULT: PASS 16/17 applicable, N/A 0, FAIL 1
+  FAILED:; incast flows complete
+
+  --- metrics (cbap_s6) ---
+  incast FCT mean/p95/p99/max = 85.4925 / 85.4950 / 85.4959 / 85.4960 ms
+  CCT (last incast finish)    = 85.4960 ms
+  incast goodput              = 1.4718 Gbps  (60 flows, 15728640 B)
+  background 0: acked=1430434000 B goodput=7.6290 Gbps completed=0
+  background 1: acked=1430274000 B goodput=7.6282 Gbps completed=0
+  queue source                = port_summary.csv:queue_bytes
+  queue mean/p95/p99/max      = 1834 / 14672 / 28296 / 29344 B
+  queue delay mean/max        = 1.467 / 23.475 us
+  queue max vs Q_abs(1048575B)= 2.80%
+  link utilisation            = 0.8214
+  ECN marks / PFC pause ns    = 0 / 0
+STOP: acceptance FAILED for cbap_s6 (applicable gate failure)

@@ -1,0 +1,4 @@
+STATUS=SUPERSEDED_PRE_DECOUPLE_BINARY
+REASON=ran under binary a6bd0124 (recorder coupled to cbap_link_by_id); cannot pair with post-fix dcqcn_s1
+BINARY_SHA=a6bd0124729870be2caaed87e8beb98767dab7175d7f0f1850d29a47d1abe5b9
+RETAINED=yes

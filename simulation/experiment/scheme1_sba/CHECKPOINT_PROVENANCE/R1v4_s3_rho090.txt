@@ -1,0 +1,51 @@
+
+--- R-1b: packet-aware window service curve (core only) ---
+  window    max_served_B       C*w/8_B  Lmax_B   excess_B   pkts  worst window [t0,t1] ns
+  5us               6288       6250.00    1048      38.00      6  [2000015737, 2000020737]
+  50us             62880      62500.00    1048     380.00     60  [2000050737, 2000100737]
+  500us           606792     625000.00    1048       0.00    579  [2000000737, 2000500737]
+==========================================================================
+R-1a/b/c v4 -- S3 rho=0.90 recorder ON
+==========================================================================
+  C            : 10.0000 Gbps
+  time epsilon : 1 ns (one simulator tick; NO percentage tolerance)
+
+--- measured ---
+  rows                                       321509
+  link identity (node,if,link)               [('84', '1', '0')]
+  core evaluation interval                   [1990000000, 2147483647] ns
+  unmatched END  lead/core/trail             1 / 0 / 0
+  unmatched BEGIN lead/core/trail            0 / 0 / 0
+  BOUNDARY_CLIPPED_PACKET (leading END)      uid=1891089 t=1989995293
+  complete pairs (all zones)                 160754
+  complete pairs fully inside core           160744
+  pairs excluded as boundary/guard           10
+  min inter-packet gap (core)                0 ns
+  max inter-packet gap (core)                11601 ns
+  core packet sizes observed                 [624, 1048]
+  core first TX_BEGIN / last TX_END          1990000737 / 2147483276 ns
+  5us worst window first pkt                 uid=1910223 tx_start=2000015028 tx_finish=2000015866 size=1048
+  50us worst window first pkt                uid=1910216 tx_start=2000050224 tx_finish=2000051062 size=1048
+  500us worst window first pkt               uid=1910203 tx_start=2000000634 tx_finish=2000001472 size=1048
+  busy periods (core)                        93952
+  worst busy period (by utilisation)         [1990000737, 1990001575] 1 pkts work=838 ns span=838 ns util=1.000000
+  core evaluation span                       157482539 ns
+  long-run average wire service rate         8.556254 Gbps
+
+--- gates ---
+  [PASS] R-1a.1 every packet_uid has at most one TX_BEGIN and one TX_END duplicate BEGIN=0 duplicate END=0
+  [PASS] R-1a.2a core interval has zero unmatched BEGIN and zero unmatched END core unmatched END=0 BEGIN=0
+  [PASS] R-1a.2b leading guard has at most 1 unmatched END (and no BEGIN) leading unmatched END=1 BEGIN=0
+  [PASS] R-1a.2c trailing guard has at most 1 unmatched BEGIN (and no END) trailing unmatched BEGIN=0 END=0
+  [PASS] R-1a.3 TX_END >= TX_BEGIN for every complete pair            0 pairs with END < BEGIN
+  [PASS] R-1a.4 duration == size_bytes*8/C for every core packet (+/-1 tick) 0 deviate; first: []
+  [PASS] R-1a.5 TX_BEGIN never earlier than the previous TX_END (core) 0 violations; first: []
+  [PASS] R-1a.6 zero overlapping serialization intervals (core)       0 overlaps; first: []
+  [PASS] R-1b.5us served <= C*w/8 + Lmax (Lmax from real GetSize())   excess 38.00 B <= Lmax 1048 B
+  [PASS] R-1b.50us served <= C*w/8 + Lmax (Lmax from real GetSize())  excess 380.00 B <= Lmax 1048 B
+  [PASS] R-1b.500us served <= C*w/8 + Lmax (Lmax from real GetSize()) excess 0.00 B <= Lmax 1048 B
+  [PASS] R-1c.1 every busy period: work_ns <= span_ns + 1 tick        0 periods violate; first: []
+  [PASS] R-1c.1x cross-check |work_ns - sum(size*8/C)| <= npkt * 1 tick 0 periods deviate; first: []
+  [PASS] R-1c.2 long-run average over the core span <= C              8.556254 Gbps <= 10.0000 Gbps
+
+  14/14 gates passed

@@ -1,0 +1,6 @@
+924e1594a8df551d699910382f7be9883fa23b730bc2cf70becc5c7dc6c1944b  r1_gates_v4.py
+30d7f49c57280a1dde1da051da98161a54fa3ec476a4cd2ab47ce9e483646212  r1_gates_v4_selftest.py
+54a11a1d3df4177fc93e72000ba0f6e0276ab58bd72f1e00c94d30bfc95aa73d  ../../scratch/tx-serialization-recorder.h
+FROZEN_AT_UTC=2026-08-14T06:24:49Z
+SELFTEST=11/11 passed BEFORE freeze and BEFORE any real trace
+SUPERSEDES=r1_serialization_gates.py (a829d997...) labelled CHECKER_BOUNDARY_DEFINITION_ERROR

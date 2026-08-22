@@ -681,6 +681,68 @@ integer number of epochs, so the pending ledger has no partial-epoch remainder.
 **Measured value: `H_guard` = 175 µs (35 epochs).** The 160 µs candidate was
 slightly low — the cross-rho global max is 170.328 µs (§3), which rounds up to 175.
 
+### Boost is a PERSISTENT ABSOLUTE TARGET (method D) — corrects an error of mine
+
+An earlier draft of this contract modelled `boost` as a **pulse**: a value whose
+effect I integrated over one `H_guard` window and then implicitly let expire. From
+that model I concluded YELLOW was unreachable in S3 without lowering
+`SOFT_FRACTION`, and I proposed doing so. **That conclusion was wrong and is
+withdrawn** — the error was the pulse model, not the thresholds.
+
+`boost` is an **absolute target that persists until replaced**:
+
+```
+sumR_target = C + boost_target − drain_target
+```
+
+- Once a boost command is confirmed at the bottleneck: `pending_generation = none`,
+  `boost_effective = boost_commanded`, and that value **continues to hold**. It does
+  **not** expire with `H_guard` and does **not** revert to `C`.
+- "At most one pending generation" forbids overlapping **unconfirmed** commands
+  only. It places no limit on how long an already-effective boost is held.
+- Recomputing every 5 µs is **not** the same as commanding every 5 µs:
+
+| Situation | Action |
+|---|---|
+| desired target unchanged | **no-op** — no command issued |
+| desired changed, nothing pending | issue the new **absolute** target |
+| a pending transition exists | update prediction only; PFC/RED may preempt |
+
+**Forbidden:** `target += boost`; expiring boost after `H_guard`; reverting to `C`
+on confirmation; lowering `SOFT_FRACTION` to make YELLOW reachable; multiple
+concurrent positive boosts.
+
+### Reachability with the parameters unchanged
+
+With `SOFT_FRACTION = 0.5`, `H_guard = 175 µs`, `MAX_BOOST = 0.30 C` all unchanged,
+and the measured S3 rho=0.90 queue of 56,592 B:
+
+```
+excess      = 0.30 × 10 G = 3 Gbps            -> fill 375 B/µs
+to soft     = (524288 − 56592) / 375e6        = 1.247 ms
+minus brake = 1.247 ms − 175 µs               = 1.072 ms  (YELLOW must engage)
+```
+
+Both figures verified against the specification. 1.072 ms is **1.22 %** of the
+87.9 ms collective, so there is ample time. The unit-test lifecycle reaches YELLOW
+at **1.250 ms**, matching the 1.247 ms prediction.
+
+### Q_stop versus Q_safe — different jobs
+
+```
+Q_stop = max(0, Q_current + max(excess_effective, excess_pending) · H_guard / 8)
+Q_safe = Q_stop + packetization_margin        (applied ONCE, never accumulated)
+```
+
+- **`Q_stop` drives the SOFT/pressure decision.** It is the net backlog accrued
+  until the earliest instant a brake command could take effect, computed from the
+  *effective* rate and the single *pending* target — never from the desired rate.
+  The worse of effective/pending is used so the brake is never under-estimated.
+- **`Q_safe` is used only for hard-bound and PFC safety checks.** It must not
+  substitute for `Q_stop` in the soft decision: the packetization margin is a
+  structural burst allowance, and letting it drive soft pressure would trip YELLOW
+  on a term that is not backlog growth.
+
 ### Dual time scale
 
 Observation and pressure evaluation run **every 5 µs** (one control epoch), but

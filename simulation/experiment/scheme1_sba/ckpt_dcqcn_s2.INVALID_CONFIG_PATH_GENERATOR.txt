@@ -1,0 +1,4 @@
+STATUS=INVALID_CONFIG_PATH_GENERATOR
+REASON=generator rewrote INPUT keys into the output dir; cells could not read topology/flow/link/path
+CONFIG_SHA=32454242b9d2efb3ee789d1ce21da2435aa1cd7aeb09409c3cb600145e171514
+RETAINED=yes
