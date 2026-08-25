@@ -157,6 +157,11 @@ std::vector<RdmaHw::CbapDelayCreditRecord>
 std::vector<RdmaHw::CbapIncreaseRecord> RdmaHw::s_cbapIncreaseRecords;
 std::vector<RdmaHw::CbapFlowRecord> RdmaHw::s_cbapFlowRecords;
 std::vector<RdmaHw::CbapTxRecord> RdmaHw::s_cbapTxRecords;
+uint64_t g_cbapTxRecordsDropped = 0;
+// TX_TIME_ROUND_NS (v2): round per-packet tx time to the nearest ns at
+// both physics sites (device serialization + QP pacing).  Default false
+// keeps the legacy double-floor behaviour byte-identical.
+bool g_txTimeRoundNs = false;
 uint64_t RdmaHw::s_cbapSummaryMessages = 0;
 uint64_t RdmaHw::s_cbapGrantMessages = 0;
 std::vector<RdmaHw::CbapScopeBatchRecord>
@@ -2920,9 +2925,15 @@ std::map<uint32_t, uint64_t> RdmaHw::GetCbapSbaAvailableCapacity()
 	std::map<uint32_t, uint64_t> available;
 	for (std::map<uint32_t, CbapLinkRuntime>::const_iterator link =
 			s_cbapLinks.begin(); link != s_cbapLinks.end(); ++link) {
-		if (link->second.initialized)
-			available[link->first] =
-				link->second.latest.effectiveCapacityBps;
+		if (link->second.initialized) {
+			uint64_t cap = link->second.latest.effectiveCapacityBps;
+			// effectiveCapacityBps is a PAYLOAD-domain telemetry figure; the
+			// SBA ledger it is compared against is WIRE-domain.  v2 converts
+			// once, here, with the authoritative helper.
+			if (s_cbapConfig.sbaWireDomainPlanning)
+				cap = PayloadRateToLinkRate(cap);
+			available[link->first] = cap;
+		}
 		else
 			available[link->first] =
 				link->second.config.capacityBps >
@@ -4197,6 +4208,11 @@ void RdmaHw::RecordCbapTxEvent(Ptr<RdmaQueuePair> qp,
 			qp->cbap.txTraceTrackingPackets >=
 				s_cbapConfig.txTraceTrackingPackets)
 		return;
+	if (s_cbapConfig.txRecordsMax > 0 &&
+			s_cbapTxRecords.size() >= s_cbapConfig.txRecordsMax){
+		g_cbapTxRecordsDropped++;
+		return;
+	}
 	CbapTxRecord record = {};
 	record.timeNs = Simulator::Now().GetTimeStep();
 	record.eventType = eventType;
@@ -8113,9 +8129,11 @@ void RdmaHw::RedistributeQp(){
 }
 
 Ptr<Packet> RdmaHw::GetNxtPacket(Ptr<RdmaQueuePair> qp){
-	uint32_t payload_size = qp->GetBytesLeft();
-	if (m_mtu < payload_size)
-		payload_size = m_mtu;
+	// GetBytesLeft is 64-bit; a u32 copy made remaining == k*2^32
+	// read as 0 and froze the QP (>4.29GB flows at 400G).
+	uint64_t bytes_left64 = qp->GetBytesLeft();
+	uint32_t payload_size = bytes_left64 > (uint64_t)m_mtu ?
+		m_mtu : (uint32_t)bytes_left64;
 	bool bopQcBurstPacket = m_cc_mode == CC_MODE_BOP_QC &&
 		qp->crfm.enabled && qp->crfm.currentRoundIndex >= 0 &&
 		qp->crfm.bopQcCreditTotal > 0 &&
@@ -8471,6 +8489,9 @@ void RdmaHw::UpdateNextAvail(Ptr<RdmaQueuePair> qp, Time interframeGap, uint32_t
 			"zero-grant CBAP flow reached DATA pacing");
 		sendingTime = interframeGap + NanoSeconds(
 			CbapPacketGapNs(pkt_size, effectiveRate));
+	}else if (g_txTimeRoundNs){
+		sendingTime = interframeGap + NanoSeconds((uint64_t)(
+			DataRate(effectiveRate).CalculateTxTime(pkt_size) * 1e9 + 0.5));
 	}else
 		sendingTime = interframeGap +
 			Seconds(DataRate(effectiveRate).CalculateTxTime(pkt_size));

@@ -154,6 +154,10 @@ string cbap_qb2_trace_file;
 static FILE *cbap_qb2_trace_csv = NULL;
 static std::set<uint32_t> cbap_qb2_manifest_links;
 uint32_t cbap_qb2_enable = 0;
+uint32_t sba_wire_domain_planning = 0;   // v2 campaigns only, default 0
+uint32_t tx_time_round_ns = 0;           // v2: exact integer-ns tx times
+uint64_t cbap_tx_records_max = 0;        // v2: cap in-memory tx records
+namespace ns3 { extern bool g_txTimeRoundNs; }
 double cbap_qb2_bmax_ratio = 0.0, cbap_qb2_qtarget_ratio = 0.0;
 uint32_t cbap_qb2_bmax_set = 0, cbap_qb2_qtarget_set = 0;
 string cbap_pfc_audit_file;
@@ -290,6 +294,10 @@ uint32_t buffer_size = 16;//缓冲区大小
 uint32_t qlen_dump_interval = 100000, qlen_mon_interval = 100;//队列长度dump间隔，队列长度监控间隔
 uint64_t qlen_mon_start = 2000000000, qlen_mon_end = 2100000000;//队列长度监控开始时间，队列长度监控结束时间
 string qlen_mon_file;
+// v2: aggregate cross-switch queue timeseries (observation only)
+string qlen_ts_file;
+uint64_t qlen_ts_interval = 10000;
+FILE* qlen_ts_output = NULL;
 
 unordered_map<uint64_t, uint32_t> rate2kmax, rate2kmin;//这里设置的ECN是RED-ECN，也就是说这两个值是RED-ECN的阈值，当队列长度超过kmax时，触发ECN，当队列长度低于kmin时，不触发ECN
 unordered_map<uint64_t, double> rate2pmax;//这个就是标记概率的最大值
@@ -329,7 +337,10 @@ std::vector<Ipv4Address> serverAddress;
 std::unordered_map<uint32_t, unordered_map<uint32_t, uint16_t> > portNumder;
 
 struct FlowInput{
-	uint32_t src, dst, pg, maxPacketCount, port, dport;
+	uint32_t src, dst, pg, port, dport;
+	// uint64: >4GiB flows (400G backgrounds) overflowed uint32 and
+	// tripped the flow-vs-round-bytes consistency check.
+	uint64_t maxPacketCount;
 	double start_time;
 	uint32_t idx;
 };//建立流
@@ -784,6 +795,9 @@ void ReadCbapInputs(){
 	config.steadyCapFraction = cbap_steady_cap_fraction;
 	config.queueBandEnable = (cbap_queue_band != 0);
 	config.queueBandV2Enable = (cbap_qb2_enable != 0);
+	config.sbaWireDomainPlanning = (sba_wire_domain_planning != 0);
+	config.txRecordsMax = cbap_tx_records_max;
+	g_txTimeRoundNs = (tx_time_round_ns != 0);
 	config.qb2BmaxRatio = cbap_qb2_bmax_ratio;
 	config.qb2QTargetRatio = cbap_qb2_qtarget_ratio;
 	// Fail-fast: v2 must be fully and consistently specified.  A screening
@@ -3102,6 +3116,7 @@ struct QlenDistribution{
 };//队列长度分布统计，这里传进来的qlen是字节数，然后这个kb就是把字节分桶成KB桶，模拟bucket。
 map<uint32_t, map<uint32_t, QlenDistribution> > queue_result;//定义一个全局统计表，即queue_result[交换机ID][端口ID] = 这个端口的队列长度分布统计
 void monitor_buffer(FILE* qlen_output, NodeContainer *n){
+	uint64_t qlen_ts_total = 0, qlen_ts_maxport = 0;
 	for (uint32_t i = 0; i < n->GetN(); i++){
 		if (n->Get(i)->GetNodeType() == 1){ // 判断这个node是不是交换机
 			Ptr<SwitchNode> sw = DynamicCast<SwitchNode>(n->Get(i));//创建并继承一个交换机节点类的智能指针
@@ -3112,8 +3127,17 @@ void monitor_buffer(FILE* qlen_output, NodeContainer *n){
 				for (uint32_t k = 0; k < SwitchMmu::qCnt; k++)
 					size += sw->m_mmu->egress_bytes[j][k];//遍历这个端口所有优先级队列，switchmmu：：qcnt是指的队列数量
 				queue_result[i][j].add(size);
+				qlen_ts_total += size;
+				if (size > qlen_ts_maxport)
+					qlen_ts_maxport = size;
 			}
 		}
+	}
+	if (qlen_ts_output != NULL && qlen_ts_interval > 0 &&
+			Simulator::Now().GetTimeStep() % qlen_ts_interval == 0){
+		fprintf(qlen_ts_output, "%lu,%lu,%lu\n",
+			Simulator::Now().GetTimeStep(), qlen_ts_total, qlen_ts_maxport);
+		fflush(qlen_ts_output);
 	}
 	if (Simulator::Now().GetTimeStep() % qlen_dump_interval == 0){//判断是否要将统计结果写入
 		fprintf(qlen_output, "time: %lu\n", Simulator::Now().GetTimeStep());
@@ -3531,6 +3555,21 @@ int main(int argc, char *argv[])
 				conf>>cbap_qc_app_hard_delay_us;
 			else if(key.compare("CBAP_QC_TRACE_FILE")==0)
 				conf>>cbap_qc_trace_file;
+			else if(key.compare("TX_TIME_ROUND_NS")==0){
+				conf>>tx_time_round_ns;
+				std::cout << "TX_TIME_ROUND_NS\t\t"
+					<< tx_time_round_ns << "\n";
+			}
+			else if(key.compare("CBAP_TX_RECORDS_MAX")==0){
+				conf>>cbap_tx_records_max;
+				std::cout << "CBAP_TX_RECORDS_MAX\t\t"
+					<< cbap_tx_records_max << "\n";
+			}
+			else if(key.compare("SBA_WIRE_DOMAIN_PLANNING")==0){
+				conf>>sba_wire_domain_planning;
+				std::cout << "SBA_WIRE_DOMAIN_PLANNING\t\t"
+					<< sba_wire_domain_planning << "\n";
+			}
 			else if(key.compare("CBAP_QUEUE_BAND_V2_ENABLE")==0){
 				conf>>cbap_qb2_enable;
 				std::cout << "CBAP_QUEUE_BAND_V2_ENABLE\t\t"
@@ -4189,6 +4228,12 @@ int main(int argc, char *argv[])
 			}else if (key.compare("QLEN_MON_FILE") == 0){
 				conf >> qlen_mon_file;
 				std::cout << "QLEN_MON_FILE\t\t\t\t" << qlen_mon_file << '\n';
+			}else if (key.compare("QLEN_TS_FILE") == 0){
+				conf >> qlen_ts_file;
+				std::cout << "QLEN_TS_FILE\t\t\t\t" << qlen_ts_file << '\n';
+			}else if (key.compare("QLEN_TS_INTERVAL_NS") == 0){
+				conf >> qlen_ts_interval;
+				std::cout << "QLEN_TS_INTERVAL_NS\t\t\t" << qlen_ts_interval << '\n';
 			}else if (key.compare("QLEN_MON_START") == 0){
 				conf >> qlen_mon_start;
 				std::cout << "QLEN_MON_START\t\t\t\t" << qlen_mon_start << '\n';
@@ -5022,6 +5067,13 @@ int main(int argc, char *argv[])
 
 	// schedule buffer monitor
 	FILE* qlen_output = fopen(qlen_mon_file.c_str(), "w");
+	if (!qlen_ts_file.empty()){
+		qlen_ts_output = fopen(qlen_ts_file.c_str(), "w");
+		if (qlen_ts_output == NULL)
+			ConfigError("cannot open " + qlen_ts_file);
+		fprintf(qlen_ts_output,
+			"time_ns,total_queue_bytes,max_port_queue_bytes\n");
+	}
 	Simulator::Schedule(NanoSeconds(qlen_mon_start), &monitor_buffer, qlen_output, &n);
 	if (port_monitor_output != NULL)
 		Simulator::Schedule(NanoSeconds(port_monitor_interval), &MonitorFixedPathPorts);

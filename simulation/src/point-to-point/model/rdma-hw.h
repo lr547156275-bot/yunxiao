@@ -200,6 +200,9 @@ public:
 		uint32_t summaryBytes;
 		uint32_t grantBytes;
 		uint32_t txTraceTrackingPackets;
+		// v2: hard cap on the in-memory CBAP tx-record vector
+		// (0 = unlimited legacy behaviour)
+		uint64_t txRecordsMax;
 		uint32_t increasePolicy;
 		double increaseFraction;
 		uint64_t increaseAbsoluteBps;
@@ -257,6 +260,11 @@ public:
 		// mutually exclusive with it at config parse.  Default false: D1/D2/D3
 		// and every flag=0 run are byte-identical.
 		bool queueBandV2Enable;
+		// SBA_WIRE_DOMAIN_PLANNING (v2 campaigns): plan admission in the
+		// WIRE domain end to end.  Default false preserves v1 behaviour
+		// (payload-domain effective capacity vs wire old side, the
+		// documented ~4.6% startup transient).
+		bool sbaWireDomainPlanning;
 		double qb2BmaxRatio;      // BMAX = ratio * C_wire; parse rejects > 0.10
 		double qb2QTargetRatio;   // Q_target = ratio * Q_abs
 		double migrationReleaseRatio;
@@ -354,7 +362,8 @@ public:
 			  sbaSteadyFill(false), phaseSpreadEnable(false),
 			  steadyCapEnable(false), steadyCapFraction(0.995),
 			  queueBandEnable(false),
-			  queueBandV2Enable(false), qb2BmaxRatio(0.0),
+			  queueBandV2Enable(false), sbaWireDomainPlanning(false), txRecordsMax(0),
+			  qb2BmaxRatio(0.0),
 			  qb2QTargetRatio(0.0),
 			  migrationReleaseRatio(0.5),
 			  migrationDecayBase(0.30), migrationRiseBase(0.30),

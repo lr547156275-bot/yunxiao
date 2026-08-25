@@ -596,7 +596,11 @@ uint64_t SenderOppTrace::s_opp = 0;
 		m_txMachineState = BUSY;
 		m_currentPkt = p;
 		m_phyTxBeginTrace(m_currentPkt);
+		extern bool g_txTimeRoundNs;   // defined in rdma-hw.cc
 		Time txTime = Seconds(m_bps.CalculateTxTime(p->GetSize()));
+		if (g_txTimeRoundNs)
+			txTime = NanoSeconds((uint64_t)(
+				m_bps.CalculateTxTime(p->GetSize()) * 1e9 + 0.5));
 		Time txCompleteTime = txTime + m_tInterframeGap;
 		NS_LOG_LOGIC("Schedule TransmitCompleteEvent in " << txCompleteTime.GetSeconds() << "sec");
 		Simulator::Schedule(txCompleteTime, &QbbNetDevice::TransmitComplete, this);
