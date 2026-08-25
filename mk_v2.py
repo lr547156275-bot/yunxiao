@@ -414,6 +414,55 @@ elif MODE == 'matrix':
     put('configs/MATRIX_TAGS.txt', '\n'.join(tags) + '\n')
     print('formal matrix: %d cells (108 core + 6 annex arms + 6 buffer), '
           'H_GUARD=%s D_abs=%s' % (len(tags), HG, DABS))
+elif MODE == 'frontier_ext':
+    # Baseline queue-tight frontier EXTENSION (supplementary evidence, new
+    # arm names, formal matrix untouched).  User request: push the
+    # rate-for-queue tradeoff as low as practical.
+    #   dcqx   = speed-normalized DCQCN + ultra-low delay-defined ECN
+    #            (KMIN=0.5us, KMAX=2us of line rate, PMAX=1.0)
+    #   dctcpx = speed-normalized DCTCP + the same ultra-low marking
+    #   hpccx  = HPCC with U_TARGET 0.90 (its rate-for-queue knob; the
+    #            0.90 point matches the v1 sweep precedent)
+    #   timely has no config-exposed threshold (compile-time attributes)
+    #   and is recorded as not adjustable.
+    HG = {10: 118.0, 200: 15.0, 400: hg400()}
+    DABS = {10: 826.0, 200: 105.0, 400: 84.0}
+    SCEN = {'s0': (64, 262144, 0.8), 's1': (64, MB, 0.8),
+            's2': (64, 4 * MB, 0.8), 's3': (64, 16 * MB, 0.8),
+            's4': (64, 4 * MB, 0.95)}
+    GROUPS = {10: ['s3'], 200: ['s0', 's1'],
+              400: ['s0', 's1', 's2', 's4']}
+    tags = []
+    for rate, scens in sorted(GROUPS.items()):
+        C = gbps(rate)
+        kmin_kb = max(2, int(round(C * 0.5e-6 / 8 / 1000)))
+        kmax_kb = max(6, int(round(C * 2e-6 / 8 / 1000)))
+        ai = max(1, int(round(0.005 * C / 1e6)))
+        hai = max(1, int(round(0.01 * C / 1e6)))
+        lowmap = {'KMIN_MAP': '1 %d %d' % (int(C), kmin_kb),
+                  'KMAX_MAP': '1 %d %d' % (int(C), kmax_kb),
+                  'PMAX_MAP': '1 %d 1.0' % int(C)}
+        dcqx = dict(lowmap)
+        dcqx.update({'RATE_AI': '%dMb/s' % ai, 'RATE_HAI': '%dMb/s' % hai})
+        dctcpx = dict(lowmap)
+        dctcpx['DCTCP_RATE_AI'] = '%dMb/s' % int(round(0.1 * C / 1e6))
+        hpccx = {'U_TARGET': '0.90'}
+        for scen in scens:
+            fanin, sbytes, bgf = SCEN[scen]
+            batch_s = fanin * sbytes * 8.0 * (PKT_WIRE / PKT_PAY) / C
+            stop = 0.02 + batch_s * 1.3 + 0.014
+            for arm, kind, over in (('dcqx', 'dcqcn', dcqx),
+                                    ('dctcpx', 'dctcp', dctcpx),
+                                    ('hpccx', 'hpcc', hpccx)):
+                tag = 'fx%dg_%s_%s' % (rate, scen, arm)
+                make_cell(tag, kind, rate, sbytes, stop, over,
+                          heff_us=HG[rate], d_target_us=8,
+                          d_abs_us=DABS[rate], bg_frac=bgf, start_s=0.015,
+                          release_ns=20000000, fanin=fanin)
+                tags.append(tag)
+    put('configs/FX_TAGS.txt', '\n'.join(tags) + '\n')
+    print('frontier extension: %d cells (ECN KMIN=0.5us KMAX=2us PMAX=1.0; '
+          'HPCC U_TARGET=0.90)' % len(tags))
 else:
     print('mode %s not enabled this round (pilot gated on screening '
           'review)' % MODE)
