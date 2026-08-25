@@ -60,23 +60,24 @@ def topo(rate):
 
 
 def flow_files(rate, size_bytes, stop_s, tag, start_s=0.05,
-               release_ns=100000000):
+               release_ns=100000000, fanin=None):
+    fanin = fanin or FANIN
     C = gbps(rate)
     bg_bytes = int(1.2 * 0.95 * C * stop_s / 8)      # never completes
-    fl = ['%d' % (FANIN + 1), '65 64 3 100 %d 0.002' % bg_bytes]
-    for s in range(FANIN):
+    fl = ['%d' % (fanin + 1), '65 64 3 100 %d 0.002' % bg_bytes]
+    for s in range(fanin):
         fl.append('%d 64 3 100 %d %.3f' % (s, size_bytes, start_s))
     put('configs/%s_flow.txt' % tag, '\n'.join(fl) + '\n')
-    sch = ['%d' % (FANIN + 1),
+    sch = ['%d' % (fanin + 1),
            '0 0 0 1 %d 0 0 0 10000000' % bg_bytes]
-    for i in range(FANIN):
-        sch.append('%d 0 1 %d %d 0 0 0 %d' % (1 + i, FANIN,
+    for i in range(fanin):
+        sch.append('%d 0 1 %d %d 0 0 0 %d' % (1 + i, fanin,
                                               size_bytes, release_ns))
     put('configs/%s_sched.txt' % tag, '\n'.join(sch) + '\n')
     put('configs/%s_link.txt' % tag,
         '1\n0 84 1 %d 400000 0 1\n' % int(C))
-    pth = ['%d' % (FANIN + 1)]
-    for i in range(FANIN + 1):
+    pth = ['%d' % (fanin + 1)]
+    for i in range(fanin + 1):
         pth.append('%d 1 0' % i)
     put('configs/%s_path.txt' % tag, '\n'.join(pth) + '\n')
 
@@ -86,6 +87,8 @@ def base_config(kind):
         'cbap': 'scr8_b040.txt',
         'dcqcn': 'mx_s3_dcqcn.txt',
         'hpcc': 'mx_s3_hpcc.txt',
+        'dctcp': 'mx_s3_dctcp.txt',
+        'timely': 'mx_s3_timely.txt',
     }[kind]))
 
 
@@ -103,9 +106,10 @@ def delkey(t, k):
 def make_cell(tag, kind, rate, size_bytes, stop_s, over, heff_us,
               d_target_us=16, d_abs_us=80, bmax=0.04, buffer_mb=64,
               bg_frac=0.8, epoch_us=5, wire_domain=1, start_s=0.05,
-              release_ns=100000000):
+              release_ns=100000000, fanin=None):
+    fanin = fanin or FANIN
     C = gbps(rate)
-    flow_files(rate, size_bytes, stop_s, tag, start_s, release_ns)
+    flow_files(rate, size_bytes, stop_s, tag, start_s, release_ns, fanin)
     t = base_config(kind)
     out = RS + '/' + tag
     os.path.isdir(out) or os.makedirs(out)
@@ -129,7 +133,7 @@ def make_cell(tag, kind, rate, size_bytes, stop_s, over, heff_us,
         'KMIN_MAP': '1 %d 400' % int(C),
         'KMAX_MAP': '1 %d 1600' % int(C),
         'PMAX_MAP': '1 %d 0.2' % int(C),
-        'FINAL_COLLECTIVE_FLOW_COUNT': '%d' % FANIN,
+        'FINAL_COLLECTIVE_FLOW_COUNT': '%d' % fanin,
         'SBA_WIRE_DOMAIN_PLANNING': '%d' % wire_domain,
         'PACKET_PAYLOAD_SIZE': '952',
         'QLEN_TS_FILE': out + '/qlen_ts.csv',
@@ -141,7 +145,7 @@ def make_cell(tag, kind, rate, size_bytes, stop_s, over, heff_us,
             'CBAP_TX_RECORDS_MAX': '2000000',
             'CBAP_QC_H_GUARD_US': '%.3f' % heff_us,
             'CBAP_QC_APP_HARD_DELAY_US': '%.4f' % d_abs_eff_us,
-            'CBAP_QC_SAFETY_MARGIN_BYTES': '%d' % (FANIN * 1000),
+            'CBAP_QC_SAFETY_MARGIN_BYTES': '%d' % (fanin * 1000),
             'CBAP_CONTROL_EPOCH_US': '%d' % epoch_us,
             'CBAP_ACTUATION_FILE': out + '/actuation.csv',
         })
@@ -341,6 +345,75 @@ elif MODE == 'pilot':
     put('configs/PILOT_TAGS.txt', '\n'.join(tags) + '\n')
     print('pilot: %d cells (60 main + 6 buffer + 1 ablation), '
           'H_GUARD(400G)=%.1fus' % (len(tags), HG[400]))
+elif MODE == 'matrix':
+    # FORMAL MATRIX (user-approved design, reports/07):
+    #   rule A: D_abs(rate) = max(80us, 7 x H_eff)  -> 826 / 105 / 84 us
+    #   rule B: stop = release(20ms) + ideal_drain x 1.3 + 14ms tail
+    # Frozen: CBAP d08_b020, H_GUARD measured per rate, epoch 5us,
+    # MIN_RATE 0.01C, single seed.
+    HG = {10: 118.0, 200: 15.0, 400: hg400()}
+    DABS = {10: 826.0, 200: 105.0, 400: 84.0}
+    SCEN = [('s0', 64, 262144, 0.8),
+            ('s1', 64, MB, 0.8),
+            ('s2', 64, 4 * MB, 0.8),
+            ('s3', 64, 16 * MB, 0.8),
+            ('s4', 64, 4 * MB, 0.95),
+            ('s5', 32, 8 * MB, 0.8)]
+    tags = []
+
+    def dcqcn_arms(rate):
+        C = gbps(rate)
+        ai = max(1, int(round(0.005 * C / 1e6)))
+        hai = max(1, int(round(0.01 * C / 1e6)))
+        kmin_kb = max(3, int(round(C * 2e-6 / 8 / 1000)))
+        kmax_kb = max(12, int(round(C * 8e-6 / 8 / 1000)))
+        sn = {'RATE_AI': '%dMb/s' % ai, 'RATE_HAI': '%dMb/s' % hai}
+        low = dict(sn)
+        low['KMIN_MAP'] = '1 %d %d' % (int(C), kmin_kb)
+        low['KMAX_MAP'] = '1 %d %d' % (int(C), kmax_kb)
+        return sn, low
+
+    def mx_cell(rate, scen, fanin, sbytes, bgf, arm, kind, over,
+                buffer_mb=64, bmax=0.02):
+        C = gbps(rate)
+        batch_s = fanin * sbytes * 8.0 * (PKT_WIRE / PKT_PAY) / C
+        stop = 0.02 + batch_s * 1.3 + 0.014
+        tag = 'fm%dg_%s_%s' % (rate, scen, arm) + \
+            ('' if buffer_mb == 64 else '_b%d' % buffer_mb)
+        make_cell(tag, kind, rate, sbytes, stop, over, heff_us=HG[rate],
+                  d_target_us=8, d_abs_us=DABS[rate], bmax=bmax,
+                  buffer_mb=buffer_mb, bg_frac=bgf, start_s=0.015,
+                  release_ns=20000000, fanin=fanin)
+        tags.append(tag)
+
+    for rate in (10, 200, 400):
+        C = gbps(rate)
+        sn, low = dcqcn_arms(rate)
+        dctcp_sn = {'DCTCP_RATE_AI': '%dMb/s' % int(round(0.1 * C / 1e6))}
+        for scen, fanin, sbytes, bgf in SCEN:
+            mx_cell(rate, scen, fanin, sbytes, bgf, 'cbap', 'cbap', {})
+            mx_cell(rate, scen, fanin, sbytes, bgf, 'hpcc', 'hpcc', {})
+            mx_cell(rate, scen, fanin, sbytes, bgf, 'dcqn', 'dcqcn', sn)
+            mx_cell(rate, scen, fanin, sbytes, bgf, 'dcql', 'dcqcn', low)
+            mx_cell(rate, scen, fanin, sbytes, bgf, 'dctcp', 'dctcp',
+                    dctcp_sn)
+            mx_cell(rate, scen, fanin, sbytes, bgf, 'timely', 'timely', {})
+        # annex: stock DCQCN (its high-rate collapse is a finding) and the
+        # boost-off ablation, both at the headline scenario
+        mx_cell(rate, 's2', 64, 4 * MB, 0.8, 'dcqs', 'dcqcn', {})
+        mx_cell(rate, 's2', 64, 4 * MB, 0.8, 'cbap0', 'cbap', {}, bmax=0.0)
+    # annex: 400G buffer sensitivity at the headline scenario
+    sn400, _ = dcqcn_arms(400)
+    for buf in (8, 32):
+        mx_cell(400, 's2', 64, 4 * MB, 0.8, 'cbap', 'cbap', {},
+                buffer_mb=buf)
+        mx_cell(400, 's2', 64, 4 * MB, 0.8, 'hpcc', 'hpcc', {},
+                buffer_mb=buf)
+        mx_cell(400, 's2', 64, 4 * MB, 0.8, 'dcqn', 'dcqcn', sn400,
+                buffer_mb=buf)
+    put('configs/MATRIX_TAGS.txt', '\n'.join(tags) + '\n')
+    print('formal matrix: %d cells (108 core + 6 annex arms + 6 buffer), '
+          'H_GUARD=%s D_abs=%s' % (len(tags), HG, DABS))
 else:
     print('mode %s not enabled this round (pilot gated on screening '
           'review)' % MODE)
