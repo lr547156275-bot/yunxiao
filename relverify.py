@@ -12,6 +12,8 @@ import tarfile
 
 ROOT = '/workspaces/yunxiao/simulation/experiment/scheme1_sba'
 TARS = ['g1_matrix', 'g2_validation', 'g3_stress_frontier']
+# the twin-regression reference outputs must stay on disk
+EXCLUDE_TOP = {'scr8_b040_out'}
 TDIR = '/tmp/relver'
 DO_DELETE = '--delete' in sys.argv
 report = []
@@ -80,14 +82,16 @@ print('VERIFY OK: release tars fully cover the on-disk copies')
 if DO_DELETE:
     import shutil
     freed = 0
-    man = open(os.path.join(ROOT, 'v2_400g/reports/DISK_RECLAIM_MANIFEST.txt'),
-               'a')
+    man = open('/workspaces/yunxiao/v2_400g/reports/'
+               'DISK_RECLAIM_MANIFEST.txt', 'a')
     man.write('# verified against evidence-2026-08 assets; deleted:\n')
     for name in TARS:
         p = os.path.join(TDIR, name + '.tar.gz')
         with tarfile.open(p, 'r:gz') as tf:
             for m in tf:
                 if not m.isreg():
+                    continue
+                if m.name.split('/')[0] in EXCLUDE_TOP:
                     continue
                 dp = os.path.join(ROOT, m.name)
                 if os.path.isfile(dp):
@@ -96,7 +100,7 @@ if DO_DELETE:
                     os.remove(dp)
     man.close()
     # sweep now-empty directories under the covered top-level paths
-    for top in covered_top:
+    for top in covered_top - EXCLUDE_TOP:
         for dirpath, dirnames, filenames in os.walk(
                 os.path.join(ROOT, top), topdown=False):
             if not os.listdir(dirpath):
