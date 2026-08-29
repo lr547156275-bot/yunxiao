@@ -1,0 +1,6 @@
+RUN pf_single_10g 15:03:46
+OK  pf_single_10g 144s peakRSS=0.12GB
+RUN pf_burst_10g 15:06:10
+OK  pf_burst_10g 263s peakRSS=0.12GB
+RUN heff_10g 15:10:33
+OK  heff_10g 238s peakRSS=0.18GB

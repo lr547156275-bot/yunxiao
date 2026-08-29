@@ -1,0 +1,59 @@
+SWEEP_START 2026-08-18T02:56:25Z  JOBS=2
+fed9f9f322a7f9affe109ea37791d2c111f46ff2d6927aee1c175a374c649cb6  /work/simulation/build/scratch/third
+091641c0171f0c2cff3605b40ead3828411cc0ff5677b594b37c04944070ad59  /work/simulation/build/libns3.18-point-to-point-debug.so
+6b922c67e56c04aa32f67078c89bd8a0a0fafceae58f078bfa272cc8223ada0b  s3_flow.txt
+70903775ca19226b39b3870a25fe748a2fc591bac3d5da4198c22df887e5b4df  s3_cbap_link.txt
+1557487d29e7efb585a37c34ca8056767d5369f510c2bcaf26bed1b1bff649e3  s3_cbap_path.txt
+8a40b3d13abe225d745360e5db26ccf71253837486b43a14423d65e9827200bb  s3_round_schedule.txt
+6091d5ec28c391c0c8ec79dcaf035d7deb44c2dd57e4c357dffe6bafe8c4fff8  topology.txt
+/dev/loop4       32G   22G  8.2G  73% /work
+cells: cap0995_rho075 cap0995_rho090 cap0995_rho09875 cap1000_rho075 cap1000_rho090 cap1000_rho09875 cap0995_rho090_b040 dcqcn hpcc
+cap0995_rho090 START 02:56:25 free=9G
+cap0995_rho075 START 02:56:25 free=9G
+cap0995_rho090 EXIT=0 03:22:40
+cap0995_rho090 DONE
+cap0995_rho075 EXIT=0 03:23:28
+cap0995_rho075 DONE
+cap0995_rho09875 START 03:23:28 free=8G
+cap1000_rho075 START 03:23:28 free=8G
+cap0995_rho09875 EXIT=0 03:50:02
+cap0995_rho09875 DONE
+cap1000_rho075 EXIT=0 03:50:06
+cap1000_rho075 DONE
+cap1000_rho090 START 03:50:06 free=8G
+cap1000_rho09875 START 03:50:06 free=8G
+cap1000_rho09875 EXIT=0 04:16:17
+cap1000_rho09875 DONE
+cap1000_rho090 EXIT=0 04:16:51
+cap1000_rho090 DONE
+cap0995_rho090_b040 START 04:16:51 free=8G
+dcqcn START 04:16:51 free=8G
+dcqcn EXIT=0 04:40:20
+dcqcn DONE
+cap0995_rho090_b040 EXIT=0 04:41:47
+cap0995_rho090_b040 DONE
+hpcc START 04:41:47 free=7G
+SWEEP_START 2026-08-18T05:08:01Z  JOBS=2
+fed9f9f322a7f9affe109ea37791d2c111f46ff2d6927aee1c175a374c649cb6  /work/simulation/build/scratch/third
+091641c0171f0c2cff3605b40ead3828411cc0ff5677b594b37c04944070ad59  /work/simulation/build/libns3.18-point-to-point-debug.so
+6b922c67e56c04aa32f67078c89bd8a0a0fafceae58f078bfa272cc8223ada0b  s3_flow.txt
+70903775ca19226b39b3870a25fe748a2fc591bac3d5da4198c22df887e5b4df  s3_cbap_link.txt
+1557487d29e7efb585a37c34ca8056767d5369f510c2bcaf26bed1b1bff649e3  s3_cbap_path.txt
+8a40b3d13abe225d745360e5db26ccf71253837486b43a14423d65e9827200bb  s3_round_schedule.txt
+6091d5ec28c391c0c8ec79dcaf035d7deb44c2dd57e4c357dffe6bafe8c4fff8  topology.txt
+/dev/loop4       32G   23G  7.2G  76% /work
+cells: cap0995_rho075 cap0995_rho090 cap0995_rho09875 cap1000_rho075 cap1000_rho090 cap1000_rho09875 cap0995_rho090_b040 dcqcn hpcc
+cap0995_rho075 SKIP(done)
+cap0995_rho090 SKIP(done)
+cap0995_rho09875 SKIP(done)
+cap1000_rho075 SKIP(done)
+cap1000_rho090 SKIP(done)
+cap1000_rho09875 SKIP(done)
+cap0995_rho090_b040 SKIP(done)
+dcqcn SKIP(done)
+hpcc START 05:08:03 free=8G
+hpcc EXIT=0 05:23:24
+hpcc DONE
+SWEEP_ALL_DONE 2026-08-18T05:23:24Z
+/dev/loop4       32G   23G  7.1G  77% /work
+9

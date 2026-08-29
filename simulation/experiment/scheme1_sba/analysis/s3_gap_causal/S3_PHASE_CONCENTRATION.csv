@@ -1,0 +1,9 @@
+algorithm,bin_ns,occupied_bins,max_packets_in_bin,p95_packets_in_bin,mean_packets_in_bin
+CBAP,1,66676,1,1,1.0000
+CBAP,10,66676,1,1,1.0000
+CBAP,100,66676,1,1,1.0000
+CBAP,1000,56045,2,2,1.1897
+DCQCN,1,68800,1,1,1.0000
+DCQCN,10,68800,1,1,1.0000
+DCQCN,100,68800,1,1,1.0000
+DCQCN,1000,57723,2,2,1.1919

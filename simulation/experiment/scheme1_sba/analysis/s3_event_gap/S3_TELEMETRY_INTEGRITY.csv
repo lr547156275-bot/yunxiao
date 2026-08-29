@@ -1,0 +1,3 @@
+algorithm,queue_rows,enqueue,dequeue,tx_begin,tx_end,tx_pairing_ok,tx_begin_minus_end,enq_deq_delta,pacer_rows,packets_w2,gaps,queue_timeline_events,pacer_span_lo,pacer_span_hi,rate_commands_in_window,rate_commands_without_pacer_telemetry,pacer_telemetry_complete
+CBAP,266743,66712,66677,66677,66677,True,0,35,484,66676,1065,133389,2000000000,2000185000,420,0,True
+DCQCN,275201,68800,68800,68800,68801,True,-1,0,0,68800,497,137600,,,0,0,True

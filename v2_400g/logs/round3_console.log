@@ -1,0 +1,60 @@
+round-2 results archived to results_r2_floor1ns/
+  identical flow_summary.csv
+  identical selected_link_timeseries.csv
+  identical rate_transition.csv
+  identical round_summary.csv
+  identical pfc_events.csv
+  identical flow_timing.csv
+REGRESSION OK (all v2 flags inert at flag-off, binary 22921aa9529c541a238bbd979bde1fad80fc15ecb5ae607d68fa5117fc69f6cc)
+RUN pf_single_10g 15:03:46
+OK  pf_single_10g 144s peakRSS=0.12GB
+RUN pf_burst_10g 15:06:10
+OK  pf_burst_10g 263s peakRSS=0.12GB
+RUN heff_10g 15:10:33
+OK  heff_10g 238s peakRSS=0.18GB
+RUN pf_single_200g 15:03:46
+OK  pf_single_200g 53s peakRSS=0.12GB
+RUN pf_burst_200g 15:04:39
+OK  pf_burst_200g 349s peakRSS=0.14GB
+RUN heff_200g 15:10:28
+OK  heff_200g 388s peakRSS=0.39GB
+RUN pf_single_400g 15:03:46
+OK  pf_single_400g 85s peakRSS=0.12GB
+RUN pf_burst_400g 15:05:11
+OK  pf_burst_400g 2356s peakRSS=0.24GB
+RUN heff_400g 15:44:27
+OK  heff_400g 2365s peakRSS=0.40GB
+=== round-3 preflight complete ===
+==========================================================================
+PREFLIGHT -- single-flow line-rate checks (injection-window based)
+pf_single_10g    inj-goodput 9.520/9.520 G  fct 0.007064 vs theory 0.007049 s  gap 800.00/800.00 ns  ack_tail 6.86 us (RTT 15044ns)  ecn=0 pfc=0 retx=0  PASS
+pf_single_200g   inj-goodput 190.391/190.400 G  fct 0.000365 vs theory 0.000352 s  gap 40.00/40.00 ns  ack_tail 6.99 us (RTT 12152ns)  ecn=0 pfc=0 retx=0  PASS
+pf_single_400g   inj-goodput 380.781/380.800 G  fct 0.000188 vs theory 0.000176 s  gap 20.00/20.00 ns  ack_tail 7.00 us (RTT 12076ns)  ecn=0 pfc=0 retx=0  PASS
+
+PREFLIGHT -- 64-way CC-inert burst, aggregate fabric queue at ~1 RTT
+pf_burst_10g     fabricQ@1RTT 0.964 MB  theory 1.144 MB  dev -15.7%  peak(500us) 1.223 MB  maxport 0.143 MB  bottleneck-link 0.058 MB  PFC 0 (first -1.0us)
+pf_burst_200g    fabricQ@1RTT 15.641 MB  theory 16.749 MB  dev -6.6%  peak(500us) 16.301 MB  maxport 2.614 MB  bottleneck-link 1.348 MB  PFC 0 (first -1.0us)
+pf_burst_400g    fabricQ@1RTT 16.007 MB  theory 16.692 MB  dev -4.1%  peak(500us) 16.639 MB  maxport 4.191 MB  bottleneck-link 2.827 MB  PFC 54 (first +162.1us)
+
+H_EFF -- actuation-stage measurement
+heff_10g     arrival_at_bottleneck              n=270    mean=   72.86us p95=  105.66us p99=  109.42us max=  139.10us
+heff_10g     counters_pending_63_inflight_0     n=1      mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_10g     counters_unmatched_0_superseded_851_negative_0 n=1      mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_10g     first_affected_at_bottleneck       n=270    mean=   80.41us p95=  113.77us p99=  117.77us max=  147.97us
+heff_10g     rate_command                       n=1184   mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_10g     sender_rate_effect                 n=270    mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_200g    arrival_at_bottleneck              n=1514   mean=    9.19us p95=   11.22us p99=   12.39us max=   12.72us
+heff_200g    counters_pending_0_inflight_0      n=1      mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_200g    counters_unmatched_0_superseded_0_negative_0 n=1      mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_200g    first_affected_at_bottleneck       n=1514   mean=   12.47us p95=   14.21us p99=   14.97us max=   15.41us
+heff_200g    rate_command                       n=1514   mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_200g    sender_rate_effect                 n=1514   mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_400g    arrival_at_bottleneck              n=1505   mean=    7.05us p95=    8.26us p99=    8.70us max=    8.85us
+heff_400g    counters_pending_1_inflight_0      n=1      mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_400g    counters_unmatched_0_superseded_0_negative_0 n=1      mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_400g    first_affected_at_bottleneck       n=1514   mean=   10.07us p95=   11.52us p99=   12.10us max=   12.41us
+heff_400g    rate_command                       n=1515   mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_400g    sender_rate_effect                 n=1514   mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+
+==========================================================================
+PREFLIGHT VERDICT: PASS -- H_eff selection: use the p99 of the last stage (bottleneck-affected) per rate, rounded up; confirm before screening generation.

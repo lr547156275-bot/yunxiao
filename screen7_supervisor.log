@@ -1,0 +1,22 @@
+SKIP scr7_d1 (DONE present)
+RUN  scr7_d3  start=21:24:06
+OK   scr7_d3 rc=0 980s
+RUN  scr7_b005  start=21:40:26
+OK   scr7_b005 rc=0 1063s
+RUN  scr7_b010  start=21:58:09
+OK   scr7_b010 rc=0 1058s
+RUN  scr7_b020  start=22:15:47
+OK   scr7_b020 rc=0 1097s
+RUN  scr7_b040  start=22:34:04
+OK   scr7_b040 rc=0 1045s
+RUN  scr7_b080  start=22:51:29
+OK   scr7_b080 rc=0 1056s
+=== screen7 complete Tue Aug 18 23:09:05 HKT 2026 ===
+  scr7_d1 DONE 0 986
+  scr7_d3 DONE 0 980
+  scr7_b005 DONE 0 1063
+  scr7_b010 DONE 0 1058
+  scr7_b020 DONE 0 1097
+  scr7_b040 DONE 0 1045
+  scr7_b080 DONE 0 1056
+/dev/loop4       32G   26G  4.7G  85% /work

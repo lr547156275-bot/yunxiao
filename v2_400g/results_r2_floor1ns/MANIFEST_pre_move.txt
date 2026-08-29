@@ -1,0 +1,192 @@
+/work/v2_400g/results:
+total 44
+drwxrwxrwx+ 11 1000 1000 4096 Aug 24 13:45 .
+drwxrwxrwx+ 10 1000 1000 4096 Aug 24 14:47 ..
+drwxrwxrwx+  2 root root 4096 Aug 24 13:09 heff_10g
+drwxrwxrwx+  2 root root 4096 Aug 24 13:10 heff_200g
+drwxrwxrwx+  2 root root 4096 Aug 24 13:45 heff_400g
+drwxrwxrwx+  2 root root 4096 Aug 24 13:04 pf_burst_10g
+drwxrwxrwx+  2 root root 4096 Aug 24 13:04 pf_burst_200g
+drwxrwxrwx+  2 root root 4096 Aug 24 13:45 pf_burst_400g
+drwxrwxrwx+  2 root root 4096 Aug 24 12:59 pf_single_10g
+drwxrwxrwx+  2 root root 4096 Aug 24 12:59 pf_single_200g
+drwxrwxrwx+  2 root root 4096 Aug 24 12:59 pf_single_400g
+
+/work/v2_400g/results/heff_10g:
+total 7460
+drwxrwxrwx+  2 root root    4096 Aug 24 13:09 .
+drwxrwxrwx+ 11 1000 1000    4096 Aug 24 13:45 ..
+-rw-rw-rw-   1 root root       6 Aug 24 13:09 DONE
+-rw-rw-rw-   1 root root  119461 Aug 24 13:09 actuation.csv
+-rw-rw-rw-   1 root root    6838 Aug 24 13:09 admission.csv
+-rw-rw-rw-   1 root root  100641 Aug 24 13:09 applied_rate_audit.csv
+-rw-rw-rw-   1 root root    5411 Aug 24 13:09 controller_summary.csv
+-rw-rw-rw-   1 root root 3088269 Aug 24 13:09 controller_v2_trace.csv
+-rw-rw-rw-   1 root root    8833 Aug 24 13:09 feedback_summary.csv
+-rw-rw-rw-   1 root root    2896 Aug 24 13:09 flow_plan.csv
+-rw-rw-rw-   1 root root    8238 Aug 24 13:09 flow_summary.csv
+-rw-rw-rw-   1 root root    6020 Aug 24 13:07 flow_timing.csv
+-rw-rw-rw-   1 root root     639 Aug 24 13:09 group_round_summary.csv
+-rw-rw-rw-   1 root root     288 Aug 24 13:09 increase_audit.csv
+-rw-rw-rw-   1 root root      44 Aug 24 13:09 pfc_events.csv
+-rw-rw-rw-   1 root root   43397 Aug 24 13:09 port_summary.csv
+-rw-rw-rw-   1 root root 1401247 Aug 24 13:09 qlen_ts.csv
+-rw-rw-rw-   1 root root  262414 Aug 24 13:09 rate_transition.csv
+-rw-rw-rw-   1 root root   13550 Aug 24 13:09 round_summary.csv
+-rw-rw-rw-   1 root root   19725 Aug 24 13:09 sba_events.csv
+-rw-rw-rw-   1 root root 1815990 Aug 24 13:09 selected_flow_timeseries.csv
+-rw-rw-rw-   1 root root  659044 Aug 24 13:09 selected_link_timeseries.csv
+-rw-rw-rw-   1 root root    3000 Aug 24 13:09 trace_output.txt
+
+/work/v2_400g/results/heff_200g:
+total 5676
+drwxrwxrwx+  2 root root    4096 Aug 24 13:10 .
+drwxrwxrwx+ 11 1000 1000    4096 Aug 24 13:45 ..
+-rw-rw-rw-   1 root root       6 Aug 24 13:10 DONE
+-rw-rw-rw-   1 root root  399547 Aug 24 13:10 actuation.csv
+-rw-rw-rw-   1 root root    7098 Aug 24 13:10 admission.csv
+-rw-rw-rw-   1 root root   94731 Aug 24 13:10 applied_rate_audit.csv
+-rw-rw-rw-   1 root root    5607 Aug 24 13:10 controller_summary.csv
+-rw-rw-rw-   1 root root 2300530 Aug 24 13:10 controller_v2_trace.csv
+-rw-rw-rw-   1 root root    8833 Aug 24 13:10 feedback_summary.csv
+-rw-rw-rw-   1 root root    3028 Aug 24 13:10 flow_plan.csv
+-rw-rw-rw-   1 root root    8371 Aug 24 13:10 flow_summary.csv
+-rw-rw-rw-   1 root root    6084 Aug 24 13:09 flow_timing.csv
+-rw-rw-rw-   1 root root     642 Aug 24 13:10 group_round_summary.csv
+-rw-rw-rw-   1 root root     288 Aug 24 13:10 increase_audit.csv
+-rw-rw-rw-   1 root root      44 Aug 24 13:10 pfc_events.csv
+-rw-rw-rw-   1 root root   40825 Aug 24 13:10 port_summary.csv
+-rw-rw-rw-   1 root root  881805 Aug 24 13:10 qlen_ts.csv
+-rw-rw-rw-   1 root root  373448 Aug 24 13:10 rate_transition.csv
+-rw-rw-rw-   1 root root   13814 Aug 24 13:10 round_summary.csv
+-rw-rw-rw-   1 root root   11935 Aug 24 13:10 sba_events.csv
+-rw-rw-rw-   1 root root 1113408 Aug 24 13:10 selected_flow_timeseries.csv
+-rw-rw-rw-   1 root root  464651 Aug 24 13:10 selected_link_timeseries.csv
+-rw-rw-rw-   1 root root    3000 Aug 24 13:10 trace_output.txt
+
+/work/v2_400g/results/heff_400g:
+total 4588
+drwxrwxrwx+  2 root root    4096 Aug 24 13:45 .
+drwxrwxrwx+ 11 1000 1000    4096 Aug 24 13:45 ..
+-rw-rw-rw-   1 root root  397312 Aug 24 13:59 actuation.csv
+-rw-rw-rw-   1 root root       0 Aug 24 13:45 controller_summary.csv
+-rw-rw-rw-   1 root root 2043904 Aug 24 14:22 controller_v2_trace.csv
+-rw-rw-rw-   1 root root       0 Aug 24 13:45 feedback_summary.csv
+-rw-rw-rw-   1 root root       0 Aug 24 13:45 flow_plan.csv
+-rw-rw-rw-   1 root root    8257 Aug 24 13:59 flow_summary.csv
+-rw-rw-rw-   1 root root    6084 Aug 24 13:59 flow_timing.csv
+-rw-rw-rw-   1 root root       0 Aug 24 13:45 group_round_summary.csv
+-rw-rw-rw-   1 root root       0 Aug 24 13:45 pfc_events.csv
+-rw-rw-rw-   1 root root  826999 Aug 24 14:22 qlen_ts.csv
+-rw-rw-rw-   1 root root       0 Aug 24 13:45 round_summary.csv
+-rw-rw-rw-   1 root root  970752 Aug 24 14:22 selected_flow_timeseries.csv
+-rw-rw-rw-   1 root root  421888 Aug 24 14:21 selected_link_timeseries.csv
+-rw-rw-rw-   1 root root       0 Aug 24 13:45 trace_output.txt
+
+/work/v2_400g/results/pf_burst_10g:
+total 3952
+drwxrwxrwx+  2 root root    4096 Aug 24 13:04 .
+drwxrwxrwx+ 11 1000 1000    4096 Aug 24 13:45 ..
+-rw-rw-rw-   1 root root       6 Aug 24 13:04 DONE
+-rw-rw-rw-   1 root root    5540 Aug 24 13:04 controller_summary.csv
+-rw-rw-rw-   1 root root    8833 Aug 24 13:04 feedback_summary.csv
+-rw-rw-rw-   1 root root    3025 Aug 24 13:04 flow_plan.csv
+-rw-rw-rw-   1 root root    8303 Aug 24 13:04 flow_summary.csv
+-rw-rw-rw-   1 root root    5572 Aug 24 13:02 flow_timing.csv
+-rw-rw-rw-   1 root root     643 Aug 24 13:04 group_round_summary.csv
+-rw-rw-rw-   1 root root      44 Aug 24 13:04 pfc_events.csv
+-rw-rw-rw-   1 root root 1429674 Aug 24 13:04 qlen_ts.csv
+-rw-rw-rw-   1 root root   14133 Aug 24 13:04 round_summary.csv
+-rw-rw-rw-   1 root root 1856288 Aug 24 13:04 selected_flow_timeseries.csv
+-rw-rw-rw-   1 root root  662015 Aug 24 13:04 selected_link_timeseries.csv
+-rw-rw-rw-   1 root root    3000 Aug 24 13:04 trace_output.txt
+
+/work/v2_400g/results/pf_burst_200g:
+total 2512
+drwxrwxrwx+  2 root root    4096 Aug 24 13:04 .
+drwxrwxrwx+ 11 1000 1000    4096 Aug 24 13:45 ..
+-rw-rw-rw-   1 root root       6 Aug 24 13:04 DONE
+-rw-rw-rw-   1 root root    5735 Aug 24 13:04 controller_summary.csv
+-rw-rw-rw-   1 root root    8833 Aug 24 13:04 feedback_summary.csv
+-rw-rw-rw-   1 root root    3156 Aug 24 13:04 flow_plan.csv
+-rw-rw-rw-   1 root root    8436 Aug 24 13:04 flow_summary.csv
+-rw-rw-rw-   1 root root    5636 Aug 24 13:03 flow_timing.csv
+-rw-rw-rw-   1 root root     647 Aug 24 13:04 group_round_summary.csv
+-rw-rw-rw-   1 root root      44 Aug 24 13:04 pfc_events.csv
+-rw-rw-rw-   1 root root  883956 Aug 24 13:04 qlen_ts.csv
+-rw-rw-rw-   1 root root   14460 Aug 24 13:04 round_summary.csv
+-rw-rw-rw-   1 root root 1123587 Aug 24 13:04 selected_flow_timeseries.csv
+-rw-rw-rw-   1 root root  471449 Aug 24 13:04 selected_link_timeseries.csv
+-rw-rw-rw-   1 root root    3000 Aug 24 13:04 trace_output.txt
+
+/work/v2_400g/results/pf_burst_400g:
+total 2516
+drwxrwxrwx+  2 root root    4096 Aug 24 13:45 .
+drwxrwxrwx+ 11 1000 1000    4096 Aug 24 13:45 ..
+-rw-rw-rw-   1 root root       7 Aug 24 13:45 DONE
+-rw-rw-rw-   1 root root    5735 Aug 24 13:45 controller_summary.csv
+-rw-rw-rw-   1 root root    8833 Aug 24 13:45 feedback_summary.csv
+-rw-rw-rw-   1 root root    3156 Aug 24 13:45 flow_plan.csv
+-rw-rw-rw-   1 root root    8436 Aug 24 13:45 flow_summary.csv
+-rw-rw-rw-   1 root root    5636 Aug 24 13:14 flow_timing.csv
+-rw-rw-rw-   1 root root     647 Aug 24 13:45 group_round_summary.csv
+-rw-rw-rw-   1 root root     538 Aug 24 13:45 pfc_events.csv
+-rw-rw-rw-   1 root root  909473 Aug 24 13:44 qlen_ts.csv
+-rw-rw-rw-   1 root root   14460 Aug 24 13:45 round_summary.csv
+-rw-rw-rw-   1 root root 1102311 Aug 24 13:45 selected_flow_timeseries.csv
+-rw-rw-rw-   1 root root  461027 Aug 24 13:45 selected_link_timeseries.csv
+-rw-rw-rw-   1 root root    3000 Aug 24 13:45 trace_output.txt
+
+/work/v2_400g/results/pf_single_10g:
+total 1004
+drwxrwxrwx+  2 root root   4096 Aug 24 12:59 .
+drwxrwxrwx+ 11 1000 1000   4096 Aug 24 13:45 ..
+-rw-rw-rw-   1 root root      5 Aug 24 12:59 DONE
+-rw-rw-rw-   1 root root    237 Aug 24 14:44 controller_summary.csv
+-rw-rw-rw-   1 root root    586 Aug 24 14:44 feedback_summary.csv
+-rw-rw-rw-   1 root root    152 Aug 24 14:44 flow_plan.csv
+-rw-rw-rw-   1 root root    276 Aug 24 14:44 flow_summary.csv
+-rw-rw-rw-   1 root root    234 Aug 24 14:44 flow_timing.csv
+-rw-rw-rw-   1 root root    483 Aug 24 14:44 group_round_summary.csv
+-rw-rw-rw-   1 root root     44 Aug 24 14:44 pfc_events.csv
+-rw-rw-rw-   1 root root    629 Aug 24 14:44 round_summary.csv
+-rw-rw-rw-   1 root root 173483 Aug 24 14:44 selected_flow_timeseries.csv
+-rw-rw-rw-   1 root root 195926 Aug 24 14:44 selected_link_timeseries.csv
+-rw-rw-rw-   1 root root   3000 Aug 24 14:44 trace_output.txt
+-rw-rw-rw-   1 root root 605745 Aug 24 14:44 tx_serialization.csv
+
+/work/v2_400g/results/pf_single_200g:
+total 892
+drwxrwxrwx+  2 root root   4096 Aug 24 12:59 .
+drwxrwxrwx+ 11 1000 1000   4096 Aug 24 13:45 ..
+-rw-rw-rw-   1 root root      5 Aug 24 12:59 DONE
+-rw-rw-rw-   1 root root    240 Aug 24 12:59 controller_summary.csv
+-rw-rw-rw-   1 root root    586 Aug 24 12:59 feedback_summary.csv
+-rw-rw-rw-   1 root root    154 Aug 24 12:59 flow_plan.csv
+-rw-rw-rw-   1 root root    279 Aug 24 12:58 flow_summary.csv
+-rw-rw-rw-   1 root root    235 Aug 24 12:58 flow_timing.csv
+-rw-rw-rw-   1 root root    484 Aug 24 12:59 group_round_summary.csv
+-rw-rw-rw-   1 root root     44 Aug 24 12:59 pfc_events.csv
+-rw-rw-rw-   1 root root    633 Aug 24 12:59 round_summary.csv
+-rw-rw-rw-   1 root root 116164 Aug 24 12:59 selected_flow_timeseries.csv
+-rw-rw-rw-   1 root root 137523 Aug 24 12:59 selected_link_timeseries.csv
+-rw-rw-rw-   1 root root   3000 Aug 24 12:59 trace_output.txt
+-rw-rw-rw-   1 root root 605365 Aug 24 12:59 tx_serialization.csv
+
+/work/v2_400g/results/pf_single_400g:
+total 892
+drwxrwxrwx+  2 root root   4096 Aug 24 12:59 .
+drwxrwxrwx+ 11 1000 1000   4096 Aug 24 13:45 ..
+-rw-rw-rw-   1 root root      5 Aug 24 12:59 DONE
+-rw-rw-rw-   1 root root    240 Aug 24 12:59 controller_summary.csv
+-rw-rw-rw-   1 root root    586 Aug 24 12:59 feedback_summary.csv
+-rw-rw-rw-   1 root root    154 Aug 24 12:59 flow_plan.csv
+-rw-rw-rw-   1 root root    279 Aug 24 12:58 flow_summary.csv
+-rw-rw-rw-   1 root root    235 Aug 24 12:58 flow_timing.csv
+-rw-rw-rw-   1 root root    484 Aug 24 12:59 group_round_summary.csv
+-rw-rw-rw-   1 root root     44 Aug 24 12:59 pfc_events.csv
+-rw-rw-rw-   1 root root    633 Aug 24 12:59 round_summary.csv
+-rw-rw-rw-   1 root root 116122 Aug 24 12:59 selected_flow_timeseries.csv
+-rw-rw-rw-   1 root root 137364 Aug 24 12:59 selected_link_timeseries.csv
+-rw-rw-rw-   1 root root   3000 Aug 24 12:59 trace_output.txt
+-rw-rw-rw-   1 root root 605045 Aug 24 12:59 tx_serialization.csv

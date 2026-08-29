@@ -1,0 +1,44 @@
+RUN  pw_dcqcn_k200  start=16:12:17
+OK   pw_dcqcn_k200 rc=0 982s
+RUN  pw_dcqcn_k800  start=16:28:39
+OK   pw_dcqcn_k800 rc=0 990s
+RUN  pw_dcqcn_k1600  start=16:45:09
+OK   pw_dcqcn_k1600 rc=0 1051s
+RUN  pw_dcqcn_pmax10  start=17:02:40
+OK   pw_dcqcn_pmax10 rc=0 1025s
+RUN  pw_dctcp_k200  start=17:19:45
+OK   pw_dctcp_k200 rc=0 1028s
+RUN  pw_dctcp_k800  start=17:36:53
+OK   pw_dctcp_k800 rc=0 1031s
+RUN  pw_dctcp_k1600  start=17:54:04
+OK   pw_dctcp_k1600 rc=0 1043s
+RUN  pw_dctcp_ai500  start=18:11:27
+OK   pw_dctcp_ai500 rc=0 1073s
+RUN  pw_hpcc_u90  start=18:29:20
+OK   pw_hpcc_u90 rc=0 1060s
+RUN  pw_hpcc_u98  start=18:47:00
+OK   pw_hpcc_u98 rc=0 1098s
+RUN  pw_hpcc_mi1  start=19:05:18
+OK   pw_hpcc_mi1 rc=0 1044s
+RUN  pw_timely_ai25  start=19:22:42
+OK   pw_timely_ai25 rc=0 1028s
+RUN  pw_timely_ai100  start=19:39:50
+OK   pw_timely_ai100 rc=0 1036s
+RUN  pw_timely_ai200  start=19:57:06
+OK   pw_timely_ai200 rc=0 1042s
+=== psweep complete Sat Aug 22 20:14:28 HKT 2026 ===
+  pw_dcqcn_k200 DONE 0 982
+  pw_dcqcn_k800 DONE 0 990
+  pw_dcqcn_k1600 DONE 0 1051
+  pw_dcqcn_pmax10 DONE 0 1025
+  pw_dctcp_k200 DONE 0 1028
+  pw_dctcp_k800 DONE 0 1031
+  pw_dctcp_k1600 DONE 0 1043
+  pw_dctcp_ai500 DONE 0 1073
+  pw_hpcc_u90 DONE 0 1060
+  pw_hpcc_u98 DONE 0 1098
+  pw_hpcc_mi1 DONE 0 1044
+  pw_timely_ai25 DONE 0 1028
+  pw_timely_ai100 DONE 0 1036
+  pw_timely_ai200 DONE 0 1042
+/dev/loop4       32G   27G  3.6G  89% /work

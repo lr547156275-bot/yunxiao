@@ -1,0 +1,64 @@
+regression already passed for this binary (marker /work/v2_400g/logs/REGV3_OK), skipping
+RUN pf_single_10g 12:58:25
+OK  pf_single_10g 86s
+RUN pf_burst_10g 12:59:51
+OK  pf_burst_10g 274s
+RUN heff_10g 13:04:25
+OK  heff_10g 293s
+RUN pf_single_200g 12:58:25
+OK  pf_single_200g 46s
+RUN pf_burst_200g 12:59:11
+OK  pf_burst_200g 336s
+RUN heff_200g 13:04:47
+OK  heff_200g 350s
+RUN pf_single_400g 12:58:25
+OK  pf_single_400g 47s
+RUN pf_burst_400g 12:59:12
+OK  pf_burst_400g 2756s
+RUN heff_400g 13:45:08
+/work/run_v2pf3.sh: line 15:   205 Aborted                 timeout -k 60 7200 "$BIN" "$tag.txt" > "$LG/$tag.log" 2>&1
+FAIL heff_400g rc=134
+terminate called after throwing an instance of 'std::bad_alloc'
+  what():  std::bad_alloc
+timeout: the monitored command dumped core
+=== round-2 preflight complete ===
+==========================================================================
+PREFLIGHT -- single-flow line-rate checks
+pf_single_10g    goodput 9.512/9.542 G  fct 0.007055 vs theory 0.007033 s  gap 799.00/838.40 ns  RTT 15044ns  ecn=0 pfc=0 retx=0  FAIL
+pf_single_200g   goodput 188.626/190.840 G  fct 0.000356 vs theory 0.000352 s  gap 39.00/41.92 ns  RTT 12152ns  ecn=0 pfc=0 retx=0  FAIL
+pf_single_400g   goodput 373.499/381.679 G  fct 0.000180 vs theory 0.000176 s  gap 19.00/20.96 ns  RTT 12076ns  ecn=0 pfc=0 retx=0  FAIL
+
+PREFLIGHT -- 64-way CC-inert burst, queue at ~1 RTT
+pf_burst_10g     q@1RTT 0.058 MB  theory 1.144 MB  dev -94.9%  peak(200us) 0.738 MB  PFC 0 (first -1.0us)
+    explanation: sampling ~10us vs RTT 15.0us; senders start paced by NIC line rate; deviation beyond +-30% must be explained before pilot
+pf_burst_200g    q@1RTT 1.383 MB  theory 18.485 MB  dev -92.5%  peak(200us) 12.324 MB  PFC 0 (first -1.0us)
+    explanation: sampling ~10us vs RTT 12.2us; senders start paced by NIC line rate; deviation beyond +-30% must be explained before pilot
+pf_burst_400g    q@1RTT 2.765 MB  theory 36.738 MB  dev -92.5%  peak(200us) 15.144 MB  PFC 26 (first +181.8us)
+    explanation: sampling ~10us vs RTT 12.1us; senders start paced by NIC line rate; deviation beyond +-30% must be explained before pilot
+
+H_EFF -- actuation-stage measurement
+heff_10g     arrival_at_bottleneck              n=271    mean=   72.68us p95=  105.00us p99=  109.42us max=  147.86us
+heff_10g     counters_pending_58_inflight_0     n=1      mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_10g     counters_unmatched_0_superseded_818_negative_0 n=1      mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_10g     first_affected_at_bottleneck       n=271    mean=   80.21us p95=  113.44us p99=  117.75us max=  155.89us
+heff_10g     rate_command                       n=1147   mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_10g     sender_rate_effect                 n=271    mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_200g    arrival_at_bottleneck              n=1514   mean=    9.18us p95=   11.22us p99=   12.39us max=   12.72us
+heff_200g    counters_pending_0_inflight_0      n=1      mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_200g    counters_unmatched_0_superseded_0_negative_0 n=1      mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_200g    first_affected_at_bottleneck       n=1514   mean=   10.53us p95=   13.14us p99=   14.55us max=   14.93us
+heff_200g    rate_command                       n=1514   mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_200g    sender_rate_effect                 n=1514   mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_400g    arrival_at_bottleneck              n=1504   mean=    7.05us p95=    8.26us p99=    8.70us max=    8.85us
+heff_400g    first_affected_at_bottleneck       n=1509   mean=    7.12us p95=    8.29us p99=    8.70us max=    8.85us
+heff_400g    rate_command                       n=1537   mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_400g    sender_rate_effect                 n=1510   mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+
+==========================================================================
+PREFLIGHT VERDICT: FAIL (6) -- DO NOT proceed to screening/pilot
+  !! pf_single_10g: tx gap correct FAILED
+  !! pf_single_200g: tx gap correct FAILED
+  !! pf_single_400g: tx gap correct FAILED
+  !! pf_burst_10g: q@1RTT deviates -94.9% from first-order theory -- EXPLAIN before pilot
+  !! pf_burst_200g: q@1RTT deviates -92.5% from first-order theory -- EXPLAIN before pilot
+  !! pf_burst_400g: q@1RTT deviates -92.5% from first-order theory -- EXPLAIN before pilot

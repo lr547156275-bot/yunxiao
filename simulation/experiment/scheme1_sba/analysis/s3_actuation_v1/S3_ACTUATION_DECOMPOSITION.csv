@@ -1,0 +1,52 @@
+metric_id,category,statistic,value,unit,sample_count,source_file,source_columns,formula,evidence_type,notes
+C.D1_command_to_sender.count,actuation,count,215,count,215,actuation.csv,time_ns@sender_rate_effect - time_ns@rate_command,D1 = t_sender_effect - t_command,MEASURED,
+C.D1_command_to_sender.mean,actuation,mean,20222.65581395349,ns,215,actuation.csv,time_ns@sender_rate_effect - time_ns@rate_command,D1 = t_sender_effect - t_command,MEASURED,
+C.D1_command_to_sender.p50,actuation,p50,13644,ns,215,actuation.csv,time_ns@sender_rate_effect - time_ns@rate_command,D1 = t_sender_effect - t_command,MEASURED,
+C.D1_command_to_sender.p95,actuation,p95,52144,ns,215,actuation.csv,time_ns@sender_rate_effect - time_ns@rate_command,D1 = t_sender_effect - t_command,MEASURED,
+C.D1_command_to_sender.p99,actuation,p99,52144,ns,215,actuation.csv,time_ns@sender_rate_effect - time_ns@rate_command,D1 = t_sender_effect - t_command,MEASURED,
+C.D1_command_to_sender.max,actuation,max,67756,ns,215,actuation.csv,time_ns@sender_rate_effect - time_ns@rate_command,D1 = t_sender_effect - t_command,MEASURED,
+C.D1_command_to_sender.min,actuation,min,0,ns,215,actuation.csv,time_ns@sender_rate_effect - time_ns@rate_command,D1 = t_sender_effect - t_command,MEASURED,
+C.D2_sender_to_bottleneck.count,actuation,count,215,count,215,actuation.csv,time_ns@first_affected_at_bottleneck - time_ns@sender_rate_effect,D2 = t_first_affected_at_bottleneck - t_sender_effect,MEASURED,
+C.D2_sender_to_bottleneck.mean,actuation,mean,84521.75813953488,ns,215,actuation.csv,time_ns@first_affected_at_bottleneck - time_ns@sender_rate_effect,D2 = t_first_affected_at_bottleneck - t_sender_effect,MEASURED,
+C.D2_sender_to_bottleneck.p50,actuation,p50,88449,ns,215,actuation.csv,time_ns@first_affected_at_bottleneck - time_ns@sender_rate_effect,D2 = t_first_affected_at_bottleneck - t_sender_effect,MEASURED,
+C.D2_sender_to_bottleneck.p95,actuation,p95,115130,ns,215,actuation.csv,time_ns@first_affected_at_bottleneck - time_ns@sender_rate_effect,D2 = t_first_affected_at_bottleneck - t_sender_effect,MEASURED,
+C.D2_sender_to_bottleneck.p99,actuation,p99,116941,ns,215,actuation.csv,time_ns@first_affected_at_bottleneck - time_ns@sender_rate_effect,D2 = t_first_affected_at_bottleneck - t_sender_effect,MEASURED,
+C.D2_sender_to_bottleneck.max,actuation,max,117779,ns,215,actuation.csv,time_ns@first_affected_at_bottleneck - time_ns@sender_rate_effect,D2 = t_first_affected_at_bottleneck - t_sender_effect,MEASURED,
+C.D2_sender_to_bottleneck.min,actuation,min,2895,ns,215,actuation.csv,time_ns@first_affected_at_bottleneck - time_ns@sender_rate_effect,D2 = t_first_affected_at_bottleneck - t_sender_effect,MEASURED,
+C.D3_command_to_bottleneck.count,actuation,count,215,count,215,actuation.csv,time_ns@first_affected_at_bottleneck - time_ns@rate_command,D3 = t_first_affected_at_bottleneck - t_command,MEASURED,
+C.D3_command_to_bottleneck.mean,actuation,mean,104744.41395348837,ns,215,actuation.csv,time_ns@first_affected_at_bottleneck - time_ns@rate_command,D3 = t_first_affected_at_bottleneck - t_command,MEASURED,
+C.D3_command_to_bottleneck.p50,actuation,p50,107824,ns,215,actuation.csv,time_ns@first_affected_at_bottleneck - time_ns@rate_command,D3 = t_first_affected_at_bottleneck - t_command,MEASURED,
+C.D3_command_to_bottleneck.p95,actuation,p95,160705,ns,215,actuation.csv,time_ns@first_affected_at_bottleneck - time_ns@rate_command,D3 = t_first_affected_at_bottleneck - t_command,MEASURED,
+C.D3_command_to_bottleneck.p99,actuation,p99,167409,ns,215,actuation.csv,time_ns@first_affected_at_bottleneck - time_ns@rate_command,D3 = t_first_affected_at_bottleneck - t_command,MEASURED,
+C.D3_command_to_bottleneck.max,actuation,max,169923,ns,215,actuation.csv,time_ns@first_affected_at_bottleneck - time_ns@rate_command,D3 = t_first_affected_at_bottleneck - t_command,MEASURED,
+C.D3_command_to_bottleneck.min,actuation,min,3034,ns,215,actuation.csv,time_ns@first_affected_at_bottleneck - time_ns@rate_command,D3 = t_first_affected_at_bottleneck - t_command,MEASURED,
+C.class.APPLIED,actuation,count,215,generations,609,actuation.csv,stage presence,classified by which stages are present,MEASURED,
+C.class.APPLIED.frac,actuation,fraction,0.3530377668308703,ratio,609,,,,DERIVED,
+C.class.SUPERSEDED_BEFORE_EFFECT,actuation,count,394,generations,609,actuation.csv,stage presence,classified by which stages are present,MEASURED,
+C.class.SUPERSEDED_BEFORE_EFFECT.frac,actuation,fraction,0.6469622331691297,ratio,609,,,,DERIVED,
+C.counters.unmatched,actuation,raw,counters_unmatched_0_superseded_340_negative_0,text,,actuation.csv,stage,,MEASURED,writer end-of-run counter line
+C.counters.pending,actuation,raw,counters_pending_54_inflight_0,text,,actuation.csv,stage,,MEASURED,writer end-of-run counter line
+E.B_deficit.CBAP,deficit,sum,3420068.0000016782,B,5838,selected_link_timeseries.csv,"tx_bytes_delta,time","integral(max(0, C - served_wire_rate) dt) over W2",DERIVED,
+E.served_bytes.CBAP,deficit,sum,69883784.0,B,5838,selected_link_timeseries.csv,tx_bytes_delta,,MEASURED,
+E.span.CBAP,deficit,duration,0.0583800000000001,s,5838,,,,DERIVED,
+E.mean_served.CBAP,deficit,mean,9.576400685166135,Gbps,,,,8*served_bytes/span,DERIVED,
+E.deficit_rate.CBAP,deficit,mean,0.4686629667696708,Gbps,,,,8*B_deficit/span,DERIVED,
+E.B_deficit.DCQCN,deficit,sum,1301512.0000006678,B,5838,selected_link_timeseries.csv,"tx_bytes_delta,time","integral(max(0, C - served_wire_rate) dt) over W2",DERIVED,
+E.served_bytes.DCQCN,deficit,sum,72085744.0,B,5838,selected_link_timeseries.csv,tx_bytes_delta,,MEASURED,
+E.span.DCQCN,deficit,duration,0.0583800000000001,s,5838,,,,DERIVED,
+E.mean_served.DCQCN,deficit,mean,9.878142377526533,Gbps,,,,8*served_bytes/span,DERIVED,
+E.deficit_rate.DCQCN,deficit,mean,0.17835039397062907,Gbps,,,,8*B_deficit/span,DERIVED,
+E.B_deficit.gap_vs_dcqcn,deficit,difference,2118556.0000010105,B,,,,B_deficit(CBAP) - B_deficit(DCQCN),DERIVED,
+E.cf.D1_zero.upper_bound_bytes,counterfactual,upper_bound,5434838.75,B,215,,,n_APPLIED * mean(D1) * C / 8  (all links idle-equivalent),COUNTERFACTUAL,"ceiling, not a predicted gain; assumes every ns of D1 is a full-line-rate hole, which it is not (idle fraction is 0)"
+E.cf.D1_zero.frac_of_deficit,counterfactual,fraction,1.5891025412352424,ratio,,,,,COUNTERFACTUAL,
+E.cf.D2_zero.upper_bound_bytes,counterfactual,upper_bound,22715222.5,B,215,,,n_APPLIED * mean(D2) * C / 8,COUNTERFACTUAL,D2 is propagation+queueing of in-flight data; it cannot be zero physically. Bound only.
+E.cf.D2_zero.frac_of_deficit,counterfactual,fraction,6.641745865868414,ratio,,,,,COUNTERFACTUAL,
+E.cf.superseded_before_effect.count,counterfactual,count,394,generations,,actuation.csv,,,MEASURED,
+E.cf.deficit_as_fct_ms,counterfactual,upper_bound,1.6948448000008083,ms,,,,8*(B_deficit_CBAP - B_deficit_DCQCN)/C,COUNTERFACTUAL,time to serve the EXCESS deficit bytes at line rate; an upper bound on the CCT component attributable to service shortfall
+D.pending_age.count,epoch,count,11675,count,11675,qc_trace.csv,pending_generation continuity,epoch_time - first epoch carrying the same pending_generation,DERIVED,This is NOT an actuation delay; it is how long a generation id persists in the ledger. Reported separately from D1/D2/D3.
+D.pending_age.mean,epoch,mean,82563.59743040685,ns,11675,qc_trace.csv,pending_generation continuity,epoch_time - first epoch carrying the same pending_generation,DERIVED,This is NOT an actuation delay; it is how long a generation id persists in the ledger. Reported separately from D1/D2/D3.
+D.pending_age.p50,epoch,p50,80000,ns,11675,qc_trace.csv,pending_generation continuity,epoch_time - first epoch carrying the same pending_generation,DERIVED,This is NOT an actuation delay; it is how long a generation id persists in the ledger. Reported separately from D1/D2/D3.
+D.pending_age.p95,epoch,p95,165000,ns,11675,qc_trace.csv,pending_generation continuity,epoch_time - first epoch carrying the same pending_generation,DERIVED,This is NOT an actuation delay; it is how long a generation id persists in the ledger. Reported separately from D1/D2/D3.
+D.pending_age.p99,epoch,p99,170000,ns,11675,qc_trace.csv,pending_generation continuity,epoch_time - first epoch carrying the same pending_generation,DERIVED,This is NOT an actuation delay; it is how long a generation id persists in the ledger. Reported separately from D1/D2/D3.
+D.pending_age.max,epoch,max,170000,ns,11675,qc_trace.csv,pending_generation continuity,epoch_time - first epoch carrying the same pending_generation,DERIVED,This is NOT an actuation delay; it is how long a generation id persists in the ledger. Reported separately from D1/D2/D3.
+D.pending_age.min,epoch,min,0,ns,11675,qc_trace.csv,pending_generation continuity,epoch_time - first epoch carrying the same pending_generation,DERIVED,This is NOT an actuation delay; it is how long a generation id persists in the ledger. Reported separately from D1/D2/D3.

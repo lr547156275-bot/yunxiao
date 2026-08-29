@@ -1,0 +1,3 @@
+scenario,algorithm,seed,group_id,round_id,common_release_time,barrier_completion_time,group_rct,total_round_bytes,participant_count,residual_queue_bytes,bottleneck_capacity_bps,background_bps,T_line,T_link,T_star,theoretical_lower_bound,lower_bound_efficiency,group_queue_max_bytes,group_ecn_marks,group_pfc_events,fallback_reason
+fx10g_s3_hpccx,hpcc,2,0,0,0.010000000,0.000000000,0.000000000,1719968259,1,0,0,0,1.375974607,0.000000000,0.000000000,0.000000000,0.000000000,0,0,0,not_bop
+fx10g_s3_hpccx,hpcc,2,1,0,0.020000000,0.992087449,0.972087449,1073741824,64,0,0,0,0.013421773,0.000000000,0.000000000,0.000000000,0.000000000,1300416,297,0,not_bop

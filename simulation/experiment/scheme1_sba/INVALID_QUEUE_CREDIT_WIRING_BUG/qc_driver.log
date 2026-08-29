@@ -1,0 +1,9 @@
+OK   qc_s3_t025 (64/64)
+OK   qc_s3_legacy (64/64)
+OK   qc_s3_t050 (64/64)
+OK   qc_s3_t080 (64/64)
+OK   qc_s4_legacy (64/64)
+OK   qc_s4_t025 (64/64)
+OK   qc_s4_t080 (64/64)
+OK   qc_s4_t050 (64/64)
+PREFLIGHT_8_DONE done=8/8

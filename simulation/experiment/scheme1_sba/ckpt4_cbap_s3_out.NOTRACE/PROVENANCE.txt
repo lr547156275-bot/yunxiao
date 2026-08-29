@@ -1,0 +1,6 @@
+STATUS=RETAINED_BYPASS_CONSISTENCY_EVIDENCE
+REASON=ran with reallocation ON but CBAP_MIGRATION_TRACE absent, so CBAP_MIG=0
+BINARY_SHA=265fe2a1a31d5e1809458c9e5b44120b528c2524ae2642cbd7185072a7b68103
+incast_mean_FCT=59.3909 ms   admit_rate=136593511 bps
+NOTE=performance matches rec2_s3_on_out (59.391 ms) exactly; retained to show
+     that adding only the trace key does not change the physics

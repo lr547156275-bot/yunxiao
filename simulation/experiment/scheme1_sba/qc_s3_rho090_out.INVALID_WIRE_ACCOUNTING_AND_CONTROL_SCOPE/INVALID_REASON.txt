@@ -1,0 +1,6 @@
+STATUS=INVALID
+REASON=INVALID_WIRE_ACCOUNTING
+DETAIL=duplicate of qc_s3_rho090_out kept as provenance copy
+LABELLED_AT_COMMIT=a745d58dec82ffa445155557147b0bba42d0dee6
+RETAINED=yes  # raw trace kept for provenance; do not delete
+USABLE_FOR_PAPER=no

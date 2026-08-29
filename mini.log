@@ -1,0 +1,12 @@
+5d14f0d7f5512395a9bc21fa3c63174d9f9bf2567ea23559da1ac463d212e40c  /work/simulation/build/scratch/third
+5d71d8b8cd208659040efa07fbfed11584ac7719dd5a41f3bc329f5e461cf62b  /work/simulation/build/libns3.18-point-to-point-debug.so
+mini_flow.txt: 65 flows (declared 65 in source)
+  size histogram: [(262144, 64), (4000000000, 1)]
+mn_dcqcn_out attempt 1 start 07:23:53 free=3G
+mn_dcqcn_out attempt 1 exit=1 07:24:54
+CONFIG_ERROR: flow total size differs from round byte sum
+mn_dcqcn_out attempt 2 start 07:24:59 free=3G
+mn_dcqcn_out attempt 2 exit=1 07:27:08
+CONFIG_ERROR: flow total size differs from round byte sum
+mn_dcqcn_out EXHAUSTED
+STOP at dcqcn

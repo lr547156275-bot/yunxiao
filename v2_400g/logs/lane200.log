@@ -1,0 +1,6 @@
+RUN pf_single_200g 15:03:46
+OK  pf_single_200g 53s peakRSS=0.12GB
+RUN pf_burst_200g 15:04:39
+OK  pf_burst_200g 349s peakRSS=0.14GB
+RUN heff_200g 15:10:28
+OK  heff_200g 388s peakRSS=0.39GB

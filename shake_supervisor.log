@@ -1,0 +1,26 @@
+RUN  sh_s1_d1  start=15:53:35
+OK   sh_s1_d1 rc=0 256s
+RUN  sh_s1_b040  start=15:57:51
+OK   sh_s1_b040 rc=0 285s
+RUN  sh_s2_d1  start=16:02:36
+OK   sh_s2_d1 rc=0 549s
+RUN  sh_s2_b040  start=16:11:45
+OK   sh_s2_b040 rc=0 569s
+RUN  sh_s6_d1  start=16:21:14
+OK   sh_s6_d1 rc=0 599s
+RUN  sh_s6_b040  start=16:31:13
+OK   sh_s6_b040 rc=0 682s
+RUN  sm_s1_dctcp  start=16:42:35
+OK   sm_s1_dctcp rc=0 231s
+RUN  sm_s1_timely  start=16:46:26
+OK   sm_s1_timely rc=0 264s
+=== shake complete Thu Aug 20 16:50:50 HKT 2026 ===
+  sh_s1_d1 DONE 0 256
+  sh_s1_b040 DONE 0 285
+  sh_s2_d1 DONE 0 549
+  sh_s2_b040 DONE 0 569
+  sh_s6_d1 DONE 0 599
+  sh_s6_b040 DONE 0 682
+  sm_s1_dctcp DONE 0 231
+  sm_s1_timely DONE 0 264
+/dev/loop4       32G   25G  5.7G  81% /work

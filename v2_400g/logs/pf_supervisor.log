@@ -1,0 +1,25 @@
+  identical flow_summary.csv
+  identical selected_link_timeseries.csv
+  identical rate_transition.csv
+  identical round_summary.csv
+  identical pfc_events.csv
+  identical flow_timing.csv
+REGRESSION OK: flag-off byte-identical
+SKIP pf_single_10g
+SKIP pf_single_200g
+SKIP pf_single_400g
+SKIP pf_burst_10g
+SKIP pf_burst_200g
+RUN  pf_burst_400g 01:22:00
+FAIL pf_burst_400g rc=1 1s
+maxRtt=12080 maxBdp=604000
+Running Simulation.
+CONFIG_ERROR: flow total size differs from round byte sum
+SKIP heff_10g
+SKIP heff_200g
+RUN  heff_400g 01:22:01
+FAIL heff_400g rc=1 0s
+maxRtt=12080 maxBdp=604000
+Running Simulation.
+CONFIG_ERROR: flow total size differs from round byte sum
+=== v2 preflight round complete Mon Aug 24 01:22:01 HKT 2026 ===

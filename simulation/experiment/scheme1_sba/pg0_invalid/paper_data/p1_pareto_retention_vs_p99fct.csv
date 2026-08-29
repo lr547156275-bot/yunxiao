@@ -1,0 +1,32 @@
+# Pareto: background protection against incast latency. Note DCQCN/DCTCP/TIMELY sit at 100% retention only because their collectives cannot displace the background flow at all.
+scenario,scenario_shape,algorithm,x_metric,x_value,x_label,y_metric,y_value,y_label
+s1,16x256KiB bg80%,DCQCN,bg_retention_pct,99.999945,background throughput retention (%) - higher better,fct_p99_ms,17.624786,incast p99 FCT (ms) - lower better
+s1,16x256KiB bg80%,DCTCP,bg_retention_pct,99.999945,background throughput retention (%) - higher better,fct_p99_ms,17.624786,incast p99 FCT (ms) - lower better
+s1,16x256KiB bg80%,TIMELY,bg_retention_pct,99.999171,background throughput retention (%) - higher better,fct_p99_ms,17.759005,incast p99 FCT (ms) - lower better
+s1,16x256KiB bg80%,HPCC,bg_retention_pct,96.336836,background throughput retention (%) - higher better,fct_p99_ms,4.092277,incast p99 FCT (ms) - lower better
+s1,16x256KiB bg80%,CBAP-SBA,bg_retention_pct,97.242855,background throughput retention (%) - higher better,fct_p99_ms,5.929390,incast p99 FCT (ms) - lower better
+s2,64x256KiB bg80%,DCQCN,bg_retention_pct,99.999396,background throughput retention (%) - higher better,fct_p99_ms,70.454985,incast p99 FCT (ms) - lower better
+s2,64x256KiB bg80%,DCTCP,bg_retention_pct,99.999396,background throughput retention (%) - higher better,fct_p99_ms,70.454985,incast p99 FCT (ms) - lower better
+s2,64x256KiB bg80%,TIMELY,bg_retention_pct,99.999508,background throughput retention (%) - higher better,fct_p99_ms,70.825008,incast p99 FCT (ms) - lower better
+s2,64x256KiB bg80%,HPCC,bg_retention_pct,87.105707,background throughput retention (%) - higher better,fct_p99_ms,15.117964,incast p99 FCT (ms) - lower better
+s2,64x256KiB bg80%,CBAP-SBA,bg_retention_pct,90.126185,background throughput retention (%) - higher better,fct_p99_ms,22.097973,incast p99 FCT (ms) - lower better
+s3,64x1MiB bg80%,DCQCN,bg_retention_pct,99.999789,background throughput retention (%) - higher better,fct_p99_ms,281.740683,incast p99 FCT (ms) - lower better
+s3,64x1MiB bg80%,DCTCP,bg_retention_pct,99.999789,background throughput retention (%) - higher better,fct_p99_ms,281.740683,incast p99 FCT (ms) - lower better
+s3,64x1MiB bg80%,TIMELY,bg_retention_pct,99.999729,background throughput retention (%) - higher better,fct_p99_ms,283.216214,incast p99 FCT (ms) - lower better
+s3,64x1MiB bg80%,HPCC,bg_retention_pct,63.113909,background throughput retention (%) - higher better,fct_p99_ms,60.130945,incast p99 FCT (ms) - lower better
+s3,64x1MiB bg80%,CBAP-SBA,bg_retention_pct,74.379345,background throughput retention (%) - higher better,fct_p99_ms,88.295083,incast p99 FCT (ms) - lower better
+s6,dual 30+30x256KiB bg80%x2,DCQCN,bg_retention_pct,99.999402,background throughput retention (%) - higher better,fct_p99_ms,33.033707,incast p99 FCT (ms) - lower better
+s6,dual 30+30x256KiB bg80%x2,DCTCP,bg_retention_pct,99.999402,background throughput retention (%) - higher better,fct_p99_ms,33.033707,incast p99 FCT (ms) - lower better
+s6,dual 30+30x256KiB bg80%x2,TIMELY,bg_retention_pct,99.999203,background throughput retention (%) - higher better,fct_p99_ms,33.206530,incast p99 FCT (ms) - lower better
+s6,dual 30+30x256KiB bg80%x2,HPCC,bg_retention_pct,93.463254,background throughput retention (%) - higher better,fct_p99_ms,7.292748,incast p99 FCT (ms) - lower better
+s6,dual 30+30x256KiB bg80%x2,CBAP-SBA,bg_retention_pct,95.069788,background throughput retention (%) - higher better,fct_p99_ms,11.097273,incast p99 FCT (ms) - lower better
+s4,64x1MiB bg95%,DCQCN,bg_retention_pct,100.000112,background throughput retention (%) - higher better,fct_p99_ms,1127.320690,incast p99 FCT (ms) - lower better
+s4,64x1MiB bg95%,DCTCP,bg_retention_pct,100.000112,background throughput retention (%) - higher better,fct_p99_ms,1127.320690,incast p99 FCT (ms) - lower better
+s4,64x1MiB bg95%,TIMELY,bg_retention_pct,100.000028,background throughput retention (%) - higher better,fct_p99_ms,1118.974858,incast p99 FCT (ms) - lower better
+s4,64x1MiB bg95%,HPCC,bg_retention_pct,62.997896,background throughput retention (%) - higher better,fct_p99_ms,60.242022,incast p99 FCT (ms) - lower better
+s4,64x1MiB bg95%,CBAP-SBA,bg_retention_pct,71.025784,background throughput retention (%) - higher better,fct_p99_ms,88.275126,incast p99 FCT (ms) - lower better
+s5,64x4MiB bg80%,DCQCN,bg_retention_pct,99.999939,background throughput retention (%) - higher better,fct_p99_ms,1126.918274,incast p99 FCT (ms) - lower better
+s5,64x4MiB bg80%,DCTCP,bg_retention_pct,99.999939,background throughput retention (%) - higher better,fct_p99_ms,1126.918274,incast p99 FCT (ms) - lower better
+s5,64x4MiB bg80%,TIMELY,bg_retention_pct,99.999870,background throughput retention (%) - higher better,fct_p99_ms,1132.819751,incast p99 FCT (ms) - lower better
+s5,64x4MiB bg80%,HPCC,bg_retention_pct,30.597231,background throughput retention (%) - higher better,fct_p99_ms,240.543265,incast p99 FCT (ms) - lower better
+s5,64x4MiB bg80%,CBAP-SBA,bg_retention_pct,57.085345,background throughput retention (%) - higher better,fct_p99_ms,350.963262,incast p99 FCT (ms) - lower better

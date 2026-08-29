@@ -1,0 +1,23 @@
+RUN  scr8_d1  start=00:03:20
+OK   scr8_d1 rc=0 1017s
+RUN  scr8_d3  start=00:20:17
+OK   scr8_d3 rc=0 1059s
+RUN  scr8_b005  start=00:37:56
+OK   scr8_b005 rc=0 1119s
+RUN  scr8_b010  start=00:56:35
+OK   scr8_b010 rc=0 1081s
+RUN  scr8_b020  start=01:14:36
+OK   scr8_b020 rc=0 988s
+RUN  scr8_b040  start=01:31:04
+OK   scr8_b040 rc=0 1050s
+RUN  scr8_b080  start=01:48:34
+OK   scr8_b080 rc=0 998s
+=== screen8 complete Wed Aug 19 02:05:12 HKT 2026 ===
+  scr8_d1 DONE 0 1017
+  scr8_d3 DONE 0 1059
+  scr8_b005 DONE 0 1119
+  scr8_b010 DONE 0 1081
+  scr8_b020 DONE 0 988
+  scr8_b040 DONE 0 1050
+  scr8_b080 DONE 0 998
+/dev/loop4       32G   27G  3.3G  90% /work

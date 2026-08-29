@@ -1,0 +1,165 @@
+bg-freeze-era results archived to /work/v2_400g/results_bgfreeze_era/
+  identical flow_summary.csv
+  identical selected_link_timeseries.csv
+  identical rate_transition.csv
+  identical round_summary.csv
+  identical pfc_events.csv
+  identical flow_timing.csv
+REGRESSION OK (payload64 fix inert at <2^32, binary 22921aa9529c541a238bbd979bde1fad80fc15ecb5ae607d68fa5117fc69f6cc)
+RUN heff_400g 02:55:42
+OK  heff_400g 368s peakRSS=0.39GB
+H_eff@400G re-measured (bg alive): n=1515 p99=11.80us -> H_GUARD=12us (written to /work/v2_400g/reports/HG400_US)
+cell scrv2_d02_b020         rate=400G size=4194304 stop=0.040s Qabs=4000000B(80.0us) kind=cbap
+cell scrv2_d04_b020         rate=400G size=4194304 stop=0.040s Qabs=4000000B(80.0us) kind=cbap
+cell scrv2_d08_b020         rate=400G size=4194304 stop=0.040s Qabs=4000000B(80.0us) kind=cbap
+cell scrv2_d16_b020         rate=400G size=4194304 stop=0.040s Qabs=4000000B(80.0us) kind=cbap
+cell scrv2_d08_b000         rate=400G size=4194304 stop=0.040s Qabs=4000000B(80.0us) kind=cbap
+cell scrv2_d08_b010         rate=400G size=4194304 stop=0.040s Qabs=4000000B(80.0us) kind=cbap
+cell scrv2_d08_b040         rate=400G size=4194304 stop=0.040s Qabs=4000000B(80.0us) kind=cbap
+cell scrv2_d04_b010         rate=400G size=4194304 stop=0.040s Qabs=4000000B(80.0us) kind=cbap
+screening cross: 8 cells, H_GUARD=12.0us stop=0.040s
+screening cells generated under /work/v2_400g/
+RUN scrv2_d02_b020 03:01:50
+RUN scrv2_d02_b020_flow 03:01:50
+FAIL scrv2_d02_b020_flow rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d02_b020_link 03:01:50
+FAIL scrv2_d02_b020_link rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d02_b020_path 03:01:50
+FAIL scrv2_d02_b020_path rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d02_b020_sched 03:01:50
+FAIL scrv2_d02_b020_sched rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d04_b010 03:01:50
+OK  scrv2_d02_b020 121s peakRSS=0.39GB
+RUN scrv2_d04_b010_flow 03:03:51
+FAIL scrv2_d04_b010_flow rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d04_b010_link 03:03:51
+FAIL scrv2_d04_b010_link rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d04_b010_path 03:03:52
+FAIL scrv2_d04_b010_path rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d04_b010_sched 03:03:52
+FAIL scrv2_d04_b010_sched rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d04_b020 03:03:52
+OK  scrv2_d04_b010 126s peakRSS=0.39GB
+RUN scrv2_d04_b020_flow 03:03:56
+FAIL scrv2_d04_b020_flow rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d04_b020_link 03:03:56
+FAIL scrv2_d04_b020_link rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d04_b020_path 03:03:56
+FAIL scrv2_d04_b020_path rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d04_b020_sched 03:03:56
+FAIL scrv2_d04_b020_sched rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b000 03:03:56
+FAIL scrv2_d08_b000 rc=1 peakRSS=0.01GB
+TX_TIME_ROUND_NS		1
+CBAP_TX_RECORDS_MAX		2000000
+CONFIG_ERROR: CBAP_QB2_BMAX_RATIO missing or outside (0, 0.10] (the old +0.30C policy is deliberately unreachable)
+RUN scrv2_d08_b000_flow 03:03:56
+FAIL scrv2_d08_b000_flow rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b000_link 03:03:56
+FAIL scrv2_d08_b000_link rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b000_path 03:03:57
+FAIL scrv2_d08_b000_path rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b000_sched 03:03:57
+FAIL scrv2_d08_b000_sched rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b010 03:03:57
+OK  scrv2_d04_b020 127s peakRSS=0.40GB
+RUN scrv2_d08_b010_flow 03:05:59
+FAIL scrv2_d08_b010_flow rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b010_link 03:05:59
+FAIL scrv2_d08_b010_link rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b010_path 03:05:59
+FAIL scrv2_d08_b010_path rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b010_sched 03:05:59
+FAIL scrv2_d08_b010_sched rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b020 03:05:59
+OK  scrv2_d08_b010 124s peakRSS=0.39GB
+RUN scrv2_d08_b020_flow 03:06:01
+FAIL scrv2_d08_b020_flow rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b020_link 03:06:01
+FAIL scrv2_d08_b020_link rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b020_path 03:06:01
+FAIL scrv2_d08_b020_path rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b020_sched 03:06:01
+FAIL scrv2_d08_b020_sched rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b040 03:06:01
+OK  scrv2_d08_b040 124s peakRSS=0.40GB
+RUN scrv2_d08_b040_flow 03:08:05
+FAIL scrv2_d08_b040_flow rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b040_link 03:08:05
+FAIL scrv2_d08_b040_link rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b040_path 03:08:05
+FAIL scrv2_d08_b040_path rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d08_b040_sched 03:08:05
+FAIL scrv2_d08_b040_sched rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d16_b020 03:08:05
+OK  scrv2_d08_b020 157s peakRSS=0.40GB
+RUN scrv2_d16_b020_flow 03:08:36
+FAIL scrv2_d16_b020_flow rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d16_b020_link 03:08:36
+FAIL scrv2_d16_b020_link rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d16_b020_path 03:08:36
+FAIL scrv2_d16_b020_path rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+RUN scrv2_d16_b020_sched 03:08:36
+FAIL scrv2_d16_b020_sched rc=1 peakRSS=0.01GB
+CONFIG_ERROR: seed=1 requires bounded CBAP packet trace
+OK  scrv2_d16_b020 152s peakRSS=0.40GB
+RUN pf_burst_400g 03:10:37
+OK  pf_burst_400g 347s peakRSS=0.14GB
+=== overnight complete ===
+cell                  ep   meanCCT    p99CCT   Qpk_MB   PFC  retx  bg_tailG bg_totGB  gates
+scrv2_d02_b020         5    5.7164    5.7473    0.401     0     0     304.6     0.93  PASS
+scrv2_d04_b010         5    5.5266    5.8941    0.515     0     0     304.6     0.92  PASS
+scrv2_d04_b020         5    5.5104    5.8793    0.642     0     0     304.6     0.92  PASS
+scrv2_d08_b000         5       n/a       n/a    0.000     0     0       n/a      n/a  incomplete 0/64;bg tail unmeasured
+scrv2_d08_b010         5    5.5265    5.8939    0.515     0     0     304.6     0.92  PASS
+scrv2_d08_b020         5    5.4551    5.8736    0.493     0     0     304.6     0.92  PASS
+scrv2_d08_b040         5    5.4899    5.9015    0.655     0     0     304.6     0.92  PASS
+scrv2_d16_b020         5    5.7198    5.9528    0.894     0     0     304.6     0.92  PASS
+
+best mean CCT 5.4551 ms; 1 candidate(s) within the 0.3% tie band
+  tie: scrv2_d08_b020  meanCCT 5.4551 ms
+SCREENING WINNER (frozen rules, union grid): scrv2_d08_b020  (D_target=8us BMAX=0.020, mean CCT 5.4551 ms, p99 5.8736 ms)
+winner is a CANDIDATE pending your review; pilot generation stays gated until you approve it.
+heff_200g    first_affected_at_bottleneck       n=1514   mean=   12.47us p95=   14.21us p99=   14.97us max=   15.41us
+heff_200g    rate_command                       n=1514   mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_200g    sender_rate_effect                 n=1514   mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_400g    arrival_at_bottleneck              n=1515   mean=    7.06us p95=    8.25us p99=    8.70us max=    8.85us
+heff_400g    counters_pending_1_inflight_0      n=1      mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_400g    counters_unmatched_0_superseded_0_negative_0 n=1      mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_400g    first_affected_at_bottleneck       n=1515   mean=   10.00us p95=   11.22us p99=   11.80us max=   12.11us
+heff_400g    rate_command                       n=1516   mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+heff_400g    sender_rate_effect                 n=1515   mean=    0.00us p95=    0.00us p99=    0.00us max=    0.00us
+
+==========================================================================
+PREFLIGHT VERDICT: PASS -- H_eff selection: use the p99 of the last stage (bottleneck-affected) per rate, rounded up; confirm before screening generation.

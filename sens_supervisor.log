@@ -1,0 +1,26 @@
+RUN  sx_a_dcqcn  start=23:54:29
+OK   sx_a_dcqcn rc=0 960s
+RUN  sx_a_dctcp  start=00:10:29
+OK   sx_a_dctcp rc=0 977s
+RUN  sx_a_timely  start=00:26:46
+OK   sx_a_timely rc=0 973s
+RUN  sx_a_hpcc  start=00:42:59
+OK   sx_a_hpcc rc=0 1042s
+RUN  sx_a_cbapsba  start=01:00:21
+OK   sx_a_cbapsba rc=0 1084s
+RUN  sx_b_dcqcn  start=01:18:25
+OK   sx_b_dcqcn rc=0 962s
+RUN  sx_b_dctcp  start=01:34:27
+OK   sx_b_dctcp rc=0 1025s
+RUN  sx_b_cbapsba  start=01:51:32
+OK   sx_b_cbapsba rc=0 1050s
+=== sens complete Sat Aug 22 02:09:02 HKT 2026 ===
+  sx_a_dcqcn DONE 0 960
+  sx_a_dctcp DONE 0 977
+  sx_a_timely DONE 0 973
+  sx_a_hpcc DONE 0 1042
+  sx_a_cbapsba DONE 0 1084
+  sx_b_dcqcn DONE 0 962
+  sx_b_dctcp DONE 0 1025
+  sx_b_cbapsba DONE 0 1050
+/dev/loop4       32G   26G  4.3G  86% /work

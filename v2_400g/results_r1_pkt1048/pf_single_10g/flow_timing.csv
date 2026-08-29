@@ -1,0 +1,2 @@
+scenario,algorithm,seed,flow_id,src,dst,total_size_bytes,app_start_ns,first_data_tx_ns,last_ack_ns,application_ready_ns,network_release_ns,acked_bytes
+pf_single_10g,dcqcn,2,0,0,64,8388608,10000000,20000000,27055041,0,20000000,8388608

@@ -1,0 +1,7 @@
+cell,type,rate_g,goodput_gbps,line_payload_g,fct_s,theory_s,tx_gap_ns,gap_theory_ns,rtt_ns,ecn,pfc,retx,verdict
+pf_single_10g,single,10,9.5314,9.52,0.007055041,0.00704925,799,800.0,15044,0,0,0,PASS
+pf_single_200g,single,200,195.2718,190.4,0.000355777,0.000352463,39,40.0,12152,0,0,0,FAIL
+pf_single_400g,single,400,400.3536,380.8,0.000179676,0.000176231,19,20.0,12076,0,0,0,FAIL
+pf_burst_10g,burst,10,,,,,,,15044,,0,,fabricQ@1RTT=0.964MB theory=1.144MB dev=-15.7%
+pf_burst_200g,burst,200,,,,,,,12152,,0,,fabricQ@1RTT=15.620MB theory=18.485MB dev=-15.5%
+pf_burst_400g,burst,400,,,,,,,12076,,26,,fabricQ@1RTT=15.855MB theory=36.738MB dev=-56.8%

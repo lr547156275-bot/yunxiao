@@ -1,0 +1,1602 @@
+ENABLE_QCN			Yes
+USE_DYNAMIC_PFC_THRESHOLD	Yes
+CLAMP_TARGET_RATE		No
+PAUSE_TIME			5
+DATA_RATE			10Gbps
+LINK_DELAY			0.001ms
+PACKET_PAYLOAD_SIZE		952
+L2_CHUNK_SIZE			4000
+L2_ACK_INTERVAL			1
+L2_BACK_TO_ZERO			No
+TOPOLOGY_FILE			/work/v2_400g/configs/topo_10g.txt
+FLOW_FILE			/work/v2_400g/configs/fm10g_s0_cbap_flow.txt
+TRACE_FILE			/work/v2_400g/results/fm10g_s0_cbap/s1_trace.txt
+TRACE_OUTPUT_FILE		/work/v2_400g/results/fm10g_s0_cbap/trace_output.txt
+SIMULATOR_STOP_TIME		0.052
+CC_MODE		30
+ALPHA_RESUME_INTERVAL		55
+RATE_DECREASE_INTERVAL		4
+RP_TIMER			300
+EWMA_GAIN			0.00390625
+FAST_RECOVERY_TIMES		5
+RATE_AI				50Mb/s
+RATE_HAI			100Mb/s
+MIN_RATE		100Mb/s
+DCTCP_RATE_AI				1000Mb/s
+ERROR_RATE_PER_LINK		0
+HAS_WIN		1
+GLOBAL_T		1
+MI_THRESH		5
+VAR_WIN		0
+FAST_REACT		1
+U_TARGET		0.95
+INT_MULTI				1
+RATE_BOUND		1
+ACK_HIGH_PRIO		0
+LINK_DOWN				0 0 0
+ENABLE_TRACE				0
+BUFFER_SIZE				64
+QLEN_MON_FILE				/dev/null
+QLEN_MON_START				0
+QLEN_MON_END				52328051
+KMAX_MAP				 10000000000 1600
+KMIN_MAP				 10000000000 400
+PMAX_MAP				 10000000000 0.2
+MULTI_RATE				1
+SAMPLE_FEEDBACK				0
+PFC_OUTPUT_FILE				/work/v2_400g/results/fm10g_s0_cbap/pfc_events.csv
+CBAP_PHASE_SPREAD_ENABLE		1
+CBAP_STEADY_CAP_ENABLE		1
+CBAP_STEADY_CAP_FRACTION		1
+CBAP_SBA_STEADY_FILL		0
+CBAP_HOLD_TRACK_TARGET		0
+CBAP_QUEUE_BAND_ENABLE		0
+CBAP_QUEUE_BAND_V2_ENABLE		1
+CBAP_QB2_BMAX_RATIO		0.02
+CBAP_QB2_QTARGET_RATIO		0.009685
+SBA_WIRE_DOMAIN_PLANNING		1
+QLEN_TS_FILE				/work/v2_400g/results/fm10g_s0_cbap/qlen_ts.csv
+QLEN_TS_INTERVAL_NS			2000
+TX_TIME_ROUND_NS		1
+CBAP_TX_RECORDS_MAX		2000000
+CBAP_REALLOC_PARSED migration_enable=1 core_initial_release=1 initial_release_ratio=0.9 migration_trace=1
+CBAP_TELEMETRY_LINK link_id=0 node=84 if=1 faces_node=64 dev_rate_bps=10000000000 cfg_capacity_bps=10000000000
+maxRtt=15044 maxBdp=18805
+Running Simulation.
+QB2_MANIFEST link=0 bmax_ratio=0.0200 qtarget_ratio=0.0097 q_abs=1032499 h_eff_us=118.000
+SBA_PLAN_AT t=10000000 group=0 application_ready=10000000 common_release=10005000 members=1
+SBA_LIFECYCLE batch=0 release_ns=10005000 installed=0 collecting=0 hold=0 startup=0 dcqcn_owned=0 finished=0 new_batch=1 rho_init=0.9000
+SBA_LIFECYCLE_CHECK batch=0 link=0 batch_sum=10000000000 old_retained=0 available=10000000000 bound=10000000000 margin=1
+CBAP_MIG_REPLAN t=10010000 reason=active_set_grew flow=0 batch=0 newest_batch=0 cur=8000000000 target=8000000000 ceiling=8000000000 old_side_present=0
+CBAP_MIG t=10010000 epoch=2002 flow=0 side=new cur=8000000000 next=8000000000 tgt=8000000000 f=0.405 u=0 breach=0 end=converged
+SBA_PLAN_AT t=20000000 group=1 application_ready=20000000 common_release=20005000 members=64
+SBA_LIFECYCLE batch=1 release_ns=20005000 installed=1 collecting=0 hold=0 startup=0 dcqcn_owned=1 finished=0 new_batch=64 rho_init=0.9000
+SBA_LIFECYCLE_LINK batch=1 link=0 old_applied=8000000000 available=10000000000
+SBA_LIFECYCLE_CHECK batch=1 link=0 batch_sum=9200000000 old_retained=800000000 available=10000000000 bound=10000000000 margin=64
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=0 batch=0 newest_batch=1 cur=8000000000 target=799999999 ceiling=8000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=1 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=2 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=3 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=4 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=5 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=6 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=7 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=8 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=9 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=10 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=11 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=12 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=13 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=14 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=15 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=16 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=17 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=18 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=19 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=20 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=21 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=22 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=23 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=24 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=25 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=26 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=27 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=28 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=29 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=30 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=31 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=32 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=33 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=34 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=35 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=36 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=37 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=38 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=39 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=40 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=41 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=42 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=43 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=44 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=45 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=46 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=47 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=48 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=49 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=50 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=51 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=52 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=53 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=54 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=55 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=56 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=57 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=58 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=59 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=60 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=61 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=62 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=63 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20010000 reason=active_set_grew flow=64 batch=1 newest_batch=1 cur=105042016 target=143750000 ceiling=10000000000 old_side_present=1
+CBAP_MIG t=20010000 epoch=4002 flow=0 side=old cur=8000000000 next=5839999999 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=1 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=2 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=3 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=4 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=5 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=6 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=7 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=8 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=9 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=10 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=11 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=12 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=13 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=14 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=15 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=16 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=17 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=18 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=19 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=20 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=21 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=22 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=23 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=24 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=25 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=26 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=27 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=28 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=29 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=30 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=31 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=32 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=33 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=34 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=35 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=36 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=37 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=38 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=39 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=40 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=41 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=42 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=43 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=44 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=45 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=46 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=47 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=48 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=49 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=50 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=51 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=52 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=53 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=54 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=55 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=56 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=57 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=58 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=59 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=60 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=61 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=62 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=63 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20010000 epoch=4002 flow=64 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=0 side=old cur=5839999999 next=4327999999 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=1 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=2 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=3 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=4 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=5 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=6 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=7 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=8 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=9 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=10 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=11 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=12 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=13 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=14 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=15 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=16 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=17 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=18 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=19 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=20 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=21 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=22 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=23 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=24 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=25 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=26 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=27 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=28 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=29 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=30 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=31 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=32 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=33 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=34 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=35 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=36 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=37 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=38 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=39 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=40 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=41 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=42 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=43 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=44 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=45 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=46 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=47 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=48 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=49 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=50 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=51 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=52 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=53 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=54 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=55 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=56 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=57 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=58 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=59 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=60 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=61 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=62 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=63 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20015000 epoch=4003 flow=64 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=0 side=old cur=4327999999 next=3269599999 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=1 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=2 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=3 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=4 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=5 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=6 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=7 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=8 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=9 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=10 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=11 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=12 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=13 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=14 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=15 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=16 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=17 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=18 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=19 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=20 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=21 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=22 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=23 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=24 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=25 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=26 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=27 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=28 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=29 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=30 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=31 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=32 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=33 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=34 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=35 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=36 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=37 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=38 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=39 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=40 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=41 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=42 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=43 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=44 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=45 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=46 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=47 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=48 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=49 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=50 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=51 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=52 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=53 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=54 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=55 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=56 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=57 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=58 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=59 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=60 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=61 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=62 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=63 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20020000 epoch=4004 flow=64 side=new cur=105042016 next=120718749 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=0 side=old cur=3269599999 next=2528719999 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=1 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=2 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=3 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=4 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=5 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=6 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=7 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=8 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=9 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=10 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=11 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=12 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=13 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=14 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=15 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=16 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=17 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=18 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=19 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=20 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=21 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=22 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=23 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=24 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=25 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=26 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=27 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=28 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=29 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=30 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=31 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=32 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=33 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=34 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=35 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=36 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=37 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=38 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=39 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=40 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=41 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=42 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=43 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=44 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=45 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=46 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=47 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=48 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=49 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=50 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=51 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=52 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=53 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=54 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=55 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=56 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=57 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=58 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=59 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=60 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=61 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=62 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=63 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20025000 epoch=4005 flow=64 side=new cur=105162500 next=120790437 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=0 side=old cur=2528719999 next=2010103999 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=1 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=2 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=3 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=4 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=5 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=6 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=7 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=8 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=9 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=10 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=11 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=12 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=13 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=14 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=15 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=16 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=17 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=18 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=19 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=20 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=21 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=22 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=23 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=24 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=25 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=26 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=27 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=28 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=29 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=30 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=31 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=32 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=33 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=34 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=35 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=36 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=37 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=38 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=39 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=40 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=41 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=42 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=43 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=44 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=45 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=46 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=47 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=48 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=49 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=50 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=51 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=52 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=53 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=54 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=55 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=56 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=57 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=58 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=59 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=60 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=61 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=62 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=63 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20030000 epoch=4006 flow=64 side=new cur=116738750 next=127678306 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=0 side=old cur=2010103999 next=1647072799 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=1 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=2 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=3 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=4 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=5 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=6 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=7 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=8 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=9 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=10 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=11 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=12 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=13 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=14 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=15 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=16 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=17 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=18 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=19 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=20 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=21 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=22 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=23 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=24 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=25 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=26 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=27 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=28 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=29 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=30 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=31 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=32 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=33 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=34 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=35 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=36 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=37 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=38 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=39 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=40 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=41 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=42 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=43 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=44 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=45 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=46 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=47 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=48 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=49 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=50 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=51 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=52 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=53 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=54 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=55 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=56 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=57 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=58 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=59 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=60 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=61 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=62 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=63 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20035000 epoch=4007 flow=64 side=new cur=124842125 next=132499814 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=0 side=old cur=1647072799 next=1392950959 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=1 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=2 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=3 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=4 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=5 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=6 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=7 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=8 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=9 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=10 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=11 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=12 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=13 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=14 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=15 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=16 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=17 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=18 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=19 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=20 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=21 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=22 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=23 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=24 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=25 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=26 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=27 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=28 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=29 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=30 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=31 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=32 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=33 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=34 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=35 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=36 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=37 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=38 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=39 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=40 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=41 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=42 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=43 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=44 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=45 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=46 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=47 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=48 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=49 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=50 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=51 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=52 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=53 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=54 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=55 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=56 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=57 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=58 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=59 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=60 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=61 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=62 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=63 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20040000 epoch=4008 flow=64 side=new cur=132499814 next=137056139 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=0 side=old cur=1392950959 next=1215065671 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=1 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=2 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=3 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=4 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=5 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=6 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=7 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=8 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=9 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=10 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=11 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=12 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=13 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=14 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=15 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=16 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=17 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=18 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=19 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=20 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=21 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=22 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=23 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=24 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=25 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=26 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=27 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=28 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=29 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=30 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=31 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=32 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=33 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=34 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=35 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=36 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=37 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=38 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=39 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=40 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=41 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=42 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=43 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=44 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=45 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=46 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=47 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=48 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=49 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=50 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=51 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=52 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=53 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=54 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=55 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=56 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=57 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=58 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=59 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=60 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=61 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=62 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=63 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20045000 epoch=4009 flow=64 side=new cur=137056139 next=139767152 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=0 side=old cur=1215065671 next=1090545969 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=1 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=2 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=3 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=4 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=5 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=6 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=7 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=8 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=9 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=10 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=11 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=12 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=13 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=14 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=15 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=16 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=17 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=18 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=19 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=20 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=21 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=22 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=23 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=24 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=25 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=26 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=27 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=28 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=29 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=30 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=31 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=32 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=33 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=34 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=35 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=36 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=37 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=38 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=39 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=40 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=41 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=42 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=43 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=44 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=45 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=46 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=47 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=48 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=49 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=50 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=51 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=52 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=53 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=54 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=55 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=56 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=57 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=58 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=59 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=60 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=61 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=62 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=63 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20050000 epoch=4010 flow=64 side=new cur=139767152 next=141380205 tgt=143750000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20055000 epoch=4011 flow=0 side=old cur=1090545969 next=1003382178 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20055000 epoch=4011 flow=1 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=2 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=3 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=4 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=5 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=6 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=7 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=8 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=9 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=10 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=11 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=12 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=13 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=14 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=15 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=16 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=17 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=18 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=19 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=20 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=21 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=22 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=23 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=24 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=25 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=26 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=27 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=28 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=29 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=30 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=31 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=32 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=33 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=34 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=35 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=36 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=37 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=38 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=39 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=40 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=41 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=42 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=43 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=44 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=45 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=46 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=47 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=48 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=49 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=50 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=51 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=52 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=53 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=54 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=55 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=56 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=57 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=58 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=59 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=60 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=61 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=62 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=63 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20055000 epoch=4011 flow=64 side=new cur=141380205 next=142339971 tgt=143750000 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20060000 epoch=4012 flow=0 side=old cur=1003382178 next=942367524 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20065000 epoch=4013 flow=0 side=old cur=942367524 next=899657266 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20070000 epoch=4014 flow=0 side=old cur=899657266 next=869760085 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20075000 epoch=4015 flow=0 side=old cur=869760085 next=848832059 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20080000 epoch=4016 flow=0 side=old cur=848832059 next=834182441 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20085000 epoch=4017 flow=0 side=old cur=834182441 next=823927708 tgt=799999999 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20090000 epoch=4018 flow=0 side=old cur=823927708 next=816749395 tgt=799999999 f=0.3 u=0 breach=0 end=deadline_retargeted
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=0 batch=0 newest_batch=1 cur=816749395 target=100000000 ceiling=8000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=1 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=2 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=3 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=4 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=5 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=6 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=7 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=8 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=9 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=10 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=11 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=12 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=13 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=14 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=15 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=16 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=17 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=18 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=19 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=20 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=21 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=22 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=23 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=24 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=25 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=26 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=27 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=28 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=29 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=30 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=31 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=32 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=33 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=34 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=35 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=36 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=37 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=38 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=39 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=40 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=41 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=42 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=43 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=44 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=45 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=46 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=47 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=48 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=49 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=50 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=51 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=52 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=53 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=54 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=55 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=56 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=57 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=58 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=59 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=60 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=61 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=62 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=63 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20095000 reason=deadline_lapsed flow=64 batch=1 newest_batch=1 cur=143488290 target=154973829 ceiling=10000000000 old_side_present=1
+CBAP_MIG t=20095000 epoch=4019 flow=0 side=old cur=816749395 next=601724576 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=1 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=2 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=3 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=4 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=5 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=6 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=7 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=8 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=9 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=10 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=11 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=12 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=13 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=14 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=15 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=16 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=17 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=18 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=19 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=20 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=21 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=22 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=23 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=24 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=25 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=26 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=27 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=28 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=29 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=30 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=31 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=32 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=33 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=34 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=35 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=36 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=37 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=38 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=39 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=40 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=41 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=42 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=43 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=44 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=45 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=46 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=47 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=48 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=49 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=50 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=51 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=52 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=53 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=54 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=55 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=56 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=57 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=58 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=59 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=60 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=61 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=62 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=63 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20095000 epoch=4019 flow=64 side=new cur=143488290 next=148139933 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=0 side=old cur=601724576 next=451207203 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=1 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=2 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=3 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=4 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=5 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=6 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=7 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=8 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=9 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=10 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=11 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=12 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=13 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=14 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=15 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=16 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=17 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=18 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=19 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=20 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=21 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=22 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=23 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=24 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=25 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=26 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=27 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=28 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=29 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=30 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=31 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=32 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=33 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=34 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=35 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=36 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=37 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=38 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=39 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=40 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=41 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=42 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=43 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=44 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=45 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=46 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=47 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=48 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=49 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=50 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=51 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=52 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=53 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=54 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=55 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=56 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=57 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=58 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=59 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=60 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=61 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=62 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=63 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20100000 epoch=4020 flow=64 side=new cur=148139933 next=150907660 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=0 side=old cur=451207203 next=345845042 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=1 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=2 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=3 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=4 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=5 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=6 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=7 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=8 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=9 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=10 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=11 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=12 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=13 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=14 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=15 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=16 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=17 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=18 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=19 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=20 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=21 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=22 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=23 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=24 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=25 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=26 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=27 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=28 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=29 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=30 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=31 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=32 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=33 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=34 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=35 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=36 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=37 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=38 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=39 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=40 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=41 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=42 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=43 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=44 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=45 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=46 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=47 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=48 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=49 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=50 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=51 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=52 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=53 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=54 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=55 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=56 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=57 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=58 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=59 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=60 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=61 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=62 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=63 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20105000 epoch=4021 flow=64 side=new cur=150907660 next=152554458 tgt=154973829 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=20110000 epoch=4022 flow=0 side=old cur=345845042 next=272091529 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20110000 epoch=4022 flow=1 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=2 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=3 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=4 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=5 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=6 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=7 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=8 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=9 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=10 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=11 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=12 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=13 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=14 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=15 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=16 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=17 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=18 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=19 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=20 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=21 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=22 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=23 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=24 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=25 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=26 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=27 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=28 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=29 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=30 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=31 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=32 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=33 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=34 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=35 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=36 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=37 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=38 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=39 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=40 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=41 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=42 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=43 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=44 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=45 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=46 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=47 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=48 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=49 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=50 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=51 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=52 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=53 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=54 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=55 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=56 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=57 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=58 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=59 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=60 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=61 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=62 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=63 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20110000 epoch=4022 flow=64 side=new cur=152554458 next=153534303 tgt=154973829 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20115000 epoch=4023 flow=0 side=old cur=272091529 next=220464070 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20120000 epoch=4024 flow=0 side=old cur=220464070 next=184324849 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20125000 epoch=4025 flow=0 side=old cur=184324849 next=159027394 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20130000 epoch=4026 flow=0 side=old cur=159027394 next=141319175 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20135000 epoch=4027 flow=0 side=old cur=141319175 next=128923422 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20140000 epoch=4028 flow=0 side=old cur=128923422 next=120246395 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20145000 epoch=4029 flow=0 side=old cur=120246395 next=114172476 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20150000 epoch=4030 flow=0 side=old cur=114172476 next=109920733 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20155000 epoch=4031 flow=0 side=old cur=109920733 next=106944513 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20160000 epoch=4032 flow=0 side=old cur=106944513 next=104861159 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20165000 epoch=4033 flow=0 side=old cur=104861159 next=103402811 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20170000 epoch=4034 flow=0 side=old cur=103402811 next=102381967 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20175000 epoch=4035 flow=0 side=old cur=102381967 next=101667376 tgt=100000000 f=0.3 u=0 breach=0 end=deadline_retargeted
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=1 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=2 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=3 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=4 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=5 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=6 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=7 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=8 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=9 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=10 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=11 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=12 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=13 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=14 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=15 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=16 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=17 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=18 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=19 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=20 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=21 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=22 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=23 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=24 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=25 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=26 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=27 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=28 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=29 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=30 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=31 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=32 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=33 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=34 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=35 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=36 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=37 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=38 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=39 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=40 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=41 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=42 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=43 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=44 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=45 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=46 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=47 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=48 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=49 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=50 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=51 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=52 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=53 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=54 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=55 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=56 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=57 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=58 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=59 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=60 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=61 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=62 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=63 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=20180000 reason=deadline_lapsed flow=64 batch=1 newest_batch=1 cur=155720517 target=157150215 ceiling=10000000000 old_side_present=1
+CBAP_MIG t=20180000 epoch=4036 flow=0 side=old cur=101667376 next=101167163 tgt=100000000 f=0.3 u=0 breach=0 end=
+CBAP_MIG t=20180000 epoch=4036 flow=1 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=2 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=3 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=4 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=5 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=6 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=7 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=8 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=9 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=10 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=11 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=12 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=13 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=14 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=15 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=16 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=17 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=18 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=19 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=20 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=21 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=22 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=23 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=24 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=25 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=26 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=27 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=28 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=29 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=30 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=31 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=32 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=33 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=34 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=35 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=36 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=37 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=38 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=39 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=40 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=41 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=42 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=43 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=44 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=45 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=46 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=47 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=48 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=49 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=50 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=51 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=52 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=53 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=54 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=55 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=56 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=57 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=58 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=59 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=60 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=61 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=62 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=63 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20180000 epoch=4036 flow=64 side=new cur=155720517 next=156299544 tgt=157150215 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=20185000 epoch=4037 flow=0 side=old cur=101167163 next=100817014 tgt=100000000 f=0.3 u=0 breach=0 end=converged
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=0 batch=0 newest_batch=1 cur=100817014 target=100000000 ceiling=8000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=2 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=3 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=4 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=5 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=6 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=7 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=8 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=9 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=10 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=11 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=12 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=13 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=14 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=15 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=16 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=17 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=18 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=19 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=20 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=21 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=22 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=23 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=24 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=25 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=26 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=27 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=28 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=29 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=30 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=31 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=32 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=33 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=34 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=35 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=36 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=37 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=38 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=39 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=40 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=41 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=42 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=43 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=44 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=45 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=46 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=47 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=48 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=49 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=50 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=51 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=52 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=53 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=54 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=55 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=56 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=57 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=58 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=59 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=60 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=61 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=62 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=63 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34255000 reason=active_set_shrank flow=64 batch=1 newest_batch=1 cur=156299544 target=158570131 ceiling=10000000000 old_side_present=1
+CBAP_MIG t=34255000 epoch=6851 flow=0 side=old cur=100817014 next=100571909 tgt=100000000 f=0.3 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=2 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=3 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=4 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=5 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=6 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=7 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=8 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=9 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=10 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=11 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=12 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=13 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=14 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=15 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=16 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=17 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=18 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=19 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=20 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=21 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=22 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=23 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=24 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=25 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=26 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=27 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=28 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=29 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=30 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=31 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=32 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=33 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=34 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=35 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=36 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=37 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=38 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=39 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=40 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=41 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=42 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=43 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=44 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=45 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=46 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=47 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=48 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=49 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=50 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=51 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=52 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=53 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=54 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=55 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=56 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=57 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=58 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=59 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=60 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=61 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=62 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=63 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG t=34255000 epoch=6851 flow=64 side=new cur=156299544 next=157219131 tgt=158570131 f=0.405 u=0 breach=0 end=converged
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=0 batch=0 newest_batch=1 cur=100571909 target=100000000 ceiling=8000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=18 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=19 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=20 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=21 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=22 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=23 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=24 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=25 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=26 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=27 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=28 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=29 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=30 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=31 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=32 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=33 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=34 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=35 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=36 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=37 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=38 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=39 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=40 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=41 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=42 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=43 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=44 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=45 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=46 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=47 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=48 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=49 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=50 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=51 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=52 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=53 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=54 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=55 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=56 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=57 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=58 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=59 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=60 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=61 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=62 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=63 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34260000 reason=active_set_shrank flow=64 batch=1 newest_batch=1 cur=157219131 target=212551974 ceiling=10000000000 old_side_present=1
+CBAP_MIG t=34260000 epoch=6852 flow=0 side=old cur=100571909 next=100400336 tgt=100000000 f=0.3 u=0 breach=0 end=converged
+CBAP_MIG t=34260000 epoch=6852 flow=18 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=19 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=20 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=21 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=22 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=23 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=24 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=25 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=26 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=27 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=28 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=29 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=30 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=31 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=32 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=33 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=34 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=35 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=36 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=37 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=38 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=39 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=40 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=41 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=42 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=43 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=44 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=45 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=46 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=47 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=48 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=49 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=50 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=51 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=52 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=53 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=54 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=55 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=56 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=57 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=58 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=59 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=60 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=61 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=62 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=63 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34260000 epoch=6852 flow=64 side=new cur=157219131 next=179628932 tgt=212551974 f=0.405 u=0 breach=0 end=
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=0 batch=0 newest_batch=1 cur=100400336 target=100000000 ceiling=8000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=34 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=35 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=36 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=37 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=38 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=39 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=40 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=41 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=42 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=43 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=44 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=45 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=46 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=47 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=48 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=49 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=50 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=51 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=52 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=53 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=54 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=55 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=56 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=57 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=58 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=59 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=60 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=61 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=62 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=63 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34265000 reason=active_set_shrank flow=64 batch=1 newest_batch=1 cur=179628932 target=322256773 ceiling=10000000000 old_side_present=1
+CBAP_MIG t=34265000 epoch=6853 flow=0 side=old cur=100400336 next=100280235 tgt=100000000 f=0.3 u=0 breach=0 end=converged
+CBAP_MIG t=34265000 epoch=6853 flow=34 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=35 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=36 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=37 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=38 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=39 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=40 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=41 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=42 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=43 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=44 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=45 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=46 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=47 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=48 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=49 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=50 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=51 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=52 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=53 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=54 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=55 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=56 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=57 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=58 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=59 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=60 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=61 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=62 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=63 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34265000 epoch=6853 flow=64 side=new cur=179628932 next=237393207 tgt=322256773 f=0.405 u=0 breach=0 end=
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=0 batch=0 newest_batch=1 cur=100280235 target=100000000 ceiling=8000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=50 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=51 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=52 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=53 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=54 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=55 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=56 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=57 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=58 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=59 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=60 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=61 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=62 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=63 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34270000 reason=active_set_shrank flow=64 batch=1 newest_batch=1 cur=237393207 target=665998131 ceiling=10000000000 old_side_present=1
+CBAP_MIG t=34270000 epoch=6854 flow=0 side=old cur=100280235 next=100196164 tgt=100000000 f=0.3 u=0 breach=0 end=converged
+CBAP_MIG t=34270000 epoch=6854 flow=50 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34270000 epoch=6854 flow=51 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34270000 epoch=6854 flow=52 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34270000 epoch=6854 flow=53 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34270000 epoch=6854 flow=54 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34270000 epoch=6854 flow=55 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34270000 epoch=6854 flow=56 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34270000 epoch=6854 flow=57 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34270000 epoch=6854 flow=58 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34270000 epoch=6854 flow=59 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34270000 epoch=6854 flow=60 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34270000 epoch=6854 flow=61 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34270000 epoch=6854 flow=62 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34270000 epoch=6854 flow=63 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34270000 epoch=6854 flow=64 side=new cur=237393207 next=410978201 tgt=665998131 f=0.405 u=0 breach=0 end=
+CBAP_MIG_REPLAN t=34275000 reason=active_set_shrank flow=0 batch=0 newest_batch=1 cur=100196164 target=100000000 ceiling=8000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34275000 reason=active_set_shrank flow=63 batch=1 newest_batch=1 cur=410978201 target=4994990192 ceiling=10000000000 old_side_present=1
+CBAP_MIG_REPLAN t=34275000 reason=active_set_shrank flow=64 batch=1 newest_batch=1 cur=410978201 target=4994990192 ceiling=10000000000 old_side_present=1
+CBAP_MIG t=34275000 epoch=6855 flow=0 side=old cur=100196164 next=100137314 tgt=100000000 f=0.3 u=0 breach=0 end=converged
+CBAP_MIG t=34275000 epoch=6855 flow=63 side=new cur=410978201 next=2267503057 tgt=4994990192 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34275000 epoch=6855 flow=64 side=new cur=410978201 next=2267503057 tgt=4994990192 f=0.405 u=0 breach=0 end=
+CBAP_MIG_REPLAN t=34280000 reason=active_set_shrank flow=0 batch=0 newest_batch=0 cur=100137314 target=8000000000 ceiling=8000000000 old_side_present=0
+CBAP_MIG t=34280000 epoch=6856 flow=0 side=new cur=100137314 next=3299581701 tgt=8000000000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34285000 epoch=6857 flow=0 side=new cur=3299581701 next=5203251112 tgt=8000000000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34290000 epoch=6858 flow=0 side=new cur=5203251112 next=6335934411 tgt=8000000000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34295000 epoch=6859 flow=0 side=new cur=6335934411 next=7009880974 tgt=8000000000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34300000 epoch=6860 flow=0 side=new cur=7009880974 next=7410879179 tgt=8000000000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34305000 epoch=6861 flow=0 side=new cur=7410879179 next=7649473111 tgt=8000000000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34310000 epoch=6862 flow=0 side=new cur=7649473111 next=7791436501 tgt=8000000000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34315000 epoch=6863 flow=0 side=new cur=7791436501 next=7875904718 tgt=8000000000 f=0.405 u=0 breach=0 end=
+CBAP_MIG t=34320000 epoch=6864 flow=0 side=new cur=7875904718 next=7926163307 tgt=8000000000 f=0.405 u=0 breach=0 end=converged
+68.1519

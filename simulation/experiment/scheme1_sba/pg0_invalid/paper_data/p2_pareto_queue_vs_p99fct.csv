@@ -1,0 +1,32 @@
+# Pareto: queue depth against incast latency.
+scenario,scenario_shape,algorithm,x_metric,x_value,x_label,y_metric,y_value,y_label
+s1,16x256KiB bg80%,DCQCN,queue_p99_bytes,315448.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,17.624786,incast p99 FCT (ms) - lower better
+s1,16x256KiB bg80%,DCTCP,queue_p99_bytes,315448.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,17.624786,incast p99 FCT (ms) - lower better
+s1,16x256KiB bg80%,TIMELY,queue_p99_bytes,317856.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,17.759005,incast p99 FCT (ms) - lower better
+s1,16x256KiB bg80%,HPCC,queue_p99_bytes,4360.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,4.092277,incast p99 FCT (ms) - lower better
+s1,16x256KiB bg80%,CBAP-SBA,queue_p99_bytes,10480.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,5.929390,incast p99 FCT (ms) - lower better
+s2,64x256KiB bg80%,DCQCN,queue_p99_bytes,1271224.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,70.454985,incast p99 FCT (ms) - lower better
+s2,64x256KiB bg80%,DCTCP,queue_p99_bytes,1271224.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,70.454985,incast p99 FCT (ms) - lower better
+s2,64x256KiB bg80%,TIMELY,queue_p99_bytes,1280928.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,70.825008,incast p99 FCT (ms) - lower better
+s2,64x256KiB bg80%,HPCC,queue_p99_bytes,1079928.400000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,15.117964,incast p99 FCT (ms) - lower better
+s2,64x256KiB bg80%,CBAP-SBA,queue_p99_bytes,113089.680000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,22.097973,incast p99 FCT (ms) - lower better
+s3,64x1MiB bg80%,DCQCN,queue_p99_bytes,1272272.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,281.740683,incast p99 FCT (ms) - lower better
+s3,64x1MiB bg80%,DCTCP,queue_p99_bytes,1272272.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,281.740683,incast p99 FCT (ms) - lower better
+s3,64x1MiB bg80%,TIMELY,queue_p99_bytes,1280928.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,283.216214,incast p99 FCT (ms) - lower better
+s3,64x1MiB bg80%,HPCC,queue_p99_bytes,900721.500000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,60.130945,incast p99 FCT (ms) - lower better
+s3,64x1MiB bg80%,CBAP-SBA,queue_p99_bytes,323832.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,88.295083,incast p99 FCT (ms) - lower better
+s6,dual 30+30x256KiB bg80%x2,DCQCN,queue_p99_bytes,594216.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,33.033707,incast p99 FCT (ms) - lower better
+s6,dual 30+30x256KiB bg80%x2,DCTCP,queue_p99_bytes,594216.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,33.033707,incast p99 FCT (ms) - lower better
+s6,dual 30+30x256KiB bg80%x2,TIMELY,queue_p99_bytes,598752.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,33.206530,incast p99 FCT (ms) - lower better
+s6,dual 30+30x256KiB bg80%x2,HPCC,queue_p99_bytes,79537.300000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,7.292748,incast p99 FCT (ms) - lower better
+s6,dual 30+30x256KiB bg80%x2,CBAP-SBA,queue_p99_bytes,25152.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,11.097273,incast p99 FCT (ms) - lower better
+s4,64x1MiB bg95%,DCQCN,queue_p99_bytes,1274368.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,1127.320690,incast p99 FCT (ms) - lower better
+s4,64x1MiB bg95%,DCTCP,queue_p99_bytes,1274368.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,1127.320690,incast p99 FCT (ms) - lower better
+s4,64x1MiB bg95%,TIMELY,queue_p99_bytes,1284096.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,1118.974858,incast p99 FCT (ms) - lower better
+s4,64x1MiB bg95%,HPCC,queue_p99_bytes,899740.500000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,60.242022,incast p99 FCT (ms) - lower better
+s4,64x1MiB bg95%,CBAP-SBA,queue_p99_bytes,310208.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,88.275126,incast p99 FCT (ms) - lower better
+s5,64x4MiB bg80%,DCQCN,queue_p99_bytes,1272272.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,1126.918274,incast p99 FCT (ms) - lower better
+s5,64x4MiB bg80%,DCTCP,queue_p99_bytes,1272272.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,1126.918274,incast p99 FCT (ms) - lower better
+s5,64x4MiB bg80%,TIMELY,queue_p99_bytes,1280928.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,1132.819751,incast p99 FCT (ms) - lower better
+s5,64x4MiB bg80%,HPCC,queue_p99_bytes,195807.600000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,240.543265,incast p99 FCT (ms) - lower better
+s5,64x4MiB bg80%,CBAP-SBA,queue_p99_bytes,1262840.000000,bottleneck queue p99 (bytes) - lower better,fct_p99_ms,350.963262,incast p99 FCT (ms) - lower better

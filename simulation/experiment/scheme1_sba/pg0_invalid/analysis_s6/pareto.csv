@@ -1,0 +1,16 @@
+pairing,algorithm,n_runs,x_metric,x_value,y_metric,y_value
+p99 FCT (ms) vs bg retention (%),dcqcn,1,fct_p99_ms,33.033707,bg_retention_pct,99.999402
+p99 FCT (ms) vs bg retention (%),dctcp,1,fct_p99_ms,33.033707,bg_retention_pct,99.999402
+p99 FCT (ms) vs bg retention (%),timely,1,fct_p99_ms,33.206530,bg_retention_pct,99.999203
+p99 FCT (ms) vs bg retention (%),hpcc,1,fct_p99_ms,7.292748,bg_retention_pct,93.463254
+p99 FCT (ms) vs bg retention (%),cbapsba,1,fct_p99_ms,11.097273,bg_retention_pct,95.069788
+CCT (ms) vs service debt (B),dcqcn,1,cct_ms,133.033707,bg_service_debt_bytes,5134718000.000000
+CCT (ms) vs service debt (B),dctcp,1,cct_ms,133.033707,bg_service_debt_bytes,5134718000.000000
+CCT (ms) vs service debt (B),timely,1,cct_ms,133.206530,bg_service_debt_bytes,5156446000.000000
+CCT (ms) vs service debt (B),hpcc,1,cct_ms,107.293464,bg_service_debt_bytes,5258138000.000000
+CCT (ms) vs service debt (B),cbapsba,1,cct_ms,111.097273,bg_service_debt_bytes,5154934000.000000
+agg goodput (Gbps) vs p99 queue (B),dcqcn,1,incast_agg_gbps,3.809113,queue_p99_bytes,594216.000000
+agg goodput (Gbps) vs p99 queue (B),dctcp,1,incast_agg_gbps,3.809113,queue_p99_bytes,594216.000000
+agg goodput (Gbps) vs p99 queue (B),timely,1,incast_agg_gbps,3.789288,queue_p99_bytes,598752.000000
+agg goodput (Gbps) vs p99 queue (B),hpcc,1,incast_agg_gbps,17.252312,queue_p99_bytes,79537.300000
+agg goodput (Gbps) vs p99 queue (B),cbapsba,1,incast_agg_gbps,11.338742,queue_p99_bytes,25152.000000

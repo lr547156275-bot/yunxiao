@@ -1,0 +1,3 @@
+scenario,algorithm,seed,group_id,round_id,common_release_time,barrier_completion_time,group_rct,total_round_bytes,participant_count,residual_queue_bytes,bottleneck_capacity_bps,background_bps,T_line,T_link,T_star,theoretical_lower_bound,lower_bound_efficiency,group_queue_max_bytes,group_ecn_marks,group_pfc_events,fallback_reason
+fm200g_s2_cbap,cbap_sba,2,0,0,0.010005000,0.000000000,0.000000000,1386879564,1,0,0,0,0.055475183,0.000000000,0.000000000,0.000000000,0.000000000,0,0,0,not_bop
+fm200g_s2_cbap,cbap_sba,2,1,0,0.020005000,0.031568946,0.011563946,268435456,64,0,0,0,0.000167772,0.000000000,0.000000000,0.000000000,0.000000000,573000,527,0,not_bop

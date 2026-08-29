@@ -1,0 +1,16 @@
+  identical flow_summary.csv
+  identical selected_link_timeseries.csv
+  identical rate_transition.csv
+  identical round_summary.csv
+  identical pfc_events.csv
+  identical flow_timing.csv
+REGRESSION OK (u64 + domain flag both inert at flag-off)
+RUN pf_burst_400g 01:57:23
+OK  pf_burst_400g 2576s
+RUN heff_400g 02:40:19
+Terminated
+FAIL heff_400g rc=143
+SBA_LIFECYCLE_CHECK batch=0 link=0 batch_sum=399999999998 old_retained=0 available=399999999998 bound=399999999998 margin=1
+CBAP_MIG_REPLAN t=10010000 reason=active_set_grew flow=0 batch=0 newest_batch=0 cur=320000000000 target=320000000000 ceiling=320000000000 old_side_present=0
+CBAP_MIG t=10010000 epoch=2002 flow=0 side=new cur=320000000000 next=320000000000 tgt=320000000000 f=0.405 u=0 breach=0 end=converged
+=== 400g rerun complete ===

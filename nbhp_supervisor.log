@@ -1,0 +1,17 @@
+RUN  nb_b030  start=21:07:52
+OK   nb_b030 rc=0 965s
+RUN  nb_b050  start=21:23:57
+OK   nb_b050 rc=0 1019s
+RUN  hp_s3  start=21:40:56
+OK   hp_s3 rc=0 1002s
+RUN  hp_s4  start=21:57:38
+OK   hp_s4 rc=0 3209s
+RUN  hp_s5  start=22:51:07
+OK   hp_s5 rc=0 3678s
+=== nbhp complete Wed Aug 19 23:52:25 HKT 2026 ===
+  nb_b030 DONE 0 965
+  nb_b050 DONE 0 1019
+  hp_s3 DONE 0 1002
+  hp_s4 DONE 0 3209
+  hp_s5 DONE 0 3678
+/dev/loop4       32G   27G  3.7G  88% /work

@@ -1,0 +1,42 @@
+RUN  reg_d3  start=13:40:52
+OK   reg_d3 rc=0 1045s
+  identical  reg_d3/flow_summary.csv
+  identical  reg_d3/port_summary.csv
+  identical  reg_d3/selected_link_timeseries.csv
+  identical  reg_d3/qlen.txt
+  identical  reg_d3/tx_serialization.csv
+  identical  reg_d3/pfc_events.csv
+  identical  reg_d3/round_summary.csv
+  identical  reg_d3/admission.csv
+  identical  reg_d3/sba_events.csv
+  identical  reg_d3/rate_transition.csv
+REGRESSION OK: reg_d3 byte-identical to frozen scr8_d3
+RUN  reg_b040  start=13:58:24
+OK   reg_b040 rc=0 1017s
+  identical  reg_b040/flow_summary.csv
+  identical  reg_b040/port_summary.csv
+  identical  reg_b040/selected_link_timeseries.csv
+  identical  reg_b040/qlen.txt
+  identical  reg_b040/tx_serialization.csv
+  identical  reg_b040/pfc_events.csv
+  identical  reg_b040/round_summary.csv
+  identical  reg_b040/admission.csv
+  identical  reg_b040/sba_events.csv
+  identical  reg_b040/rate_transition.csv
+REGRESSION OK: reg_b040 byte-identical to frozen scr8_b040
+RUN  st_2560  start=14:15:28
+OK   st_2560 rc=0 1199s
+SBA_LIFECYCLE_CHECK batch=2 link=0 batch_sum=9005105536 old_retained=1000567285 available=9541984732 bound=10005672848 margin=91
+RUN  st_2555  start=14:35:27
+OK   st_2555 rc=0 1159s
+SBA_LIFECYCLE_CHECK batch=2 link=0 batch_sum=9005105536 old_retained=1000567285 available=9541984732 bound=10005672848 margin=91
+RUN  st_2550  start=14:54:46
+OK   st_2550 rc=0 1141s
+SBA_LIFECYCLE_CHECK batch=2 link=0 batch_sum=9005105536 old_retained=1000567285 available=9541984732 bound=10005672848 margin=91
+=== stB complete Thu Aug 20 15:13:47 HKT 2026 ===
+-rw-rw-rw- 1 root root 7 Aug 20 14:15 reg_b040_out/DONE
+-rw-rw-rw- 1 root root 7 Aug 20 13:58 reg_d3_out/DONE
+-rw-rw-rw- 1 root root 7 Aug 20 15:13 st_2550_out/DONE
+-rw-rw-rw- 1 root root 7 Aug 20 14:54 st_2555_out/DONE
+-rw-rw-rw- 1 root root 7 Aug 20 14:35 st_2560_out/DONE
+/dev/loop4       32G   28G  2.1G  94% /work

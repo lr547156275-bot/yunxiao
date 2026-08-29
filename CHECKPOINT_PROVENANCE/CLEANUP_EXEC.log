@@ -1,0 +1,16 @@
+CLEANUP_EXEC 2026-08-16T16:33:01Z
+df before:
+/dev/loop4       32G   28G  2.5G  92% /work
+DELETED /work/simulation/experiment/scheme1_sba/so_cbap_on_out  (246724989 bytes)
+DELETED /work/simulation/experiment/scheme1_sba/so_dcqcn_on_out  (262034544 bytes)
+deleted_dirs=2
+df after:
+/dev/loop4       32G   27G  3.0G  91% /work
+=== survivors that must still exist ===
+v3_split_out         PRESENT
+sr_cbap_s3_out       PRESENT
+sr_dcqcn_s3_out      PRESENT
+v4_off_out           PRESENT
+v4_on_out            PRESENT
+gs_s3_on_out         PRESENT
+CHECKPOINT_PROVENANCE PRESENT

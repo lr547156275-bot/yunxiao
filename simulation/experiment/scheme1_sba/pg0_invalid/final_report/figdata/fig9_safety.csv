@@ -1,0 +1,151 @@
+scenario,scenario_desc,algorithm,metric,value,unit
+s1,"16-way x 256KiB, background 80%",DCQCN,ecn_marks,0,count
+s1,"16-way x 256KiB, background 80%",DCQCN,pfc_events,0,count
+s1,"16-way x 256KiB, background 80%",DCQCN,pfc_pause_total_ns,0,count
+s1,"16-way x 256KiB, background 80%",DCQCN,drops,0,count
+s1,"16-way x 256KiB, background 80%",DCQCN,retx_events_total,0,count
+s1,"16-way x 256KiB, background 80%",DCTCP,ecn_marks,0,count
+s1,"16-way x 256KiB, background 80%",DCTCP,pfc_events,0,count
+s1,"16-way x 256KiB, background 80%",DCTCP,pfc_pause_total_ns,0,count
+s1,"16-way x 256KiB, background 80%",DCTCP,drops,0,count
+s1,"16-way x 256KiB, background 80%",DCTCP,retx_events_total,0,count
+s1,"16-way x 256KiB, background 80%",TIMELY,ecn_marks,0,count
+s1,"16-way x 256KiB, background 80%",TIMELY,pfc_events,0,count
+s1,"16-way x 256KiB, background 80%",TIMELY,pfc_pause_total_ns,0,count
+s1,"16-way x 256KiB, background 80%",TIMELY,drops,0,count
+s1,"16-way x 256KiB, background 80%",TIMELY,retx_events_total,0,count
+s1,"16-way x 256KiB, background 80%",HPCC,ecn_marks,0,count
+s1,"16-way x 256KiB, background 80%",HPCC,pfc_events,0,count
+s1,"16-way x 256KiB, background 80%",HPCC,pfc_pause_total_ns,0,count
+s1,"16-way x 256KiB, background 80%",HPCC,drops,0,count
+s1,"16-way x 256KiB, background 80%",HPCC,retx_events_total,0,count
+s1,"16-way x 256KiB, background 80%",CBAP-SBA,ecn_marks,0,count
+s1,"16-way x 256KiB, background 80%",CBAP-SBA,pfc_events,0,count
+s1,"16-way x 256KiB, background 80%",CBAP-SBA,pfc_pause_total_ns,0,count
+s1,"16-way x 256KiB, background 80%",CBAP-SBA,drops,0,count
+s1,"16-way x 256KiB, background 80%",CBAP-SBA,retx_events_total,0,count
+s2,"64-way x 256KiB, background 80%",DCQCN,ecn_marks,2271.0,count
+s2,"64-way x 256KiB, background 80%",DCQCN,pfc_events,0,count
+s2,"64-way x 256KiB, background 80%",DCQCN,pfc_pause_total_ns,0,count
+s2,"64-way x 256KiB, background 80%",DCQCN,drops,0,count
+s2,"64-way x 256KiB, background 80%",DCQCN,retx_events_total,0,count
+s2,"64-way x 256KiB, background 80%",DCTCP,ecn_marks,2271.0,count
+s2,"64-way x 256KiB, background 80%",DCTCP,pfc_events,0,count
+s2,"64-way x 256KiB, background 80%",DCTCP,pfc_pause_total_ns,0,count
+s2,"64-way x 256KiB, background 80%",DCTCP,drops,0,count
+s2,"64-way x 256KiB, background 80%",DCTCP,retx_events_total,0,count
+s2,"64-way x 256KiB, background 80%",TIMELY,ecn_marks,2296.0,count
+s2,"64-way x 256KiB, background 80%",TIMELY,pfc_events,0,count
+s2,"64-way x 256KiB, background 80%",TIMELY,pfc_pause_total_ns,0,count
+s2,"64-way x 256KiB, background 80%",TIMELY,drops,0,count
+s2,"64-way x 256KiB, background 80%",TIMELY,retx_events_total,0,count
+s2,"64-way x 256KiB, background 80%",HPCC,ecn_marks,274.0,count
+s2,"64-way x 256KiB, background 80%",HPCC,pfc_events,0,count
+s2,"64-way x 256KiB, background 80%",HPCC,pfc_pause_total_ns,0,count
+s2,"64-way x 256KiB, background 80%",HPCC,drops,0,count
+s2,"64-way x 256KiB, background 80%",HPCC,retx_events_total,0,count
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,ecn_marks,0,count
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,pfc_events,0,count
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,pfc_pause_total_ns,0,count
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,drops,0,count
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,retx_events_total,0,count
+s3,"64-way x 1MiB, background 80%",DCQCN,ecn_marks,9542.0,count
+s3,"64-way x 1MiB, background 80%",DCQCN,pfc_events,0,count
+s3,"64-way x 1MiB, background 80%",DCQCN,pfc_pause_total_ns,0,count
+s3,"64-way x 1MiB, background 80%",DCQCN,drops,0,count
+s3,"64-way x 1MiB, background 80%",DCQCN,retx_events_total,0,count
+s3,"64-way x 1MiB, background 80%",DCTCP,ecn_marks,9542.0,count
+s3,"64-way x 1MiB, background 80%",DCTCP,pfc_events,0,count
+s3,"64-way x 1MiB, background 80%",DCTCP,pfc_pause_total_ns,0,count
+s3,"64-way x 1MiB, background 80%",DCTCP,drops,0,count
+s3,"64-way x 1MiB, background 80%",DCTCP,retx_events_total,0,count
+s3,"64-way x 1MiB, background 80%",TIMELY,ecn_marks,9655.0,count
+s3,"64-way x 1MiB, background 80%",TIMELY,pfc_events,0,count
+s3,"64-way x 1MiB, background 80%",TIMELY,pfc_pause_total_ns,0,count
+s3,"64-way x 1MiB, background 80%",TIMELY,drops,0,count
+s3,"64-way x 1MiB, background 80%",TIMELY,retx_events_total,0,count
+s3,"64-way x 1MiB, background 80%",HPCC,ecn_marks,274.0,count
+s3,"64-way x 1MiB, background 80%",HPCC,pfc_events,0,count
+s3,"64-way x 1MiB, background 80%",HPCC,pfc_pause_total_ns,0,count
+s3,"64-way x 1MiB, background 80%",HPCC,drops,0,count
+s3,"64-way x 1MiB, background 80%",HPCC,retx_events_total,0,count
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,ecn_marks,0,count
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,pfc_events,0,count
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,pfc_pause_total_ns,0,count
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,drops,0,count
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,retx_events_total,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,ecn_marks,451.0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,pfc_events,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,pfc_pause_total_ns,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,drops,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,retx_events_total,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCTCP,ecn_marks,451.0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCTCP,pfc_events,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCTCP,pfc_pause_total_ns,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCTCP,drops,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCTCP,retx_events_total,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",TIMELY,ecn_marks,454.0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",TIMELY,pfc_events,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",TIMELY,pfc_pause_total_ns,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",TIMELY,drops,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",TIMELY,retx_events_total,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",HPCC,ecn_marks,24.0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",HPCC,pfc_events,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",HPCC,pfc_pause_total_ns,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",HPCC,drops,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",HPCC,retx_events_total,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",CBAP-SBA,ecn_marks,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",CBAP-SBA,pfc_events,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",CBAP-SBA,pfc_pause_total_ns,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",CBAP-SBA,drops,0,count
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",CBAP-SBA,retx_events_total,0,count
+s4,"64-way x 1MiB, background 95%",DCQCN,ecn_marks,9582.0,count
+s4,"64-way x 1MiB, background 95%",DCQCN,pfc_events,0,count
+s4,"64-way x 1MiB, background 95%",DCQCN,pfc_pause_total_ns,0,count
+s4,"64-way x 1MiB, background 95%",DCQCN,drops,0,count
+s4,"64-way x 1MiB, background 95%",DCQCN,retx_events_total,0,count
+s4,"64-way x 1MiB, background 95%",DCTCP,ecn_marks,9582.0,count
+s4,"64-way x 1MiB, background 95%",DCTCP,pfc_events,0,count
+s4,"64-way x 1MiB, background 95%",DCTCP,pfc_pause_total_ns,0,count
+s4,"64-way x 1MiB, background 95%",DCTCP,drops,0,count
+s4,"64-way x 1MiB, background 95%",DCTCP,retx_events_total,0,count
+s4,"64-way x 1MiB, background 95%",TIMELY,ecn_marks,9694.0,count
+s4,"64-way x 1MiB, background 95%",TIMELY,pfc_events,0,count
+s4,"64-way x 1MiB, background 95%",TIMELY,pfc_pause_total_ns,0,count
+s4,"64-way x 1MiB, background 95%",TIMELY,drops,0,count
+s4,"64-way x 1MiB, background 95%",TIMELY,retx_events_total,0,count
+s4,"64-way x 1MiB, background 95%",HPCC,ecn_marks,274.0,count
+s4,"64-way x 1MiB, background 95%",HPCC,pfc_events,0,count
+s4,"64-way x 1MiB, background 95%",HPCC,pfc_pause_total_ns,0,count
+s4,"64-way x 1MiB, background 95%",HPCC,drops,0,count
+s4,"64-way x 1MiB, background 95%",HPCC,retx_events_total,0,count
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,ecn_marks,0,count
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,pfc_events,0,count
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,pfc_pause_total_ns,0,count
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,drops,0,count
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,retx_events_total,0,count
+s5,"64-way x 4MiB, background 80%",DCQCN,ecn_marks,38410.0,count
+s5,"64-way x 4MiB, background 80%",DCQCN,pfc_events,0,count
+s5,"64-way x 4MiB, background 80%",DCQCN,pfc_pause_total_ns,0,count
+s5,"64-way x 4MiB, background 80%",DCQCN,drops,0,count
+s5,"64-way x 4MiB, background 80%",DCQCN,retx_events_total,0,count
+s5,"64-way x 4MiB, background 80%",DCTCP,ecn_marks,38410.0,count
+s5,"64-way x 4MiB, background 80%",DCTCP,pfc_events,0,count
+s5,"64-way x 4MiB, background 80%",DCTCP,pfc_pause_total_ns,0,count
+s5,"64-way x 4MiB, background 80%",DCTCP,drops,0,count
+s5,"64-way x 4MiB, background 80%",DCTCP,retx_events_total,0,count
+s5,"64-way x 4MiB, background 80%",TIMELY,ecn_marks,38862.0,count
+s5,"64-way x 4MiB, background 80%",TIMELY,pfc_events,0,count
+s5,"64-way x 4MiB, background 80%",TIMELY,pfc_pause_total_ns,0,count
+s5,"64-way x 4MiB, background 80%",TIMELY,drops,0,count
+s5,"64-way x 4MiB, background 80%",TIMELY,retx_events_total,0,count
+s5,"64-way x 4MiB, background 80%",HPCC,ecn_marks,274.0,count
+s5,"64-way x 4MiB, background 80%",HPCC,pfc_events,0,count
+s5,"64-way x 4MiB, background 80%",HPCC,pfc_pause_total_ns,0,count
+s5,"64-way x 4MiB, background 80%",HPCC,drops,0,count
+s5,"64-way x 4MiB, background 80%",HPCC,retx_events_total,0,count
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,ecn_marks,25062.0,count
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,pfc_events,0,count
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,pfc_pause_total_ns,0,count
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,drops,0,count
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,retx_events_total,0,count

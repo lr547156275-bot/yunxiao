@@ -1,0 +1,247 @@
+RUN pv10g_256k_cbap 09:49:25
+RUN pv10g_256k_hpcc 09:49:25
+OK  pv10g_256k_hpcc 44s peakRSS=0.12GB
+RUN pv10g_256k_dcqs 09:50:09
+OK  pv10g_256k_dcqs 61s peakRSS=0.12GB
+RUN pv10g_256k_dcqn 09:51:10
+OK  pv10g_256k_cbap 107s peakRSS=0.13GB
+RUN pv10g_256k_dcql 09:51:12
+OK  pv10g_256k_dcql 50s peakRSS=0.12GB
+RUN pv10g_1m_cbap 09:52:02
+OK  pv10g_256k_dcqn 104s peakRSS=0.12GB
+RUN pv10g_1m_hpcc 09:52:54
+OK  pv10g_1m_cbap 113s peakRSS=0.15GB
+RUN pv10g_1m_dcqs 09:53:55
+OK  pv10g_1m_hpcc 118s peakRSS=0.12GB
+RUN pv10g_1m_dcqn 09:54:52
+OK  pv10g_1m_dcqs 108s peakRSS=0.12GB
+RUN pv10g_1m_dcql 09:55:43
+OK  pv10g_1m_dcqn 87s peakRSS=0.12GB
+RUN pv10g_4m_cbap 09:56:19
+OK  pv10g_1m_dcql 87s peakRSS=0.12GB
+RUN pv10g_4m_hpcc 09:57:10
+OK  pv10g_4m_cbap 314s peakRSS=0.21GB
+RUN pv10g_4m_dcqs 10:01:33
+OK  pv10g_4m_hpcc 265s peakRSS=0.12GB
+RUN pv10g_4m_dcqn 10:01:35
+OK  pv10g_4m_dcqs 264s peakRSS=0.12GB
+RUN pv10g_4m_dcql 10:05:57
+OK  pv10g_4m_dcqn 286s peakRSS=0.12GB
+RUN pv10g_16m_cbap 10:06:21
+OK  pv10g_4m_dcql 299s peakRSS=0.12GB
+RUN pv10g_16m_hpcc 10:10:56
+OK  pv10g_16m_cbap 1118s peakRSS=0.40GB
+RUN pv10g_16m_dcqs 10:24:59
+OK  pv10g_16m_hpcc 938s peakRSS=0.12GB
+RUN pv10g_16m_dcqn 10:26:34
+OK  pv10g_16m_dcqs 995s peakRSS=0.12GB
+RUN pv10g_16m_dcql 10:41:34
+OK  pv10g_16m_dcqn 969s peakRSS=0.12GB
+RUN pv200g_256k_cbap 10:42:43
+OK  pv200g_256k_cbap 67s peakRSS=0.24GB
+RUN pv200g_256k_hpcc 10:43:50
+OK  pv200g_256k_hpcc 77s peakRSS=0.14GB
+RUN pv200g_256k_dcqs 10:45:07
+OK  pv200g_256k_dcqs 101s peakRSS=0.14GB
+RUN pv200g_256k_dcqn 10:46:48
+OK  pv200g_256k_dcqn 61s peakRSS=0.14GB
+RUN pv200g_256k_dcql 10:47:49
+OK  pv200g_256k_dcql 62s peakRSS=0.14GB
+RUN pv200g_1m_cbap 10:48:51
+OK  pv200g_1m_cbap 75s peakRSS=0.26GB
+RUN pv200g_1m_hpcc 10:50:06
+OK  pv200g_1m_hpcc 80s peakRSS=0.14GB
+RUN pv200g_1m_dcqs 10:51:26
+OK  pv200g_1m_dcqs 105s peakRSS=0.14GB
+RUN pv200g_1m_dcqn 10:53:11
+OK  pv200g_1m_dcqn 69s peakRSS=0.14GB
+RUN pv200g_1m_dcql 10:54:20
+OK  pv200g_1m_dcql 68s peakRSS=0.14GB
+RUN pv200g_4m_cbap 10:55:28
+OK  pv200g_4m_cbap 106s peakRSS=0.32GB
+RUN pv200g_4m_hpcc 10:57:14
+OK  pv10g_16m_dcql 1048s peakRSS=0.12GB
+RUN pv200g_4m_dcqs 10:59:02
+OK  pv200g_4m_hpcc 149s peakRSS=0.14GB
+RUN pv200g_4m_dcqn 10:59:43
+OK  pv200g_4m_dcqs 84s peakRSS=0.14GB
+RUN pv200g_4m_dcql 11:00:26
+OK  pv200g_4m_dcqn 114s peakRSS=0.14GB
+RUN pv200g_16m_cbap 11:01:37
+OK  pv200g_4m_dcql 87s peakRSS=0.14GB
+RUN pv200g_16m_hpcc 11:01:53
+OK  pv200g_16m_hpcc 232s peakRSS=0.14GB
+RUN pv200g_16m_dcqs 11:05:45
+OK  pv200g_16m_cbap 300s peakRSS=0.40GB
+RUN pv200g_16m_dcqn 11:06:37
+OK  pv200g_16m_dcqs 205s peakRSS=0.14GB
+RUN pv200g_16m_dcql 11:09:10
+OK  pv200g_16m_dcqn 209s peakRSS=0.14GB
+RUN pv400g_256k_cbap 11:10:06
+OK  pv400g_256k_cbap 127s peakRSS=0.36GB
+RUN pv400g_256k_hpcc 11:12:13
+OK  pv200g_16m_dcql 205s peakRSS=0.14GB
+RUN pv400g_256k_dcqs 11:12:35
+OK  pv400g_256k_dcqs 84s peakRSS=0.14GB
+RUN pv400g_256k_dcqn 11:13:59
+OK  pv400g_256k_hpcc 147s peakRSS=0.14GB
+RUN pv400g_256k_dcql 11:14:40
+OK  pv400g_256k_dcqn 86s peakRSS=0.14GB
+RUN pv400g_1m_cbap 11:15:25
+OK  pv400g_256k_dcql 133s peakRSS=0.14GB
+RUN pv400g_1m_hpcc 11:16:53
+OK  pv400g_1m_cbap 102s peakRSS=0.39GB
+RUN pv400g_1m_dcqs 11:17:07
+OK  pv400g_1m_hpcc 106s peakRSS=0.16GB
+RUN pv400g_1m_dcqn 11:18:39
+OK  pv400g_1m_dcqs 115s peakRSS=0.15GB
+RUN pv400g_1m_dcql 11:19:02
+OK  pv400g_1m_dcql 92s peakRSS=0.15GB
+RUN pv400g_4m_cbap 11:20:34
+OK  pv400g_1m_dcqn 135s peakRSS=0.15GB
+RUN pv400g_4m_hpcc 11:20:54
+OK  pv400g_4m_cbap 148s peakRSS=0.40GB
+RUN pv400g_4m_dcqs 11:23:02
+OK  pv400g_4m_hpcc 156s peakRSS=0.16GB
+RUN pv400g_4m_dcqn 11:23:30
+OK  pv400g_4m_dcqs 92s peakRSS=0.15GB
+RUN pv400g_4m_dcql 11:24:34
+OK  pv400g_4m_dcqn 103s peakRSS=0.15GB
+RUN pv400g_16m_cbap 11:25:13
+OK  pv400g_4m_dcql 107s peakRSS=0.15GB
+RUN pv400g_16m_hpcc 11:26:21
+OK  pv400g_16m_cbap 303s peakRSS=0.40GB
+RUN pv400g_16m_dcqs 11:30:16
+OK  pv400g_16m_hpcc 241s peakRSS=0.16GB
+RUN pv400g_16m_dcqn 11:30:22
+OK  pv400g_16m_dcqn 204s peakRSS=0.15GB
+RUN pv400g_16m_dcql 11:33:46
+OK  pv400g_16m_dcqs 222s peakRSS=0.15GB
+RUN pv400g_4m_cbap_b8 11:33:58
+OK  pv400g_4m_cbap_b8 167s peakRSS=0.40GB
+RUN pv400g_4m_hpcc_b8 11:36:45
+OK  pv400g_16m_dcql 203s peakRSS=0.15GB
+RUN pv400g_4m_dcqn_b8 11:37:09
+OK  pv400g_4m_dcqn_b8 126s peakRSS=0.15GB
+RUN pv400g_4m_cbap_b32 11:39:15
+OK  pv400g_4m_hpcc_b8 187s peakRSS=0.16GB
+RUN pv400g_4m_hpcc_b32 11:39:52
+OK  pv400g_4m_cbap_b32 131s peakRSS=0.40GB
+RUN pv400g_4m_dcqn_b32 11:41:26
+OK  pv400g_4m_hpcc_b32 169s peakRSS=0.16GB
+RUN pv400g_4m_cbap0 11:42:41
+OK  pv400g_4m_dcqn_b32 103s peakRSS=0.15GB
+OK  pv400g_4m_cbap0 122s peakRSS=0.39GB
+=== pilot complete ===
+
+== 10G x 64x256k  buffer=64MB  (ideal drain 14.099 ms) ==
+arm     n/64   meanCCT    p99CCT   p99/idl   Qpk_MB   qdly_us   PFC  retx  bg_tailG
+cbap      64   14.2660   14.2759     1.013    0.071      59.2     0     0       7.6
+hpcc      64   14.8929   15.1925     1.078    1.243    1042.8     0     0       7.2
+dcqs      64   14.1658   15.1533     1.075    1.223    1025.6     0     0       4.2
+dcqn      64   14.1658   15.1533     1.075    1.223    1025.6     0     0       4.2
+dcql      64   14.8125   15.7551     1.118    1.156     969.6     0     0       4.0
+
+== 10G x 64x1m  buffer=64MB  (ideal drain 56.394 ms) ==
+arm     n/64   meanCCT    p99CCT   p99/idl   Qpk_MB   qdly_us   PFC  retx  bg_tailG
+cbap      64   56.9884   57.0000     1.011    0.255     213.6     0     0       7.6
+hpcc      64   59.9798   60.5749     1.074    1.243    1042.8     0     0       7.4
+dcqs      64   54.7666   58.4636     1.037    1.223    1025.6     0     0       4.8
+dcqn      64   54.7666   58.4636     1.037    1.223    1025.6     0     0       4.8
+dcql      64   57.0925   60.6941     1.076    1.156     969.6     0     0       3.8
+
+== 10G x 64x4m  buffer=64MB  (ideal drain 225.576 ms) ==
+arm     n/64   meanCCT    p99CCT   p99/idl   Qpk_MB   qdly_us   PFC  retx  bg_tailG
+cbap      64  222.8349  228.2049     1.012    1.124     943.2     0     0       7.4
+hpcc       9  238.8747  239.9531     1.064    1.243    1042.8     0     0       0.2
+dcqs      64  222.4664  229.4195     1.017    1.223    1025.6     0     0       5.7
+dcqn      64  222.4664  229.4195     1.017    1.223    1025.6     0     0       5.7
+dcql      64  226.5203  234.7802     1.041    1.156     969.6     0     0       2.9
+
+== 10G x 64x16m  buffer=64MB  (ideal drain 902.304 ms) ==
+arm     n/64   meanCCT    p99CCT   p99/idl   Qpk_MB   qdly_us   PFC  retx  bg_tailG
+cbap      64  899.9434  913.9782     1.013    1.190     998.4     0     0       7.4
+hpcc       0       n/a       n/a       n/a    1.243    1042.8     0     0       0.2
+dcqs      57  899.2853  915.3103     1.014    1.223    1025.6     0     0       1.3
+dcqn      57  899.2853  915.3103     1.014    1.223    1025.6     0     0       1.3
+dcql      27  901.6951  915.2062     1.014    1.156     969.6     0     0       0.2
+
+== 200G x 64x256k  buffer=64MB  (ideal drain 0.705 ms) ==
+arm     n/64   meanCCT    p99CCT   p99/idl   Qpk_MB   qdly_us   PFC  retx  bg_tailG
+cbap      64    0.7436    0.7441     1.056    0.360      15.1     0     0     152.3
+hpcc      64    0.6417    0.7692     1.091   12.437     521.6     0     0     146.4
+dcqs      64    0.6152    0.7366     1.045   12.019     504.1     0     0     152.3
+dcqn      64    0.6152    0.7366     1.045   12.019     504.1     0     0     152.3
+dcql      64    0.6092    0.7305     1.036   11.874     498.0     0     0     152.3
+
+== 200G x 64x1m  buffer=64MB  (ideal drain 2.820 ms) ==
+arm     n/64   meanCCT    p99CCT   p99/idl   Qpk_MB   qdly_us   PFC  retx  bg_tailG
+cbap      64    2.7715    2.9217     1.036    0.469      19.7     0     0     152.3
+hpcc      64    2.9725    3.1188     1.106   19.402     813.8    78     0     146.4
+dcqs      64    2.8613    3.1667     1.123   17.160     719.8     0     0     100.3
+dcqn      64    2.8613    3.1667     1.123   17.160     719.8     0     0     152.3
+dcql      64    2.8916    2.9799     1.057   16.969     711.7     0     0     152.3
+
+== 200G x 64x4m  buffer=64MB  (ideal drain 11.279 ms) ==
+arm     n/64   meanCCT    p99CCT   p99/idl   Qpk_MB   qdly_us   PFC  retx  bg_tailG
+cbap      64   11.0236   11.5585     1.025    0.546      22.9     0     0     152.3
+hpcc      64   12.3177   12.4544     1.104   19.402     813.8    78     0     146.6
+dcqs      64   12.1152   13.6332     1.209   17.160     719.8     0     0       6.9
+dcqn      64   11.9655   12.9701     1.150   17.160     719.8     0     0      87.6
+dcql      64   12.3348   13.1569     1.167   16.969     711.7     0     0      81.9
+
+== 200G x 64x16m  buffer=64MB  (ideal drain 45.115 ms) ==
+arm     n/64   meanCCT    p99CCT   p99/idl   Qpk_MB   qdly_us   PFC  retx  bg_tailG
+cbap      64   43.6157   45.8064     1.015    0.546      22.9     0     0     152.3
+hpcc      64   49.5552   49.8412     1.105   19.402     813.8    78     0     146.4
+dcqs      64   44.8164   48.7957     1.082   17.160     719.8     0     0       8.6
+dcqn      64   44.8301   48.9832     1.086   17.160     719.8     0     0      81.1
+dcql      64   45.9500   49.8322     1.105   16.969     711.7     0     0      80.9
+
+== 400G x 64x256k  buffer=64MB  (ideal drain 0.352 ms) ==
+arm     n/64   meanCCT    p99CCT   p99/idl   Qpk_MB   qdly_us   PFC  retx  bg_tailG
+cbap      64    0.3879    0.3881     1.101    0.353       7.4     0     0     304.6
+hpcc      64    0.3338    0.3976     1.128   12.771     267.8     0     0     292.8
+dcqs      64    0.3181    0.3788     1.075   12.231     256.5     0     0     304.6
+dcqn      64    0.3181    0.3788     1.075   12.231     256.5     0     0     304.6
+dcql      64    0.3167    0.3774     1.071   12.166     255.1     0     0     304.6
+
+== 400G x 64x1m  buffer=64MB  (ideal drain 1.410 ms) ==
+arm     n/64   meanCCT    p99CCT   p99/idl   Qpk_MB   qdly_us   PFC  retx  bg_tailG
+cbap      64    1.3609    1.4852     1.053    0.419       8.8     0     0     304.6
+hpcc      64    1.3549    1.5201     1.078   21.486     450.6   326     0     293.0
+dcqs      64    1.3742    1.4470     1.026   21.415     449.1   280     0     304.6
+dcqn      64    1.3742    1.4470     1.026   21.415     449.1   280     0     304.6
+dcql      64    1.3737    1.4457     1.025   21.438     449.6   276     0     304.6
+
+== 400G x 64x4m  buffer=8MB  (ideal drain 5.639 ms) ==
+arm     n/64   meanCCT    p99CCT   p99/idl   Qpk_MB   qdly_us   PFC  retx  bg_tailG
+cbap      64    5.4551    5.8736     1.042    0.493      10.3     0     0     304.6
+hpcc      64    5.9736    6.2918     1.116    2.795      58.6  2442     0     292.8
+dcqn      64    6.0570    6.6746     1.184    2.723      57.1  2146     0     173.3
+
+== 400G x 64x4m  buffer=32MB  (ideal drain 5.639 ms) ==
+arm     n/64   meanCCT    p99CCT   p99/idl   Qpk_MB   qdly_us   PFC  retx  bg_tailG
+cbap      64    5.4551    5.8736     1.042    0.493      10.3     0     0     304.6
+hpcc      64    6.1139    6.2364     1.106   10.808     226.7   792     0     293.0
+dcqn      64    5.9606    6.3944     1.134   10.736     225.1   724     0     200.3
+
+== 400G x 64x4m  buffer=64MB  (ideal drain 5.639 ms) ==
+arm     n/64   meanCCT    p99CCT   p99/idl   Qpk_MB   qdly_us   PFC  retx  bg_tailG
+cbap      64    5.4551    5.8736     1.042    0.493      10.3     0     0     304.6
+cbap0     64    5.7162    5.7420     1.018    0.397       8.3     0     0     304.6
+hpcc      64    6.0357    6.2444     1.107   21.486     450.6   812     0     293.0
+dcqs      64    5.9976    6.5005     1.153   21.415     449.1   322     0      19.2
+dcqn      64    5.9976    6.5005     1.153   21.415     449.1   322     0     162.0
+dcql      64    5.9491    6.1890     1.097   21.438     449.6   544     0     249.4
+
+== 400G x 64x16m  buffer=64MB  (ideal drain 22.558 ms) ==
+arm     n/64   meanCCT    p99CCT   p99/idl   Qpk_MB   qdly_us   PFC  retx  bg_tailG
+cbap      64   21.5794   23.1420     1.026    2.046      42.9     0     0     304.6
+hpcc      64   24.7881   25.0351     1.110   21.486     450.6   812     0     292.8
+dcqs      64   23.6872   27.6193     1.224   21.415     449.1   322     0      12.0
+dcqn      64   23.3765   25.5245     1.132   21.415     449.1   322     0     185.6
+dcql      64   23.9448   25.9184     1.149   21.438     449.6   544     0     185.8
+
+csv written: reports/03_pilot_results.csv (67 cells)
+INCOMPLETE cells (n!=64): pv10g_4m_hpcc, pv10g_16m_hpcc, pv10g_16m_dcqs, pv10g_16m_dcqn, pv10g_16m_dcql

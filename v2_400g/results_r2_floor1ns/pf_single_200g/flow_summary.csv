@@ -1,0 +1,2 @@
+scenario,algorithm,seed,flow_id,qp_id,src,dst,total_size_bytes,start_time,finish_time,fct,acked_bytes,completed,flow_goodput,retx_bytes,retx_events
+pf_single_200g,dcqcn,2,0,0b000001-0b004001-10000-3,0,64,8388608,0.020000000,0.020355777,0.000355777,8388608,1,188626201244.039,0,0

@@ -1,0 +1,16 @@
+SKIP s4v_d1 (DONE present)
+SKIP s4v_d3 (DONE present)
+SKIP s4v_b040 (DONE present)
+SKIP s5v_d1 (DONE present)
+RUN  s5v_d3  start=16:00:30
+OK   s5v_d3 rc=0 3878s
+RUN  s5v_b040  start=17:05:08
+OK   s5v_b040 rc=0 4024s
+=== s45 complete Wed Aug 19 18:12:12 HKT 2026 ===
+  s4v_d1 DONE 0 3315
+  s4v_d3 DONE 0 3534
+  s4v_b040 DONE 0 3384
+  s5v_d1 DONE 0 3742
+  s5v_d3 DONE 0 3878
+  s5v_b040 DONE 0 4024
+/dev/loop4       32G   25G  4.8G  84% /work

@@ -1,0 +1,8 @@
+RUN  st_2560  start=10:30:55
+/work/run_stress.sh: line 22:    85 Aborted                 timeout -k 60 7200 "$BIN" "${tag}.txt" > "$LOG/${tag}.log" 2>&1
+FAIL st_2560 rc=134 175s; log tail:
+CBAP_MIG t=2000365000 epoch=400073 flow=63 side=new cur=154681244 next=154769883 tgt=154900108 f=0.405 u=0 breach=37 end=converged
+CBAP_MIG t=2000365000 epoch=400073 flow=64 side=new cur=154681244 next=154769883 tgt=154900108 f=0.405 u=0 breach=37 end=converged
+terminate called after throwing an instance of 'std::logic_error'
+  what():  SBA initial release violates planned capacity
+timeout: the monitored command dumped core

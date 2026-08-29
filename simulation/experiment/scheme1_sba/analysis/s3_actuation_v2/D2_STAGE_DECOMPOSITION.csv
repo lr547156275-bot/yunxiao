@@ -1,0 +1,4 @@
+stage,count,mean_ns,p50_ns,p95_ns,max_ns,evidence,note
+D2a_sender_to_bottleneck_arrival,215,64833,70013,78393,84998,MEASURED,"propagation + upstream queueing; physical, not controller-optimisable"
+D2b_bottleneck_queue_to_egress,215,19689,20112,37341,43150,MEASURED,bottleneck egress queueing + serialization; physical lower bound
+D2_total_sender_to_first_affected,215,84522,88449,115130,117779,MEASURED,sum of the two measured sub-stages

@@ -1,0 +1,3 @@
+scenario,algorithm,seed,group_id,round_id,common_release_time,barrier_completion_time,group_rct,total_round_bytes,participant_count,residual_queue_bytes,bottleneck_capacity_bps,background_bps,T_line,T_link,T_star,theoretical_lower_bound,lower_bound_efficiency,group_queue_max_bytes,group_ecn_marks,group_pfc_events,fallback_reason
+fx200g_s1_dctcpx,dctcp,2,0,0,0.010000000,0.000000000,0.000000000,1073469891,1,0,0,0,0.042938796,0.000000000,0.000000000,0.000000000,0.000000000,0,0,0,not_bop
+fx200g_s1_dctcpx,dctcp,2,1,0,0.020000000,0.022902954,0.002902954,67108864,64,0,0,0,0.000041943,0.000000000,0.000000000,0.000000000,0.000000000,20071000,72399,0,not_bop

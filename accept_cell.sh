@@ -1,0 +1,188 @@
+#!/bin/bash
+# Per-cell acceptance with an ALGORITHM-AWARE output contract and three-state
+# gates (PASS / FAIL / N/A).
+#
+# Fixes the defect that stopped dcqcn_s1: port_summary.csv, admission.csv,
+# sba_events.csv, applied_rate_audit.csv, rate_transition.csv and
+# increase_audit.csv are produced by the CBAP telemetry path only.  With
+# CBAP_ENABLE 0 they legitimately do not exist, so demanding them from a DCQCN
+# baseline is wrong.  Per the ruling: CBAP-only gates are N/A for DCQCN --
+# never PASS, never a stop.
+#
+# N/A is excluded from the applicable denominator.  Reported as
+#     PASS x/x applicable, N/A y, FAIL z
+# so N/A can never be used to manufacture a 20/20.
+#
+# Touches ONLY the acceptance/extraction layer.  No algorithm, controller,
+# threshold, formula, parameter, rho, MIN_RATE, MAX_BOOST, topology, traffic, or
+# frozen physical checker is modified.
+#
+# Usage: accept_cell.sh <out_dir> <algo:cbap|dcqcn> <config> [label]
+set -u
+OUT="$1"; ALGO="$2"; CFG="$3"; LABEL="${4:-$OUT}"
+cd /work/simulation/experiment/scheme1_sba || exit 2
+
+P=0; F=0; NA=0
+FAILED=""
+
+pass() { P=$((P+1)); printf '  [PASS] %s\n' "$1"; }
+fail() { F=$((F+1)); FAILED="$FAILED; $1"; printf '  [FAIL] %s -- %s\n' "$1" "${2:-}"; }
+na()   { NA=$((NA+1)); printf '  [N/A ] %s -- %s\n' "$1" "${2:-not produced by this algorithm}"; }
+
+echo "=============================================================="
+echo "ACCEPTANCE  $LABEL   algo=$ALGO"
+echo "=============================================================="
+
+# ---- output contract --------------------------------------------------
+# COMMON: produced by every algorithm, genuinely required
+COMMON="flow_summary.csv selected_link_timeseries.csv round_summary.csv pfc_events.csv run.log"
+# CBAP-ONLY: exists only when the CBAP telemetry path is enabled
+CBAP_ONLY="port_summary.csv admission.csv sba_events.csv applied_rate_audit.csv rate_transition.csv increase_audit.csv"
+
+echo "--- output contract ---"
+for f in $COMMON; do
+  if [ -s "$OUT/$f" ]; then pass "common output present: $f"
+  else fail "common output present: $f" "missing or empty"; fi
+done
+for f in $CBAP_ONLY; do
+  if [ "$ALGO" = "cbap" ]; then
+    if [ -s "$OUT/$f" ]; then pass "CBAP output present: $f"
+    else fail "CBAP output present: $f" "missing or empty"; fi
+  else
+    na "CBAP-only output: $f" "CBAP_ENABLE=0, telemetry path not run"
+  fi
+done
+
+# ---- inputs resolve ---------------------------------------------------
+echo "--- inputs ---"
+ibad=0
+for k in TOPOLOGY_FILE FLOW_FILE ROUND_SCHEDULE_FILE CBAP_LINK_FILE CBAP_PATH_FILE; do
+  v=$(grep -m1 "^$k " "$CFG" | awk '{print $2}')
+  [ -z "$v" ] && continue
+  [ -f "$v" ] || { echo "    MISSING $k -> $v"; ibad=1; }
+done
+[ "$ibad" = "0" ] && pass "all input files resolve" || fail "all input files resolve" "see above"
+
+# ---- pg ---------------------------------------------------------------
+FF=$(grep -m1 '^FLOW_FILE ' "$CFG" | awk '{print $2}')
+TOT=$(awk 'NR>1' "$FF" | wc -l)
+P3=$(awk 'NR>1 && $3==3' "$FF" | wc -l)
+P0=$(awk 'NR>1 && $3==0' "$FF" | wc -l)
+# Expected incast/background counts come from the flow SIZE class in the flow
+# file, not from "total minus one".  S1-S5 have ONE background flow but S6 has
+# TWO (one per bottleneck: 65->64 and 61->60), so TOT-1 miscounted a background
+# flow as incast and failed cbap_s6 at "60 of 61" when all 60 incast had in fact
+# completed.  Threshold unchanged: every incast flow must complete; background
+# flows are long-lived and are NOT required to finish inside the window.
+EXP_INC=$(awk 'NR>1 && $5<1000000000' "$FF" | wc -l)
+EXP_BG=$(awk 'NR>1 && $5>=1000000000' "$FF" | wc -l)
+if [ "$P0" = "0" ] && [ "$P3" = "$TOT" ]; then
+  pass "pg=3 for all $TOT flows, pg0_count=0"
+else
+  fail "pg=3 for all flows" "flows=$TOT pg3=$P3 pg0=$P0"
+fi
+
+# ---- flows complete ---------------------------------------------------
+LINES=$(wc -l < "$OUT/flow_summary.csv" 2>/dev/null || echo 0)
+# Classify by size, matching the metrics extractor in this same script.
+INC_DONE=$(awk -F, 'NR>1 && $8<1000000000 && $13==1' "$OUT/flow_summary.csv" 2>/dev/null | wc -l)
+BG_DONE=$(awk -F, 'NR>1 && $8>=1000000000 && $13==1' "$OUT/flow_summary.csv" 2>/dev/null | wc -l)
+if [ "$INC_DONE" -ge "$EXP_INC" ]; then
+  pass "incast flows complete: $INC_DONE/$EXP_INC (background $BG_DONE/$EXP_BG, not required)"
+else
+  fail "incast flows complete" "$INC_DONE of $EXP_INC"
+fi
+
+# ---- safety: PFC / drops / retx --------------------------------------
+PFC=$(( $(wc -l < "$OUT/pfc_events.csv" 2>/dev/null) - 1 ))
+D=$(grep -c 'Drop:' "$OUT/run.log" 2>/dev/null; true)
+D=$(printf '%s' "$D" | head -1 | tr -dc '0-9'); [ -n "$D" ] || D=0
+RB=$(awk -F, 'NR>1{r+=$15} END{printf "%d", r+0}' "$OUT/flow_summary.csv")
+RE=$(awk -F, 'NR>1{e+=$16} END{printf "%d", e+0}' "$OUT/flow_summary.csv")
+[ "$PFC" -le 0 ] && pass "zero PFC events" || fail "zero PFC events" "$PFC"
+[ "$D" -eq 0 ] && pass "zero headroom drops" || fail "zero headroom drops" "$D"
+{ [ "$RB" -eq 0 ] && [ "$RE" -eq 0 ]; } && pass "zero retransmissions" \
+  || fail "zero retransmissions" "${RB}B/${RE}ev"
+
+# ---- verdict ----------------------------------------------------------
+APPLICABLE=$((P+F))
+echo ""
+echo "  RESULT: PASS $P/$APPLICABLE applicable, N/A $NA, FAIL $F"
+[ "$F" -eq 0 ] || { echo "  FAILED:$FAILED"; }
+
+# ---- metrics, source-routed by algorithm -----------------------------
+python3 - "$OUT" "$ALGO" "$LABEL" <<'PY'
+import csv, os, sys
+d, algo, label = sys.argv[1], sys.argv[2], sys.argv[3]
+C = 10e9
+def rows(n):
+    p = os.path.join(d, n)
+    return list(csv.DictReader(open(p))) if os.path.exists(p) else []
+def g(r, k, dv=0.0):
+    try: return float(r.get(k, dv) or dv)
+    except Exception: return dv
+print('')
+print('  --- metrics (%s) ---' % label)
+fs = rows('flow_summary.csv')
+inc = [r for r in fs if 0 < g(r,'total_size_bytes') < 1e9 and g(r,'fct') > 0]
+bg  = [r for r in fs if g(r,'total_size_bytes') >= 1e9]
+f = sorted(g(r,'fct') for r in inc)
+if f:
+    n = len(f)
+    print('  incast FCT mean/p95/p99/max = %.4f / %.4f / %.4f / %.4f ms'
+          % (1e3*sum(f)/n, 1e3*f[int(.95*(n-1))], 1e3*f[int(.99*(n-1))], 1e3*f[-1]))
+    print('  CCT (last incast finish)    = %.4f ms' % (1e3*f[-1]))
+    tot = sum(g(r,'total_size_bytes') for r in inc)
+    print('  incast goodput              = %.4f Gbps  (%d flows, %.0f B)'
+          % (8*tot/f[-1]/1e9, n, tot))
+for r in bg:
+    bct = g(r,'fct')
+    print('  background %s: acked=%.0f B goodput=%.4f Gbps completed=%s%s'
+          % (r.get('flow_id'), g(r,'acked_bytes'), g(r,'flow_goodput')/1e9,
+             r.get('completed'), '' if bct <= 0 else ' BCT=%.4f ms' % (1e3*bct)))
+
+# queue / utilisation: CBAP uses port_summary, DCQCN uses the link timeseries
+src = None
+q = []
+util = None
+ps = rows('port_summary.csv')
+if algo == 'cbap' and ps:
+    src = 'port_summary.csv:queue_bytes'
+    q = sorted(g(r,'queue_bytes') for r in ps)
+    sr = [g(r,'service_rate_bps') for r in ps]
+    if sr: util = sum(sr)/len(sr)/C
+else:
+    lts = rows('selected_link_timeseries.csv')
+    if lts:
+        src = 'selected_link_timeseries.csv:queue_bytes'
+        q = sorted(g(r,'queue_bytes') for r in lts)
+        # utilisation from real transmitted bytes over the sample interval
+        t = [g(r,'time') for r in lts]
+        tx = [g(r,'tx_bytes_delta') for r in lts]
+        if len(t) > 2 and sum(tx) > 0:
+            span = max(t) - min(t)          # 'time' is in seconds
+            if span > 0:
+                util = 8*sum(tx)/span/C
+        u2 = [g(r,'utilization') for r in lts if g(r,'utilization') > 0]
+        if u2 and util is None:
+            util = sum(u2)/len(u2)
+if q:
+    n = len(q); mean = sum(q)/n
+    print('  queue source                = %s' % src)
+    print('  queue mean/p95/p99/max      = %.0f / %.0f / %.0f / %.0f B'
+          % (mean, q[int(.95*(n-1))], q[int(.99*(n-1))], q[-1]))
+    print('  queue delay mean/max        = %.3f / %.3f us'
+          % (8*mean/C*1e6, 8*q[-1]/C*1e6))
+    print('  queue max vs Q_abs(1048575B)= %.2f%%' % (100.0*q[-1]/1048575.0))
+else:
+    print('  queue                       = N/A (no queue source for this algo)')
+if util is not None:
+    print('  link utilisation            = %.4f' % util)
+lts = rows('selected_link_timeseries.csv')
+if lts:
+    ecn = sum(g(r,'ecn_marks_delta') for r in lts)
+    pfcns = sum(g(r,'pfc_pause_ns_delta') for r in lts)
+    print('  ECN marks / PFC pause ns    = %.0f / %.0f' % (ecn, pfcns))
+PY
+
+exit $([ "$F" -eq 0 ] && echo 0 || echo 1)

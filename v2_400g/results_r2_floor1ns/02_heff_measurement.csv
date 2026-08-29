@@ -1,0 +1,17 @@
+cell,rate_g,stage,n,mean_us,p95_us,p99_us,max_us
+heff_10g,10,arrival_at_bottleneck,271,72.678,104.997,109.418,147.86
+heff_10g,10,counters_pending_58_inflight_0,1,0.0,0.0,0.0,0.0
+heff_10g,10,counters_unmatched_0_superseded_818_negative_0,1,0.0,0.0,0.0,0.0
+heff_10g,10,first_affected_at_bottleneck,271,80.212,113.44,117.747,155.893
+heff_10g,10,rate_command,1147,0.0,0.0,0.0,0.0
+heff_10g,10,sender_rate_effect,271,0.0,0.0,0.0,0.0
+heff_200g,200,arrival_at_bottleneck,1514,9.184,11.218,12.391,12.717
+heff_200g,200,counters_pending_0_inflight_0,1,0.0,0.0,0.0,0.0
+heff_200g,200,counters_unmatched_0_superseded_0_negative_0,1,0.0,0.0,0.0,0.0
+heff_200g,200,first_affected_at_bottleneck,1514,10.529,13.137,14.549,14.931
+heff_200g,200,rate_command,1514,0.0,0.0,0.0,0.0
+heff_200g,200,sender_rate_effect,1514,0.0,0.0,0.0,0.0
+heff_400g,400,arrival_at_bottleneck,1504,7.049,8.26,8.696,8.85
+heff_400g,400,first_affected_at_bottleneck,1509,7.118,8.286,8.696,8.85
+heff_400g,400,rate_command,1537,0.0,0.0,0.0,0.0
+heff_400g,400,sender_rate_effect,1510,0.0,0.0,0.0,0.0

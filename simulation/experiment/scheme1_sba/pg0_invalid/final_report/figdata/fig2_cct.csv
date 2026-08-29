@@ -1,0 +1,31 @@
+scenario,scenario_desc,algorithm,metric,value,unit
+s1,"16-way x 256KiB, background 80%",DCQCN,cct_ms,117.62493500000026,ms
+s1,"16-way x 256KiB, background 80%",DCTCP,cct_ms,117.62493500000026,ms
+s1,"16-way x 256KiB, background 80%",TIMELY,cct_ms,117.76958999999998,ms
+s1,"16-way x 256KiB, background 80%",HPCC,cct_ms,104.09342200000005,ms
+s1,"16-way x 256KiB, background 80%",CBAP-SBA,cct_ms,105.92941300000014,ms
+s2,"64-way x 256KiB, background 80%",DCQCN,cct_ms,170.45560900000024,ms
+s2,"64-way x 256KiB, background 80%",DCTCP,cct_ms,170.45560900000024,ms
+s2,"64-way x 256KiB, background 80%",TIMELY,cct_ms,170.82563999999988,ms
+s2,"64-way x 256KiB, background 80%",HPCC,cct_ms,115.1293950000003,ms
+s2,"64-way x 256KiB, background 80%",CBAP-SBA,cct_ms,122.0980690000002,ms
+s3,"64-way x 1MiB, background 80%",DCQCN,cct_ms,381.74258100000014,ms
+s3,"64-way x 1MiB, background 80%",DCTCP,cct_ms,381.74258100000014,ms
+s3,"64-way x 1MiB, background 80%",TIMELY,cct_ms,383.2175960000002,ms
+s3,"64-way x 1MiB, background 80%",HPCC,cct_ms,160.13421800000006,ms
+s3,"64-way x 1MiB, background 80%",CBAP-SBA,cct_ms,188.2953970000001,ms
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCQCN,cct_ms,133.03370700000005,ms
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",DCTCP,cct_ms,133.03370700000005,ms
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",TIMELY,cct_ms,133.20653000000027,ms
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",HPCC,cct_ms,107.29346400000006,ms
+s6,"dual bottleneck, 30+30-way x 256KiB, two background flows",CBAP-SBA,cct_ms,111.09727299999994,ms
+s4,"64-way x 1MiB, background 95%",DCQCN,cct_ms,1227.32734,ms
+s4,"64-way x 1MiB, background 95%",DCTCP,cct_ms,1227.32734,ms
+s4,"64-way x 1MiB, background 95%",TIMELY,cct_ms,1218.9810250000003,ms
+s4,"64-way x 1MiB, background 95%",HPCC,cct_ms,160.313452,ms
+s4,"64-way x 1MiB, background 95%",CBAP-SBA,cct_ms,188.27543999999995,ms
+s5,"64-way x 4MiB, background 80%",DCQCN,cct_ms,1226.9195070000003,ms
+s5,"64-way x 4MiB, background 80%",DCTCP,cct_ms,1226.9195070000003,ms
+s5,"64-way x 4MiB, background 80%",TIMELY,cct_ms,1232.820464,ms
+s5,"64-way x 4MiB, background 80%",HPCC,cct_ms,340.5664110000002,ms
+s5,"64-way x 4MiB, background 80%",CBAP-SBA,cct_ms,450.9634390000001,ms

@@ -1,0 +1,48 @@
+SKIP mx_s1_dcqcn
+SKIP mx_s1_dctcp
+SKIP mx_s1_timely
+SKIP mx_s1_hpcc
+SKIP mx_s1_cbapsba
+--- scenario s1 finished 10:28:27 ---
+SKIP mx_s2_dcqcn
+SKIP mx_s2_dctcp
+SKIP mx_s2_timely
+SKIP mx_s2_hpcc
+SKIP mx_s2_cbapsba
+--- scenario s2 finished 10:28:27 ---
+SKIP mx_s6_dcqcn
+SKIP mx_s6_dctcp
+SKIP mx_s6_timely
+SKIP mx_s6_hpcc
+SKIP mx_s6_cbapsba
+--- scenario s6 finished 10:28:27 ---
+SKIP mx_s3_dcqcn
+SKIP mx_s3_dctcp
+SKIP mx_s3_timely
+SKIP mx_s3_hpcc
+SKIP mx_s3_cbapsba
+--- scenario s3 finished 10:28:27 ---
+SKIP mx_s4_dcqcn
+RUN  mx_s4_dctcp  start=10:28:27
+OK   mx_s4_dctcp rc=0 3332s
+RUN  mx_s4_timely  start=11:23:59
+OK   mx_s4_timely rc=0 3431s
+RUN  mx_s4_hpcc  start=12:21:10
+OK   mx_s4_hpcc rc=0 3452s
+RUN  mx_s4_cbapsba  start=13:18:42
+OK   mx_s4_cbapsba rc=0 3591s
+--- scenario s4 finished 14:18:33 ---
+RUN  mx_s5_dcqcn  start=14:18:33
+OK   mx_s5_dcqcn rc=0 3859s
+RUN  mx_s5_dctcp  start=15:22:52
+OK   mx_s5_dctcp rc=0 3558s
+RUN  mx_s5_timely  start=16:22:10
+OK   mx_s5_timely rc=0 3686s
+RUN  mx_s5_hpcc  start=17:23:36
+OK   mx_s5_hpcc rc=0 3722s
+RUN  mx_s5_cbapsba  start=18:25:38
+OK   mx_s5_cbapsba rc=0 3933s
+--- scenario s5 finished 19:31:11 ---
+=== matrix complete Fri Aug 21 19:31:11 HKT 2026 ===
+DONE: 30/30   FAILED: none
+/dev/loop4       32G   26G  4.2G  86% /work

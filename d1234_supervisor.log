@@ -1,0 +1,12 @@
+=== wave 1: d1_dcqcn + d2_caponly  Tue Aug 18 16:02:35 HKT 2026 ===
+OK   d1_dcqcn rc=0  1507s
+OK   d2_caponly rc=0  1571s
+=== wave 2: d3_capmig + d4_capmigband  Tue Aug 18 16:28:46 HKT 2026 ===
+OK   d3_capmig rc=0  1593s
+OK   d4_capmigband rc=0  1596s
+=== all waves finished Tue Aug 18 16:55:22 HKT 2026 ===
+  d1_dcqcn DONE 0 1507
+  d2_caponly DONE 0 1571
+  d3_capmig DONE 0 1593
+  d4_capmigband DONE 0 1596
+/dev/loop4       32G   24G  6.2G  80% /work

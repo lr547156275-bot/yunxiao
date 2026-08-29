@@ -1,0 +1,5 @@
+STATUS=INVALID_VM_RESTART
+REASON=codespace VM restarted ~07:51; simulator killed mid-run
+EVIDENCE=controller_summary.csv 0 bytes; runner process gone; host uptime 10 min
+OOMKilled=false Exit=0 (container auto-restarted 07:56:08Z)
+RETAINED=yes

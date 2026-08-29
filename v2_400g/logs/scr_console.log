@@ -1,0 +1,12 @@
+RUN scrv2_d08_b060 16:38:41
+RUN scrv2_d08_b040 16:38:41
+RUN scrv2_d08_b020 16:38:41
+RUN scrv2_d16_b020 16:38:41
+OK  scrv2_d08_b060 6655s peakRSS=0.40GB
+RUN scrv2_d16_b040 18:29:36
+OK  scrv2_d08_b040 6664s peakRSS=0.40GB
+RUN scrv2_d16_b060 18:29:45
+OK  scrv2_d16_b020 6684s peakRSS=0.40GB
+RUN scrv2_d32_b020 18:30:05
+OK  scrv2_d08_b020 6816s peakRSS=0.40GB
+RUN scrv2_d32_b040 18:32:17

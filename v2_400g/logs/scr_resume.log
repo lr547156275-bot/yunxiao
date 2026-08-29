@@ -1,0 +1,30 @@
+SKIP scrv2_d08_b020 (already done)
+SKIP scrv2_d08_b040 (already done)
+SKIP scrv2_d08_b060 (already done)
+SKIP scrv2_d16_b020 (already done)
+RUN scrv2_d16_b040 22:57:37
+RUN scrv2_d16_b060 22:57:37
+OK  scrv2_d16_b040 3261s peakRSS=0.40GB
+RUN scrv2_d32_b020 23:51:58
+OK  scrv2_d16_b060 3298s peakRSS=0.40GB
+RUN scrv2_d32_b040 23:52:35
+OK  scrv2_d32_b020 3351s peakRSS=0.40GB
+RUN scrv2_d32_b060 00:47:49
+OK  scrv2_d32_b040 3318s peakRSS=0.40GB
+OK  scrv2_d32_b060 3138s peakRSS=0.40GB
+=== screening complete (resume) ===
+cell                 meanCCT    p99CCT   Qpk_MB fabric_MB   PFC  retx  bg_Gbps  gates
+scrv2_d08_b020        5.4223    5.8808    0.536     0.538     0     0      n/a  PASS
+scrv2_d08_b040        5.5066    5.8883    1.374     1.384     0     0      n/a  PASS
+scrv2_d08_b060        5.5047    5.9028    1.549     1.551     0     0      n/a  PASS
+scrv2_d16_b020        5.6568    5.9599    1.614     1.616     0     0      n/a  PASS
+scrv2_d16_b040        5.6864    5.9704    1.507     1.507     0     0      n/a  PASS
+scrv2_d16_b060        5.7759    5.9799    0.965     0.968     0     0      n/a  PASS
+scrv2_d32_b020        5.6564    5.9583    1.562     1.562     0     0      n/a  PASS
+scrv2_d32_b040        5.6861    5.9694    1.507     1.507     0     0      n/a  PASS
+scrv2_d32_b060        5.7509    5.9683    1.893     1.894     0     0      n/a  PASS
+
+best mean CCT 5.4223 ms; 1 candidate(s) within the 0.3% tie band
+  tie: scrv2_d08_b020  meanCCT 5.4223 ms
+SCREENING WINNER (frozen rules): scrv2_d08_b020  (D_target=8us BMAX=0.02, mean CCT 5.4223 ms, p99 5.8808 ms)
+winner is a CANDIDATE pending your review; pilot generation stays gated until you approve it.
