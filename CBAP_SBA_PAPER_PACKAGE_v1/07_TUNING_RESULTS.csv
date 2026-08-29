@@ -1,0 +1,31 @@
+algorithm,parameter_point,S3_CCT_ms,S3_queue_p99_B,status,source
+cbap,BMAX=0.005C,58.2011,1048,tried,screen8_report.md
+cbap,BMAX=0.010C,58.2367,1048,tried,screen8_report.md
+cbap,BMAX=0.020C,58.2217,1048,tried,screen8_report.md
+cbap,BMAX=0.030C,56.8412,39824,tried,nbhp round
+cbap,BMAX=0.040C,56.8412,19912,SELECTED,screen8 + matrix
+cbap,BMAX=0.050C,56.8387,148816,tried,nbhp round
+cbap,BMAX=0.080C,58.4757,2096,tried,screen8_report.md
+cbap,pre-fix scr7 ladder,NA,NA,INVALID_LEDGER_GHOST_BIAS,screen7_report.md (do not cite)
+dcqcn,K=100/400,59.5711,254664,tried,frontier_s3.csv
+dcqcn,K=200/800,58.5647,498848,tried,frontier_s3.csv
+dcqcn,K=400/1600 std,58.373,967304,STANDARD,frontier_s3.csv
+dcqcn,K=800/3200,57.1686,1275416,tried,frontier_s3.csv
+dcqcn,K=1600/6400,57.1686,1275416,tried (ECN inert),frontier_s3.csv
+dcqcn,PMAX=1.0,59.2679,520856,tried,frontier_s3.csv
+dctcp,K=100/400,58.191,596312,tried,frontier_s3.csv
+dctcp,K=200/800,57.7368,798576,tried,frontier_s3.csv
+dctcp,K=400/1600 std,57.2474,1218824,STANDARD,frontier_s3.csv
+dctcp,K=800/3200,57.1737,1274368,tried,frontier_s3.csv
+dctcp,K=1600/6400,57.1686,1275416,tried (ECN inert),frontier_s3.csv
+dctcp,RATE_AI=500M,57.3572,1163280,tried,frontier_s3.csv
+timely,RATE_AI=25M,58.2317,86592,tried,frontier_s3.csv
+timely,RATE_AI=50M std,57.8657,100320,STANDARD,frontier_s3.csv
+timely,RATE_AI=100M,57.9816,779328,tried,frontier_s3.csv
+timely,RATE_AI=200M,57.7421,1076064,tried,frontier_s3.csv
+hpcc,eta=0.90,60.5504,11990,tried,frontier_s3.csv
+hpcc,eta=0.95 std,60.3267,14170,STANDARD,frontier_s3.csv
+hpcc,eta=0.98,60.2323,14170,tried,frontier_s3.csv
+hpcc,MI=1,60.3161,14170,tried,frontier_s3.csv
+
+"# tuning protocol: CBAP tuned ONLY on S3 (training scenario); selection rule = all safety gates PASS, then completion, then queue; |delta|<0.3%% single-seed = tie. S4/S5 held out (parameters untouched). Baselines: matrix uses STANDARD codebase defaults (not claimed optimal); the 21-point S3 sweep bounds their reachable frontier. Baseline sweep was NOT run on S1/S2/S4-S6 (see 12_MISSING)."

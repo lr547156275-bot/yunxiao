@@ -1,0 +1,16 @@
+variant,algorithm,CCT_ms,queue_max_B,PFC_count,note
+buffer 8MB (std),dcqcn,58.373,1279608,0,main matrix
+buffer 2MB,dcqcn,57.9916,721024,10456,annex A
+buffer 8MB (std),dctcp,57.2474,1276464,0,
+buffer 2MB,dctcp,58.1399,721024,11548,
+buffer 8MB (std),timely,57.8657,1278816,0,
+buffer 2MB,timely,58.1014,712800,2026,
+buffer 8MB (std),hpcc,60.3267,1296010,0,
+buffer 2MB,hpcc,60.3354,712860,438,
+buffer 8MB (std),cbapsba,56.8412,26200,0,
+buffer 2MB,cbapsba,56.8412,26200,0,byte-identical
+ECN std (400/1600),dcqcn,58.373,1279608,0,annex B
+ECN low (100/400),dcqcn,59.5711,1250264,0,
+ECN std,dctcp,57.2474,1276464,0,
+ECN low,dctcp,58.191,1276464,0,
+ECN low,cbapsba,56.8412,26200,0,byte-identical

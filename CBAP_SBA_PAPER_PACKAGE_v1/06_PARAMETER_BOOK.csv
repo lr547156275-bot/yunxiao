@@ -1,0 +1,21 @@
+component,parameter,final_value,search_range,source,frozen_status
+CBAP,BMAX (D4v2 boost cap),0.04*C wire,"0.005..0.08C screened (scr8), 0.03/0.05 neighborhood (nb)","S3 screening + neighborhood, S4/S5 held-out",FROZEN
+CBAP,Q_target,"0.025*Q_abs = 26,214 B",NOT swept post-fix,design choice; sensitivity untested (see 12_MISSING),FROZEN
+CBAP,Q_abs,"1,048,575 B (838.86us@10G)",never swept (budget),frozen queue budget,FROZEN
+CBAP,Q_low/Q_high/Q_red,"524,287 / 915,877 / 981,503 B",never swept,"derived: soft=0.5, M_act, M_safe=67,072",FROZEN
+CBAP,steadyCapFraction,1.000,0.995/1.000 compared in pareto era (superseded round),pa round + D-round,FROZEN
+CBAP,rho (planner) / initial_release_ratio,0.90,rho 0.55/0.75/0.90/0.9875 swept in superseded pre-D4v2 era only,au/pa rounds (pre-fix); not re-swept post-fix (see 12_MISSING),FROZEN
+CBAP,MIN_RATE,100 Mb/s payload,never swept (floor guarantee),design,FROZEN
+CBAP,migration release/decay/rise,0.5 / 0.30 / 0.30,not swept this campaign,config defaults,FROZEN
+CBAP,H_eff (H_guard),175 us,not swept; measured worst case,"measurement, quantised",FROZEN
+CBAP,control epoch,5 us,not swept,design,FROZEN
+DCQCN,KMIN/KMAX/PMAX,400/1600 KB / 0.2 (standard),"sweep: K in {100,200,400,800,1600}, PMAX {0.2,1.0}",HPCC-codebase defaults; sweep in 07_TUNING_RESULTS,standard
+DCQCN,"RATE_AI/HAI, timers, EWMA, FR","50M/100M, alpha_resume 55, dec_int 4, RP 300, g 1/256, FR 5",not swept,HPCC-codebase defaults,standard
+DCTCP,DCTCP_RATE_AI,1000 Mb/s,"sweep {500,1000}",codebase default,standard
+DCTCP,ECN K ladder,shares DCQCN KMIN/KMAX,sweep {100..1600},codebase default,standard
+TIMELY,RATE_AI,50 Mb/s,"sweep {25,50,100,200}",codebase default,standard
+TIMELY,T_LOW/T_HIGH/alpha/beta,codebase defaults,NOT SWEPT: not exposed by harness config parser,harness limitation (12_MISSING),standard
+HPCC,U_TARGET (eta),0.95,"sweep {0.90,0.95,0.98}",HPCC paper default,standard
+HPCC,MI_THRESH,5,"sweep {1,5}",codebase default,standard
+switch,BUFFER_SIZE,"8 MB (main), 2 MB (annex A)",annex only,codebase default,standard
+switch,PFC,"dynamic threshold, pause 5us",not swept,codebase default,standard

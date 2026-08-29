@@ -1,0 +1,6 @@
+algorithm,CCT_ms,batch_goodput_gbps,vs_dcqcn_pct
+dcqcn,6.8529,18.3614,0.0
+dctcp,6.8537,18.3592,0.012
+timely,8.2396,15.2713,20.234
+hpcc,7.3254,17.1771,6.895
+cbapsba,6.8652,18.3286,0.179

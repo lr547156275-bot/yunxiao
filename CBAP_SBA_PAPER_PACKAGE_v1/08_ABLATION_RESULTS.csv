@@ -1,0 +1,8 @@
+arm,description,CCT_ms,BCT_ms,batch_goodput_gbps,queue_max_B,queue_p99_B,bg_recovery_ms,status,evidence
+D1,DCQCN-only,58.373,58.373,9.1972,1279608,967304,22.887,VALID,d1_dcqcn_out; identical numbers reproduced by mx_s3_dcqcn
+D2,"static cap only (no migration, boost=0)",83.9493,83.9443,6.3952,62880,54496,NA,VALID,d2_caponly_out: -43.5%% CCT vs D3 -- migration is necessary
+D3,"static cap + active migration, boost=0",58.4911,58.4862,9.1787,9432,1048,0.0488,VALID,d3_capmig_out / scr8_d3: ties DCQCN at 135x lower queue
+D4v1,legacy queue-band (+0.30C fixed),71.4106,71.4056,7.5181,1196816,1121360,NA,INVALID_OVERBOOST_POLICY,"d4_capmigband_out: evidence retained, policy invalid"
+D4v2,"full controller (leased predictive boost, BMAX=0.04C)",56.8412,56.8362,9.4451,26200,19912,0.0388,VALID,scr8_b040 / mx_s3_cbapsba: the shipped configuration
+
+"# mechanism contributions (S3, vs D1): admission+cap alone (D2) LOSES 43.8%% CCT -- capacity must be migrated; migration (D3) recovers to +0.20%% CCT (tie) with queue 135.7x lower and bg recovery 469x faster; the leased predictive boost (D4v2-D3 delta) converts the tie into -2.62%% CCT / +2.90%% goodput at queue max 26.2KB (still 48.8x below D1). All arms same timestamps/definitions (01_METRIC_DEFINITIONS)."

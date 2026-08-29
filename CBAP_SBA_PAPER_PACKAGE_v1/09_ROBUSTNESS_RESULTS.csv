@@ -1,0 +1,15 @@
+axis,variation,result,verdict,source
+BMAX neighborhood,b030/b040/b050 on S3,CCT 56.8412/56.8412/56.8387 (all -2.6% vs DCQCN); queue max 71264/26200/298680,NEIGHBORHOOD_ROBUST on completion; queue cost non-monotonic (documented),nbhp round / 07_TUNING
+BMAX full ladder,0.005..0.08C,only 0.04C beats ties band,lone-peak landscape; motivated the held-out validation,screen8_report.md
+rho / initial release,0.90 final,swept only pre-D4v2 (superseded rounds),NOT re-swept post-fix,12_MISSING
+Q_target,0.025*Q_abs fixed,not swept,NOT swept,12_MISSING
+steadyCapFraction,1.000 vs 0.995,compared in pareto era,superseded-era evidence only,pa round summaries
+shallow buffer,8->2 MB uniform (S3),"baselines: 438-11548 PFC pauses, CCT -0.65..+1.56%; CBAP byte-identical, 0 PFC",CBAP insensitive to buffer depth,SENSITIVITY_ANNEX.md
+ECN thresholds,KMIN 100/KMAX 400 (S3),dcqcn +2.05% CCT p99 967K->255K; dctcp +1.65%; CBAP byte-identical,no ECN setting wins both axes,SENSITIVITY_ANNEX.md
+held-out scenarios,"S4 (bg 9.5G), S5 (4MiB flows)","CBAP -3.77% / -1.35% CCT, gates PASS, params untouched",HELD_OUT_S4_S5_PASS,s45_report.md
+dual bottleneck,"S6 30+30 flows, 2 links","CBAP +0.18% CCT (TIE), queue 23x lower per link",tie on completion; queue advantage holds,matrix_report.md
+flow count,16 (S1) / 60 (S6) / 64 (S2-S5),CBAP -5.1% / +0.2% / -1.4..-8.9%,covered by scenario set,matrix_report.md
+flow size,256KiB / 1MiB / 4MiB,CBAP -5.1..-8.9% / -2.6..-3.8% / -1.4%,advantage shrinks with batch length (fixed discovery-tax amortisation),matrix_report.md
+background load,8G / 9.5G cap,S3 -2.62% vs S4 -3.77%,covered,matrix_report.md
+RTT variation,single topology only,NOT varied,NOT varied,12_MISSING
+zone machinery under stress,batch-overlap injection,full GREEN->HOLD->DRAIN->RED->GREEN at 97.5% Q_abs (st_2560); structural envelope T~2.2ms quantified,safety machinery exercised under official law,ZONE_COVERAGE_STRESS.md

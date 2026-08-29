@@ -1,0 +1,47 @@
+paper_item,symbol_or_step,meaning,value,unit,scope,source_file,function,line_start,line_end,verification_status,notes
+fluid_model,A_l,link admitted arrival sum,per-run,bit/s,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch ledger,857,887,verified,wire domain; ledger per owning QP
+fluid_model,dq/dt,(A-C)/8 with zero floor,-,Byte/s,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch,896,898,verified,discrete per 5us epoch; /8 bit->Byte
+prediction,A_safe,safe arrival envelope (pending-down kept at old rate until deadline; pending-up counted immediately),per-epoch,bit/s,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch,860,887,verified,conservative direction documented in code comment
+prediction,A_ddl,post-deadline arrival envelope,per-epoch,bit/s,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch,862,884,verified,arrivalAfterDeadline
+prediction,tau,earliest pending-down deadline clamped to H_eff,<=H_eff,s,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch,891,897,verified,default H_eff when no pending down
+prediction,q1,q0+(A_safe-C)*tau/8,-,Byte,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch,896,896,verified,
+prediction,q2,q1+(A_ddl-C)*(H_eff-tau)/8,-,Byte,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch,897,898,verified,
+prediction,q_stop,max(q0,q1,q2) prefix max,-,Byte,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch,899,909,verified,index recorded; q_stop>=q0 by construction
+prediction,q_safe,q_stop+M_safe,-,Byte,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch,913,916,verified,
+prediction,M_safe,packetization margin,64000 (v2 fanin64),Byte,per cell,v2_400g/configs/fm*_cbap.txt,CBAP_QC_SAFETY_MARGIN_BYTES,0,0,verified,= fanin x 1000B wire packet
+prediction,H_eff,measured actuation horizon p99,118/15/12,us,per rate,v2_400g/reports/02_heff_measurement.csv,heff cells,0,0,verified,CBAP_QC_H_GUARD_US in configs
+zones,RED enter,q_safe>=Q_abs or q0>=Q_abs or !pfcSafe,-,-,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch,923,924,verified,
+zones,RED exit,q_stop<=Q_high and q0<=Q_high and pfcSafe and no pendingUp,-,-,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch,928,930,verified,hysteresis; comment explains no double M_safe
+boost,B_l request,(Q_target-q_stop)*8/H_eff when positive (GREEN only),-,bit/s,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch D4v2,1050,1055,verified,semantic: EXTRA admitted wire rate above base aggregate budget
+boost,B_l cap,min(request BMAX*C),BMAX=0.02,-,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch D4v2,1041,1055,verified,qb2BmaxRatio*cWire
+boost,B_l veto,clamp to (Q_red-q_stop)*8/H_eff; <=0 -> 0,-,bit/s,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch D4v2,1056,1064,verified,veto codes 1/2
+boost,headroom lease,boost expires at now+H_eff if unrefreshed,H_eff,s,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch,846,849 and 1044,verified,distinct from 1ms startup backstop
+boost,HOLD decay,x0.99 per 5us epoch,0.99,-,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch D4v2,1065,1072,verified,
+boost,DRAIN,-min(2*BMAX*C drainMax)*pressure,-,bit/s,per link,simulation/src/point-to-point/model/rdma-hw.cc,QueueControllerEpoch D4v2,1073,1080,verified,
+admission,C_avail domain,wire-domain planning conversion,flag=1 in v2,-,per link,simulation/src/point-to-point/model/rdma-hw.cc,GetCbapSbaAvailableCapacity,2918,2936,verified,SBA_WIRE_DOMAIN_PLANNING
+admission,R_old census,old-side applied sum excl FINISHED/HOLD/COLLECTING,-,bit/s,per link,simulation/src/point-to-point/model/cbap-sba.cc,AdmitBatch,196,213,verified,lifecycle guard explicit
+admission,rho_init,initial release ratio,0.90,-,global,simulation/src/point-to-point/model/cbap-sba.cc,SetCoreInitialRelease,168,175,verified,clamped to [0 1]; config CBAP_INITIAL_RELEASE_RATIO
+admission,B_init,min(C_avail (C_avail-R_old)+floor(rho*R_old)),-,bit/s,per link,simulation/src/point-to-point/model/cbap-sba.cc,AdmitBatch core release,283,303,verified,H_l=C_avail-R_old is capacity headroom NOT time horizon
+admission,conservation,sum grants+ (1-rho)R_old <= max(C_avail R_old)+|F|,fail-fast,-,per link,simulation/src/point-to-point/model/cbap-sba.cc,AdmitBatch,331,386,verified,occupancy bound; throws on violation
+admission,ADMISSION_HOLD,zero-grant flows held not sending,-,-,per flow,simulation/src/point-to-point/model/cbap-sba.cc,AdmitBatch,317,326,verified,0 occurrences in v2 formal cells (audit)
+fairness,ProgressiveFill,equal-increment water filling with bottleneck freeze,-,-,per admission,simulation/src/point-to-point/model/cbap-sba.cc,ProgressiveFill,87,166,verified,<=|F|+1 iterations; 0.5 tolerance; floor at output
+migration,u_k,path max of clip((q-0.5*qecn)/(0.5*qecn)),band 200k-400kB in v2,-,per flow,simulation/src/point-to-point/model/rdma-hw.cc,EvaluateCbapSbaMigration,3419,3432,verified,band from link-file ecnThresholdBytes=400000 x fractions 0.5/1.0 (rdma-hw.h:358)
+migration,alpha rise,0.30*(1+0.35*(1-2u)),0.195..0.405,-,per flow,simulation/src/point-to-point/model/rdma-hw.cc,EvaluateCbapSbaMigration,3443,3446,verified,defaults rdma-hw.h:369-370
+migration,alpha decay,constant,0.30,-,per flow,simulation/src/point-to-point/model/rdma-hw.cc,EvaluateCbapSbaMigration,3447,3448,verified,
+migration,update,r+alpha*(r*-r) clamped into [current target] then [minRate maxRate],-,bit/s,per flow,simulation/src/point-to-point/model/rdma-hw.cc,EvaluateCbapSbaMigration,3452,3471,verified,no overshoot path exists; direction from sign only
+migration,deadline,retarget after migrationMaxRtt windows,5,RTT,per flow,simulation/src/point-to-point/model/rdma-hw.h,CbapConfig,370,370,verified,deadline paths rdma-hw.cc:2420-2440
+handoff,first feedback,STARTUP_SENDING->DCQCN_OWNED at first actionable CNP,-,-,per flow,simulation/src/point-to-point/model/cbap-sba.cc,OnActionableFeedback,435,456,verified,caller rdma-hw.cc:4501
+handoff,startup backstop,forced handoff if no feedback by release+T_lease,1,ms,per flow,simulation/src/point-to-point/model/rdma-hw.cc,EvaluateCbapSbaLease,3124,3147,verified,sbaLeaseNs default rdma-hw.h:357; key CBAP_SBA_LEASE_US third.cc:3646; code comment: UNCALIBRATED placeholder
+handoff,backstop set sites,lease armed at release and at readmit resume,release+1ms,ns,per flow,simulation/src/point-to-point/model/rdma-hw.cc,admission/readmit,3041,3042 and 3116,verified,
+handoff,measured share,flows handed off exactly at +1ms,42/65 (200G-S2); 9/65 (400G-S2),flows,per cell,v2_400g/results/fm*_s2_cbap/sba_events.csv,audit script,0,0,verified,implementation boundary only
+recovery,completion release,FINISHED + reason flow_completed_capacity_release,-,-,per flow,simulation/src/point-to-point/model/cbap-sba.cc,Finish,457,470,verified,
+recovery,readmission,ReadmitHeld water-fills HOLD flows on events,-,-,per batch,simulation/src/point-to-point/model/cbap-sba.cc,ReadmitHeld,389,433,verified,trigger loop rdma-hw.cc:3078-3100
+phase_spread,off_i,rank*T_pkt/n; T_pkt=8*wire_pkt/r_i; shifts m_nextAvail only,<1 packet time,ns,per flow,simulation/src/point-to-point/model/rdma-hw.cc,release path,7668,7703,verified,CBAP_PHASE_SPREAD_ENABLE=1 in v2 configs; default false rdma-hw.h:362; no isolated ablation
+timing,T_plan,planning delay (CCT-BCT gap for CBAP),5000,ns,global,simulation/src/point-to-point/model/rdma-hw.h,CbapConfig default,339,339,verified,measured gap exactly 5000ns in fm400g_s2_cbap flow_timing
+timing,T_ctrl,control epoch,5,us,global,v2_400g/configs/fm*_cbap.txt,CBAP_CONTROL_EPOCH_US,0,0,verified,
+packet,wire bytes,payload+eth14+ipv4 20+udp8+seq/pg+INT(NONE),1000 (v2: 952+48),Byte,global,simulation/src/point-to-point/model/rdma-hw.cc,CbapLinkBytesPerPacket,359,374,verified,derived from header layout; v1 was 1048=1000+48
+params,MIN_RATE,per-flow floor,0.01*C (4G@400G),bit/s,per rate,v2_400g/configs/fm*_cbap.txt,MIN_RATE,0,0,verified,
+params,Q_abs,C*D_abs/8; D_abs=max(80us 7*H_eff),1.03M/2.63M/4.2M,Byte,per rate,v2_400g/reports/07_formal_matrix_design.md,rule A,0,0,verified,CBAP_QC_APP_HARD_DELAY_US in configs
+params,Q_target,C*8us/8 as ratio of Q_abs,ratio 0.095238 @400G,-,per rate,v2_400g/configs/fm*_cbap.txt,CBAP_QB2_QTARGET_RATIO,0,0,verified,=8/84
+metrics,ideal drain,fanin*size*8*(1000/952)/C,-,s,per cell,matrix_analyze.py + fmt_tables.py,ideal_ms,0,0,verified,wire/payload exact from packet geometry
+v20_lease,2x blind window,release+2*maxBlind (OTHER cc-mode arm),-,ns,v20 only,simulation/src/point-to-point/model/rdma-hw.cc,v20 admission,2706,2803,verified,NOT active in CC_MODE 30 cells; do not cite for main algorithm
